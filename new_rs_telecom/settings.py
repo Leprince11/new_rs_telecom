@@ -21,17 +21,17 @@ pymysql.install_as_MySQLdb()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k#ca$7z6x9&p2j8#t--xbgx-6e5h2_oi1&j39o0w5rwgne4no5'
-
+#SECRET_KEY = 'django-insecure-k#ca$7z6x9&p2j8#t--xbgx-6e5h2_oi1&j39o0w5rwgne4no5'
+SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config('DEBUG')
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['rs-telecom.fr','www.rs-telecom.fr','16.16.24.244']
+CSRF_TRUSTED_ORIGINS = ['https://rs-cyber.fr','https://www.rs-telecom.fr']
 
 
 # Application definition
@@ -63,8 +63,8 @@ TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
         'DIRS': [ 
-            BASE_DIR/'portail_web/templates',
-            BASE_DIR/'pulls/templates'
+            os.path.join(BASE_DIR,'portail_web/Templates'),
+            os.path.join(BASE_DIR,'pulls/Templates')
             ],
         'APP_DIRS': True,
         'OPTIONS': {
@@ -136,13 +136,14 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = 'static/'
-# STATICROOT = os.path.join(BASE_DIR,'static')
+#STATIC_URL = '/static/'
+#STATIC_ROOT = os.path.join(BASE_DIR,"staticfiles")
 STATICFILES_DIRS =[
     os.path.join(BASE_DIR,'portail_web/static'),
     os.path.join(BASE_DIR,'pulls/static')
 ]
-
+STATIC_ROOT = os.path.join(BASE_DIR,"staticfiles")
+STATIC_URL = '/static/'
 # Media files
 
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -161,7 +162,7 @@ PASSWORD_ODOO=config('password')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.gmail.com"
+EMAIL_HOST = "smtp.office365.com"
 EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')

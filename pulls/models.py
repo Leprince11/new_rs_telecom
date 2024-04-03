@@ -1,11 +1,12 @@
 from django.db import models
 import uuid
+from django.utils import timezone
 
 class User(models.Model):
     id_user        = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
     users_name     = models.CharField(max_length=255)
     users_fname    = models.CharField(max_length=255)
-    created_date   = models.DateTimeField(auto_now_add=True)
+    created_date   = models.DateTimeField(default=timezone.now)
     delete_date    = models.DateTimeField(null=True)
     update_date    = models.DateTimeField(null=True)
     users_phone    = models.CharField(max_length=255,null=True)

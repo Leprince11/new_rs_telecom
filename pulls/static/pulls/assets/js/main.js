@@ -69,12 +69,13 @@ $(document).ready(function() {
                     success: function(response) {
                         if (response.success) {
                             showAlert('success', response.msg ,5000);
+                            window.location="Home"
                         } else {
                             showAlert('danger',response.msg,5000);
                         }
                     },
                     error: function(xhr, status, error) {
-                        showAlert('warning', 'error',5000);
+                        showAlert('warning', response.errors,5000);
                     }
                 });
             } catch (error) {
@@ -120,7 +121,7 @@ $(document).ready(function() {
                         }
                     },
                     error: function(xhr, status, error) {
-                        showAlert('warning', 'error',5000);
+                        showAlert('warning', error,5000);
                     }
                 });
             } catch (error) {

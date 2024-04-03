@@ -1,7 +1,5 @@
 {% load static %}
 {% if head %}
-
-
 <section id="particles-js" class="d-flex bg-md-full">
     
     <div class="left-block" data-aos="zoom-in-down" data-aos-duration="3000">
@@ -39,7 +37,7 @@
                 <div class="row d-flex justify-content-center">
                     <div class="col-lg-6 text-center text-uppercase">
                         {% if active_page == 'about' %}
-                            <h2 id="typewriterh2">Qui nous sommes?</h2>
+                            <h2 id="typewriterh2">Qui sommes-nous?</h2>
                             {% elif active_page == 'service' %}
                             <h2 id="typewriterh2">Nos services</h2>
                             {% elif active_page == 'expertise' %}
@@ -66,7 +64,7 @@
             <ol>
                 <li><a href="{% url 'Home'%}">Accueil</a></li>
                 {% if active_page == 'about' %}
-                <li>Qui nous sommes?</li>
+                <li>Qui sommes-nous?</li>
                 {% elif active_page == 'service' %}
                 <li>Nos services</li>
                 {% elif active_page == 'expertise' %}

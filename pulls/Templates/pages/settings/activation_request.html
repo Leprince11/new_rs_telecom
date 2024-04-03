@@ -172,7 +172,7 @@
             <tr>
               <td class="content">
                 <h2>
-                  Salue
+                  Bonjour Mr/Mme
                   <strong style="text-transform: capitalize"
                     >{{ fullname }}</strong
                   >,
@@ -190,7 +190,7 @@
                     <td align="center">
                       <p>
                         <a
-                          href="http://{{ domain }}{% url 'accounts:activate' uidb64=uid token=token %}"
+                          href="http://{{ domain }}{% url 'activate' uidb64=uid token=token %}"
                           class="button"
                           >Oui, j'en suis !</a
                         >
@@ -203,10 +203,10 @@
                     Au fait, si le bouton ci-dessus n'est pas cliquable, collez le
                     lien suivant dans votre navigateur
                   <!-- email link -->
-                    http://{{ domain }}{% url 'accounts:activate' uidb64=uid token=token %}
+                    http://{{ domain }}{% url 'activate' uidb64=uid token=token %}
                 </p>
 
-                <p><em>– R$S TELECOM</em></p>
+                <p><em>R$S TELECOM</em></p>
               </td>
             </tr>
           </table>
@@ -224,8 +224,8 @@
                   State, Nigeria.
                 </p>
                 <p>
-                  <a href="mailto:nelsonidogun@gmail.com"
-                    >nelsonidogun@gmail.com</a
+                  <a href="mailto:contact@rs-telecom.fr"
+                    >contact@rs-telecom.fr</a
                   >
                 </p>
               </td>

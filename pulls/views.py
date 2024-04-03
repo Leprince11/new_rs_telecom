@@ -46,8 +46,11 @@ def login(request):
                                         "msg": "Aucun utilisateur avec les informations fournies n'existe dans notre système.",
                                         })
             except User.DoesNotExist:
-                return None
-        
+                return JsonResponse({
+                                "success": False,
+                                "msg": "Aucun utilisateur avec les informations fournies n'existe dans notre système.",
+                                })
+
     form = LoginForm()
     return render(request, 'pages/auth/login.html',{'form': form})
 
@@ -61,8 +64,7 @@ def register(request):
         password = post_data.get("password")
         accept_terms=post_data.get("accept_terms")
 
-       
-        
+
         if(accept_terms=='on'):
             if(utils.is_valid_email(email)['success']):
                 users = User.objects.create(users_mail=email)
@@ -98,13 +100,14 @@ def register(request):
                     else:
                         tasks.send_email_message(
                             subject=subject,
+                            header_from="Validation de votre adresse email",
                             template_name="pages/settings/activation_request.html",
                             user_id=users.id_user,
                             ctx=ctx,
                             simple=True
                         )
                         # raw_password = password
-                    
+
                     return JsonResponse(
                         {
                             "success": True,
@@ -127,7 +130,7 @@ def register(request):
                         })
     else:
         form = SignupForm()
-    
+
     return render(request, 'pages/auth/register.html', {'form': form})
 
 def forget(request):
