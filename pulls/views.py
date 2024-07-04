@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import render,redirect
+from django.shortcuts import render,redirect,get_object_or_404
 from datetime import datetime,timedelta
 from django.http import JsonResponse
 from django.contrib.sites.shortcuts import get_current_site
@@ -8,10 +8,11 @@ from django.contrib.auth.hashers import make_password,check_password
 from django.urls.base import reverse
 from django.utils.encoding import force_bytes,force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+from django.core.exceptions import ValidationError
 
 from pulls.tokens import AccountActivationTokenGenerator
-from .models import User
-from .form import SignupForm,LoginForm
+from .models import User,UserTwoFactorAuthData
+from .form import SignupForm,LoginForm,TwoFactorAuthForm
 from . import tasks, utils
 
 # Create your views here.
@@ -22,13 +23,23 @@ def login(request):
             username = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
             try:
-                user = User.objects.get(users_mail=username)
+                user = User.objects.get(users_mail=username,delete_date=None)
                 if check_password(password,user.users_password):
                     if user is not None:
                         if user.users_is_active:
-                            request.session['user_id'] = str(user.id_user)
-                            return JsonResponse({
+                            try :
+                                two_factor_auth_data=UserTwoFactorAuthData.objects.get(user_id=user.id_user,is_active=True)
+                                request.session['user_id'] = str(user.id_user)
+                                return JsonResponse({
                                                     "success": True,
+                                                    "opt":'activate',
+                                                    "msg": "Connexion réussie!",
+                                                })
+                            except UserTwoFactorAuthData.DoesNotExist :
+                                request.session['user_id'] = str(user.id_user)
+                                return JsonResponse({
+                                                    "success": True,
+                                                    'opt':'deactivate',
                                                     "msg": "Connexion réussie!",
                                                 })
                         else:
@@ -45,12 +56,16 @@ def login(request):
                     return JsonResponse({"success": False,
                                         "msg": "Aucun utilisateur avec les informations fournies n'existe dans notre système.",
                                         })
+            
             except User.DoesNotExist:
-                return JsonResponse({
-                                "success": False,
-                                "msg": "Aucun utilisateur avec les informations fournies n'existe dans notre système.",
-                                })
-
+                return JsonResponse({"success": False,
+                                        "msg": "Aucun utilisateur avec les informations fournies n'existe dans notre système.",
+                                        })
+            except Exception as e:
+                return JsonResponse({"success": False,
+                                        "msg": "Serveur momentanement indisponible.",
+                                        })
+        
     form = LoginForm()
     return render(request, 'pages/auth/login.html',{'form': form})
 
@@ -64,58 +79,65 @@ def register(request):
         password = post_data.get("password")
         accept_terms=post_data.get("accept_terms")
 
-
+       
+        
         if(accept_terms=='on'):
+            print(email)
             if(utils.is_valid_email(email)['success']):
-                users = User.objects.create(users_mail=email)
-                if utils.is_valid_password(password, users):
-                    users.users_password=make_password(password)
-                    users.users_name=lname
-                    users.users_fname=fname
-                    users.users_mail=email
-                    users.created_date=datetime.today()
-                    users.users_type="default"
-                    users.users_is_active=False
-                    users.users_preavis=False
-                    users.save()
-                    subject = "Veuillez activer votre compte par mail"
+                try:
+                    users = User.objects.create(users_mail=email)
                     token_generator = AccountActivationTokenGenerator()
                     token = token_generator.make_token(users)
+                    subject = "Veuillez activer votre compte par mail"
                     ctx = {
-                        "fullname": f"{fname} {lname}",
-                        "domain": str(get_current_site(request)),
-                        "uid": urlsafe_base64_encode(force_bytes(users.pk)),
-                        "token": token
-                    }
-
-                    if settings.DEBUG:
-                        tasks.send_email_message(
-                            subject=subject,
-                            header_from="Validation de votre adresse email",
-                            template_name="pages/settings/activation_request.txt",
-                            user_id=users.id_user,
-                            ctx=ctx,
-                            simple=True
-                        )
-                    else:
-                        tasks.send_email_message(
-                            subject=subject,
-                            header_from="Validation de votre adresse email",
-                            template_name="pages/settings/activation_request.html",
-                            user_id=users.id_user,
-                            ctx=ctx,
-                            simple=True
-                        )
-                        # raw_password = password
-
-                    return JsonResponse(
-                        {
-                            "success": True,
-                            "msg": "Votre compte a été créé! Vous devez vérifier votre adresse e-mail pour pouvoir vous connecter.",
+                            "fullname": f"{fname} {lname}",
+                            "domain": str(get_current_site(request)),
+                            "uid": urlsafe_base64_encode(force_bytes(users.pk)),
+                            "token": token
                         }
-                    )
-                else:
-                    return JsonResponse({'success': False, 'errors': form.errors.as_ul()})
+
+                    if utils.is_valid_password(password, users):
+                        
+                        users.users_password=make_password(password)
+                        users.users_name=lname
+                        users.users_fname=fname
+                        users.users_type="com"
+                        users.users_is_active=False
+                        users.users_preavis=False
+                        users.save()
+
+                        if settings.DEBUG:
+                            tasks.send_email_message(
+                                subject=subject,
+                                header_from="Validation de votre adresse email",
+                                template_name="pages/settings/activation_request.txt",
+                                user_id=users.id_user,
+                                ctx=ctx,
+                                simple=True
+                            )
+                        else:
+                            tasks.send_email_message(
+                                subject=subject,
+                                template_name="pages/settings/activation_request.html",
+                                user_id=users.id_user,
+                                ctx=ctx,
+                                simple=True
+                            )
+
+                        return JsonResponse(
+                                {
+                                    "success": True,
+                                    "msg": "Votre compte a été créé! Vous devez vérifier votre adresse e-mail pour pouvoir vous connecter.",
+                                }
+                            )
+                    else:
+                        return JsonResponse({'success': False, 'msg': 'Le format est incorrect : le mot de passe doit comporter au moins 8 caractères, incluant une lettre majuscule, une lettre minuscule et un caractère spécial.'})
+            
+                    
+                except Exception as e :
+                    print(e)
+                    return JsonResponse({'success': False, 'msg': 'Envoie du courier est momentanement indisponible, Merci de reesseyer ulterierement.'}) 
+                    
             else:
                 return JsonResponse(
                         {
@@ -130,8 +152,9 @@ def register(request):
                         })
     else:
         form = SignupForm()
-
+    
     return render(request, 'pages/auth/register.html', {'form': form})
+
 
 def forget(request):
     return render(request, 'pages/auth/forget.html')
@@ -141,6 +164,7 @@ def logout(request):
         request.session.flush()
         messages.success(request, 'Déconnexion réussie.')
         return render(request,'pages/auth/logout.html')
+    return redirect("login")
 
 def home(request):
     pin = request.session.get('user_id')
@@ -161,12 +185,14 @@ def home(request):
 
                 user_last_month = User.objects.filter(created_date__gte=last_month_start, created_date__lt=current_month_start).count()
                 user_current_month = User.objects.filter(created_date__gte=current_month_start).count()
+               
                 def croissance(y2,y1):
                     if y1!=0:
                         return ((y2 - y1) / y1)*100
                     else :
                         return 0
                 user_type ="Ressources humaines"
+                
                 context={
                     'user':user,
                     'users_type':user_type,
@@ -176,21 +202,139 @@ def home(request):
                     'croissance':croissance(user_current_month,user_last_month),
                 }
             case 'admin':
+
+                users_type ="Direction"
+                context={
+                    'user':user,
+                    'users_type':user_type,
+                }
+            case 'stt':
+                users_type ="Freelance"
+                context={
+                    'user':user,
+                    'users_type':users_type
+                }
+            case 'con':
+                users_type ="Consultant"
+                context={
+                    'user':user,
+                    'users_type':users_type
+                }
+            case 'com':
+                users_type ="Commercial"
+                context={
+                    'user':user,
+                    'users_type':users_type
+                }
+            case 'sup':
+                users_type ="Super admin"
+                context={
+                    'user':user,
+                    'users_type':users_type
+                }
+            case _:
+                users_type="Mode invite"
+                context={
+                    'user':user,
+                    'users_type':users_type
+                }
+        
+        return render(request,'pages/admin/home.html',context)
+    return redirect('login')
+
+def profil(request):
+    pin=request.session.get('user_id')
+    context={}
+    if(pin):
+        user= User.objects.get(pk=pin)
+        users_type=""
+            
+        match user.users_type:
+            case 'paie':
+                users_type ="Ressources humaines"
+                context={
+                    'user':user,
+                    'users_type':users_type
+                }
+            case 'admin':
                 users_type ="Direction"
             case 'stt':
                 users_type ="Freelance"
             case 'con':
                 users_type ="Consultant"
             case 'com':
-                users_type ="Commerciaux"
+                users_type ="Commercial"
             case 'sup':
                 users_type ="Super admin"
             case _:
                 users_type="Inconue"
         
-        return render(request,'pages/admin/home.html',context)
+        try:
+            UserTwoFactor=UserTwoFactorAuthData.objects.get(user_id=user.id_user)
+            context['activate']=UserTwoFactor.is_active
+        except UserTwoFactorAuthData.DoesNotExist:
+            context['activate']=False
+        context['user']=user
+        context['users_type']=users_type
+
+        return render(request,'pages/clients/profil.html',context)
     return redirect('login')
 
+def verification(request):
+    pin=request.session.get('user_id')
+    mdp = request.POST.get('password')
+    opt_value = request.POST.get('otp')
+    if(pin):
+        try:
+            user = User.objects.get(pk=pin)
+            if(request.method=='POST'):
+                if(check_password(mdp,user.users_password)):
+                    try:
+                        two_factor_auth_data=UserTwoFactorAuthData.objects.get(user_id=user.id_user)
+                        context={
+                            'otp_secret':two_factor_auth_data.otp_secret,
+                            'qr_code':request.session.get('qr_code')
+                        }
+                        return JsonResponse({
+                            'status':True,
+                            'message': context
+                        })
+                    except UserTwoFactorAuthData.DoesNotExist:
+                        context=utils.AdminSetupTwoFactorAuthView(user)
+                        two_factor_auth_data=UserTwoFactorAuthData.objects.get(user_id=user.id_user)
+                        two_factor_auth_data.qr_code=context['qr_code']
+                        two_factor_auth_data.save()
+                        request.session['qr_code'] = context['qr_code']
+                        context['json_id']=user.id_user
+                        return JsonResponse({
+                            'status':True,
+                            'message': context
+                        })
+                elif (opt_value):
+                    two_factor_auth_data = UserTwoFactorAuthData.objects.filter(user=user).first()
+                    form = TwoFactorAuthForm(user, request.POST)
+                    print(form)
+                    if form.is_valid():
+                        two_factor_auth_data.rotate_session_identifier()
+                        request.session['2fa_token'] = str(two_factor_auth_data.session_identifier)
+                        two_factor_auth_data.is_active=True
+                        two_factor_auth_data.save()
+                        return JsonResponse({'status': True,})
+                    else:
+                        return JsonResponse({'status': False, 'message': 'Mot de passe expiré'})
+                else:
+                    return JsonResponse({
+                        'status':False,
+                        'message':'Tres bien'
+                    })
+        except Exception as e:
+            print('erreur', e)
+
+def opt(request):
+    pin=request.session.get('user_id')
+    if pin:
+        return render(request,'pages/settings/opt.html')
+    return redirect('login')
 
 def getcra(request):
     context={}
@@ -208,7 +352,7 @@ def getcra(request):
             case 'con':
                 users_type ="Consultant"
             case 'sup':
-                users_type ="Commerciaux"
+                users_type ="Commercial"
             case 'sup':
                 users_type ="Super admin"
             case _:
@@ -236,8 +380,8 @@ def conge(request):
                 users_type ="Freelance"
             case 'con':
                 users_type ="Consultant"
-            case 'sup':
-                users_type ="Commerciaux"
+            case 'com':
+                users_type ="Commercial"
             case 'sup':
                 users_type ="Super admin"
             case _:
@@ -251,6 +395,35 @@ def conge(request):
         return redirect('login')
 
 
+def change_password(request):
+    pin = request.session.get('user_id')
+    if (pin):
+        if request.method == 'POST':
+            user=User.objects.get(pk=pin)
+            old_password = request.POST.get('password')
+            new_password = request.POST.get('new_password')
+            con_password = request.POST.get('con_password')
+            if (old_password):
+                if check_password(old_password, user.users_password):
+                    return JsonResponse({'reponse':'succes'})
+                else :
+                    return JsonResponse({'reponse':'error','message':'Le mot de passe est incorrect, veuillez réessayer'})
+
+            if(new_password and con_password):
+                if(new_password == con_password):
+                    if(check_password(new_password,user.users_password)):
+                        return JsonResponse({'reponse':'error','message':'Le mot de passe dois etre different que l\'ancien, merci'})
+                    else:
+                        new_password=make_password(new_password)
+                        user.users_password=new_password
+                        user.save()
+                        return JsonResponse({'reponse':'succes','message':'Mot de passe changer avec success'})
+                else:
+                    return JsonResponse({'reponse':'error','message':'Les mot de passe sont different'})
+            else:
+                return JsonResponse({'reponse':'error','message':'Champs obligatoires'})
+    else:
+        return JsonResponse({'reponse':'error','message':'Vous etes pas autorisé a effectuer cette requete'})
 
 
 def fiche_paie(request):
@@ -295,3 +468,25 @@ def activate(request, uidb64, token):
         return redirect("login")
     else:
         return JsonResponse({'message':'site n\'est plus valide'})
+
+def admin_confirm_two_factor_auth(request):
+    user_id = request.session.get('user_id', None)
+    user = get_object_or_404(User, id_user=user_id)
+    two_factor_auth_data = UserTwoFactorAuthData.objects.filter(user=user).first()
+    if request.method == 'POST':
+        form = TwoFactorAuthForm(user, request.POST)
+        if form.is_valid():
+            if two_factor_auth_data:
+                two_factor_auth_data.rotate_session_identifier()
+                request.session['2fa_token'] = str(two_factor_auth_data.session_identifier)
+                user.save()
+                return JsonResponse({'success': True,'message': 'Autorisé'})
+            else:
+                return JsonResponse({'success': True,'message': 'Autorisé'})
+        else:
+            return JsonResponse({'success': False, 'message': 'Mot de passe expiré'})
+    else:
+        return JsonResponse({'success': False, 'message': 'Mot de passe expiré'})
+    
+def anonymise(request):
+    return render(request,'pages/settings/anonymise.html')

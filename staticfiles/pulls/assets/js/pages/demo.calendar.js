@@ -53,8 +53,8 @@
           , a = this;
         a.$calendarObj = new FullCalendar.Calendar(a.$calendar[0],{
             slotDuration: "00:15:00",
-            slotMinTime: "08:00:00",
-            slotMaxTime: "19:00:00",
+            slotMinTime: "09:00:00",
+            slotMaxTime: "18:00:00",
             themeSystem: "bootstrap",
             bootstrapFontAwesome: !1,
             buttonText: {
@@ -66,6 +66,7 @@
                 prev: "Arriere",
                 next: "Suivant"
             },
+            timeZone: 'Europe/Paris',
             initialView: "dayGridMonth",
             handleWindowResize: !0,
             height: l(window).height() - 200,
@@ -75,14 +76,10 @@
                 right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth"
             },
             initialEvents: t,
-            editable: !0,
+            editable: !0, 
             droppable: !0,
             selectable: !0,
             dateClick: function(e) {
-                var currentDate = new Date();
-                if (e.date > currentDate) {
-                    return;
-                }
                 a.onSelect(e)
             },
             eventClick: function(e) {
@@ -115,6 +112,8 @@
             a.$selectedEvent = null,
             a.$modal.hide())
         }))
+
+        a.$calendarObj.setOption('locale', 'fr');
     }
     ,
     l.CalendarApp = new e,

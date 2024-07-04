@@ -1,10 +1,11 @@
 import re
-
+from django.core.exceptions import ValidationError
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
-from .models import User
+from .models import User,UserTwoFactorAuthData
 from six import text_type
+import pyotp
 
 USERNAME_MIN_LENGTH = 9
 
@@ -35,7 +36,9 @@ def is_valid_email(email):
             "success": False,
             "reason": "Cette adresse mail existe dans nos archives, merci.",
         }
-    if not re.match(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", email):
+    print(email)
+    print(re.match(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b", email))
+    if not re.match(r"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}\b", email):
         return {
             "success": False,
             "reason": "Le format de votre adresse email est incorrect, merci de verifier votre adresse",
@@ -96,3 +99,33 @@ def validate_username(username):
     return {
         "success": True,
     }
+
+
+def user_two_factor_auth_data_create(*, user) -> UserTwoFactorAuthData:
+    if hasattr(user, 'two_factor_auth_data'):
+        raise ValidationError(
+            'Ne peut pas avoir plus d’une donnée liée à 2FA.'
+        )
+
+    two_factor_auth_data = UserTwoFactorAuthData.objects.create(
+        user=user,
+        otp_secret=pyotp.random_base32(),
+    )
+    print(two_factor_auth_data) 
+    return two_factor_auth_data
+
+def AdminSetupTwoFactorAuthView(user):
+    context={}
+    try:
+        two_factor_auth_data = user_two_factor_auth_data_create(user=user)
+        otp_secret = two_factor_auth_data.otp_secret
+
+
+        context["otp_secret"] = otp_secret
+        context["qr_code"] = two_factor_auth_data.generate_qr_code(
+                name=user.users_mail
+            )
+    except ValidationError as exc:
+        context["form_errors"]=exc.message
+    return context
+
