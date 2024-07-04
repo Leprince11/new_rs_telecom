@@ -1,3 +1,7 @@
 venv
 .env
 new_rs_telecom/settings.py
+__pycache__/
+*.py[cod]
+*/migrations/*
+!*/migrations/__init__.py

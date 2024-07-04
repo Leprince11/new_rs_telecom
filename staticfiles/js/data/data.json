@@ -1,0 +1,32 @@
+[
+    {
+      "title": "Aerospace",
+      "description": "Les acteurs de l'aérospatiale répondent aux défis économiques et environnementaux en adoptant une approche plus agile, favorisant ainsi l'innovation et la durabilité. Cette agilité leur permet de s'adapter rapidement aux changements du marché et de maintenir leur compétitivité dans un secteur en évolution constante.",
+      "link": "detail-expertise/aerospace"
+    },
+    {
+      "title": "Banque",
+      "description": "Les entreprises doivent répondre positivement aux besoins des clients tout en faisant face à la concurrence des nouveaux entrants et à la pression réglementaire. Cela nécessite une adaptation constante, une innovation agile et une conformité aux normes en vigueur pour maintenir leur position sur le marché.",
+      "link": "detail-expertise/banque"
+    },
+    {
+      "title": "Automobile",
+      "description": "L'intégration des innovations informatiques est cruciale pour répondre aux transformations du marché automobile. Elle permet une efficacité accrue, une optimisation des processus et une adaptation aux nouvelles exigences technologiques, renforçant ainsi la compétitivité des acteurs du secteur.",
+      "link": "detail-expertise/automobile"
+    },
+    {
+      "title": "Healthcare",
+      "description": "La digitalisation du système de santé est essentielle pour relever les défis du secteur. Elle assure une meilleure gestion des données, optimise les processus cliniques et administratifs, favorise l'accès aux soins, améliorant ainsi la qualité de vie des patients et l'efficacité globale du système de santé.",
+      "link": "detail-expertise/healthcare"
+    },
+    {
+      "title": "Energie & Utilities",
+      "description": "Le secteur Énergie & Utilities se transforme avec la transition énergétique, la production décentralisée et les énergies renouvelables, tout en adoptant les technologies digitales, sous l'influence de régulations en constante évolution et d'une concurrence croissante.",
+      "link": "detail-expertise/energie"
+    },
+    {
+      "title": "Secteur Public",
+      "description": "L'administration peut optimiser ses services avec des solutions technologiques innovantes, favorisant une gestion efficiente, l'automatisation des processus et une accessibilité accrue. Cela simplifie les interactions citoyennes pour une administration plus transparente et réactive.",
+      "link": "detail-expertise/public"
+    }
+  ]

@@ -1,0 +1,28 @@
+{% extends 'layouts/bases.html' %}
+{% load static %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">R&S TELECOM</a></li>
+                    <li class="breadcrumb-item active">Anonymiser les CV</li>
+                </ol>
+            </div>
+            <h4 class="page-title">Anonymisation des CV</h4>
+        </div>
+    </div>
+</div>
+
+<div class="container-anonyme">
+    <iframe
+        class="responsive-iframe"
+        src="anonimyse.firebaseapp.com"
+        title="Anonymiser"
+        height="100%" width="100%">
+    </iframe>
+</div>
+
+{%endblock%}

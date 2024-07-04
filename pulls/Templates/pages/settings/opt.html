@@ -1,0 +1,38 @@
+{% extends 'layouts/base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="col-xxl-4 col-lg-5">
+    <div class="card">
+        <!-- Logo -->
+        <div class="card-header pt-4 pb-4 text-center bg-primary">
+            <a href="{% url 'Home'%}" class="text-light font-weight-bold">
+                R&S TELECOM
+            </a>
+        </div>
+
+        <div class="card-body p-4">
+            
+            <div class="text-center w-75 m-auto">
+                <svg fill="#000000" height="40px" width="40px" version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 223.095 223.095" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M173.976,83.236h-13.308V49.115C160.668,22.033,138.633,0,111.549,0C84.464,0,62.43,22.033,62.43,49.115v34.121h-13.31 c-4.142,0-7.5,3.357-7.5,7.5v124.859c0,4.142,3.358,7.5,7.5,7.5h124.856c4.142,0,7.5-3.358,7.5-7.5V90.736 C181.476,86.593,178.118,83.236,173.976,83.236z M77.43,49.115C77.43,30.304,92.735,15,111.549,15 c18.813,0,34.119,15.304,34.119,34.115v34.121H77.43V49.115z M166.476,208.095H56.619V98.236H69.93h83.238h13.308V208.095z"></path> </g></svg>
+                <h4 class="text-dark-50 text-center mt-3 fw-bold">Authentifiez votre compte </h4>
+                <p class="text-muted mb-4">Veuillez confirmer votre compte en entrant le code d'autorisation obtenu (Google Authenticator, Autre..)</p>
+            </div>
+
+            <form id="2fa-form">
+                {% csrf_token %}
+                <div id="container-error"></div>
+                <div class="mb-3">
+                    <input class="form-control form-control-lg text-center" type="number" required="" id="id_otp"  autofocus="">
+                </div>
+
+                <div class="mb-0 text-center">
+                    <button class="btn btn-primary" type="submit">Confirmer</button>
+                </div>
+            </form>
+            
+        </div> <!-- end card-body-->
+    </div>
+    <!-- end card-->
+</div>
+{% endblock %}

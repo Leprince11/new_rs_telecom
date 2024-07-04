@@ -15,10 +15,13 @@
                             <i class="uil-apps me-1"></i>Applications <div class="arrow-down"></div>
                         </a>
                         <div class="dropdown-menu" aria-labelledby="topnav-apps">
-                            <a href="{% url 'cra'%}" class="dropdown-item">Gestion de CRA</a>  
+                            {% if user.users_type in 'com admin superadmin' %}
+                            <a href="https://rs-telecom-5fe33.web.app" target="_blank" class="dropdown-item">Maquettage de cv</a>
+                            {% endif %}
+                            <!-- <a href="{% url 'cra'%}" class="dropdown-item">Gestion de CRA</a>  
                             <a href="{% url 'conge' %}" class="dropdown-item">Gestion de damande de congés</a>  
                             <a href="{% url 'fiche_paie' %}" class="dropdown-item">Gestion de fiche de paie</a> 
-                            <a href="{% url 'note_frais' %}" class="dropdown-item">Gestion de note de frais</a> 
+                            <a href="{% url 'note_frais' %}" class="dropdown-item">Gestion de note de frais</a>  -->
                         </div>
                     </li>
                     <li class="nav-item dropdown">
@@ -27,8 +30,8 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="topnav-pages">
                             <div class="dropdown">
-                            <a href="#" class="dropdown-item">Informations</a>
-                            <a href="#" class="dropdown-item">Télécharger une attestation employeur</a>
+                            <a href="{% url 'profil' %}" class="dropdown-item">Informations</a>
+                            <!-- <a href="#" class="dropdown-item">Télécharger une attestation employeur</a> -->
                         </div>
                     </li>
                 </ul>
