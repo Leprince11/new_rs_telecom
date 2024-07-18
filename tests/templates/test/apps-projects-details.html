@@ -1,0 +1,215 @@
+﻿
+{% extends 'layouts/bases.html' %}
+{%load static%}
+{%block content%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Commentaires du CV</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.16.0/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="{% static 'test/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'test/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style">
+    <style>
+        .comment-item {
+            position: relative;
+            padding-bottom: 1.5em;
+        }
+        .comment-item .created-at {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            font-size: 0.8em;
+            color: gray;
+        }
+        .comment-feedback {
+            margin-top: 5px;
+        }
+    </style>
+</head>
+<body class="loading" data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":false, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true}'>
+
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="mt-0 mb-3">Commentaires du CV ID: {{ cv_name }}</h4>
+
+                <!-- Formulaire de soumission de commentaire -->
+                <form id="comment-form" enctype="multipart/form-data">
+                    <textarea class="form-control form-control-light mb-2" placeholder="Écrire un commentaire" id="example-textarea" rows="3" name="comment"></textarea>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-primary btn-sm" id="submit-comment">Soumettre</button>
+                    </div>
+                    <div class="comment-feedback" id="comment-feedback"></div>
+                </form>
+
+                <!-- Affichage des commentaires -->
+                <div id="comments-container">
+                    {% for comment in comments %}
+                    <div class="d-flex align-items-start mt-2 comment-item">
+                        <img class="me-3 avatar-sm rounded-circle" src="{% static 'test/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                        <div class="w-100 overflow-hidden">
+                            <h5 class="mt-0">{{ comment.user_name }} {{comment.users_fname}}</h5>
+                            {{ comment.comment }}
+                            <span class="created-at">{{ comment.created_at }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-2">
+                    <a href="javascript:void(0);" class="text-danger">Charger plus </a>
+                </div>
+            </div> <!-- end card-body-->
+        </div> <!-- end card-->
+    </div> <!-- end container -->
+
+    <!-- Right Sidebar -->
+    <div class="end-bar">
+        <div class="rightbar-title">
+            <a href="javascript:void(0);" class="end-bar-toggle float-end">
+                <i class="dripicons-cross noti-icon"></i>
+            </a>
+            <h5 class="m-0">Paramètres</h5>
+        </div>
+        <div class="rightbar-content h-100" data-simplebar="">
+            <div class="p-3">
+                <div class="alert alert-warning" role="alert">
+                    <strong>Personnaliser </strong> le schéma de couleur global, le menu de la barre latérale, etc.
+                </div>
+                <h5 class="mt-3">Schéma de couleur</h5>
+                <hr class="mt-1">
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="color-scheme-mode" value="light" id="light-mode-check" checked="">
+                    <label class="form-check-label" for="light-mode-check">Mode clair</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="color-scheme-mode" value="dark" id="dark-mode-check">
+                    <label class="form-check-label" for="dark-mode-check">Mode sombre</label>
+                </div>
+                <h5 class="mt-4">Largeur</h5>
+                <hr class="mt-1">
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="width" value="fluid" id="fluid-check" checked="">
+                    <label class="form-check-label" for="fluid-check">Fluide</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="width" value="boxed" id="boxed-check">
+                    <label class="form-check-label" for="boxed-check">Boxed</label>
+                </div>
+                <h5 class="mt-4">Barre latérale gauche</h5>
+                <hr class="mt-1">
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="theme" value="default" id="default-check">
+                    <label class="form-check-label" for="default-check">Défaut</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="theme" value="light" id="light-check" checked="">
+                    <label class="form-check-label" for="light-check">Clair</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="theme" value="dark" id="dark-check">
+                    <label class="form-check-label" for="dark-check">Sombre</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="compact" value="fixed" id="fixed-check" checked="">
+                    <label class="form-check-label" for="fixed-check">Fixé</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="compact" value="condensed" id="condensed-check">
+                    <label class="form-check-label" for="condensed-check">Condensé</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="compact" value="scrollable" id="scrollable-check">
+                    <label class="form-check-label" for="scrollable-check">Déroulable</label>
+                </div>
+                <div class="d-grid mt-4">
+                    <button class="btn btn-primary" id="resetBtn">Réinitialiser par défaut</button>
+                    <a href="../../product/hyper-responsive-admin-dashboard-template/index.html" class="btn btn-danger mt-3" target="_blank"><i class="mdi mdi-basket me-1"></i> Acheter maintenant</a>
+                </div>
+            </div> <!-- end padding-->
+        </div>
+    </div>
+    <div class="rightbar-overlay"></div>
+    <!-- /End-bar -->
+
+    <!-- bundle -->
+    <script src="{% static 'test/assets/js/vendor.min.js' %}"></script>
+    <script src="{% static 'test/assets/js/app.min.js' %}"></script>
+    <!-- third party js -->
+    <script src="{% static 'test/assets/js/vendor/Chart.bundle.min.js' %}"></script>
+    <!-- third party js ends -->
+    <!-- demo app -->
+    <script src="{% static 'test/assets/js/pages/demo.project-detail.js' %}"></script>
+    <!-- end demo js-->
+
+    <script type="text/javascript">
+        document.addEventListener("DOMContentLoaded", function() {
+            var csrfToken = getCookie('csrftoken');
+
+            document.getElementById('submit-comment').addEventListener('click', function() {
+                var form = document.getElementById('comment-form');
+                var formData = new FormData(form);
+                formData.append('cv_id', '{{ cv_id }}');
+
+                fetch('/rstelecom/add_comment/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    var feedback = document.getElementById('comment-feedback');
+                    if (data.message) {
+                        feedback.innerText = 'Commentaire ajouté : ' + data.message;
+                        feedback.classList.add('text-success');
+                        setTimeout(() => feedback.innerText = '', 3000);
+                        form.reset();
+                        // Ajouter le nouveau commentaire à la liste des commentaires
+                        var commentsContainer = document.getElementById('comments-container');
+                        var newComment = document.createElement('div');
+                        newComment.className = 'd-flex align-items-start mt-2 comment-item';
+                        newComment.innerHTML = `
+                            <img class="me-3 avatar-sm rounded-circle" src="{% static 'test/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                            <div class="w-100 overflow-hidden">
+                                <h5 class="mt-0">${data.user_name}</h5>
+                                ${data.comment}
+                                <span class="created-at">${data.created_at}</span>
+                            </div>`;
+                        commentsContainer.prepend(newComment);
+                    } else {
+                        feedback.innerText = 'Erreur : ' + data.error;
+                        feedback.classList.add('text-danger');
+                        setTimeout(() => feedback.innerText = '', 3000);
+                    }
+                })
+                .catch(error => console.error('Fetch error:', error));
+            });
+
+            // Fonction pour récupérer le token CSRF
+            function getCookie(name) {
+                let cookieValue = null;
+                if (document.cookie && document.cookie !== '') {
+                    const cookies = document.cookie.split(';');
+                    for (let i = 0; i < cookies.length; i++) {
+                        const cookie = cookies[i].trim();
+                        if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                            break;
+                        }
+                    }
+                }
+                return cookieValue;
+            }
+        });
+    </script>
+</body>
+</html>
+{%endblock content%}

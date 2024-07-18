@@ -6,6 +6,10 @@ from django.core import exceptions
 from .models import User,UserTwoFactorAuthData
 from six import text_type
 import pyotp
+from django.shortcuts import redirect
+from functools import wraps
+
+
 
 USERNAME_MIN_LENGTH = 9
 
@@ -129,3 +133,20 @@ def AdminSetupTwoFactorAuthView(user):
         context["form_errors"]=exc.message
     return context
 
+def login_required_connect(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        user_id = request.session.get('user_id')
+        print(request.session.get(user_id))
+        if not user_id:
+            return redirect('login')
+ 
+        try:
+            user = User.objects.get(id_user=user_id)
+        except User.DoesNotExist:
+            return redirect('login')
+ 
+    
+        request.user = user
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view

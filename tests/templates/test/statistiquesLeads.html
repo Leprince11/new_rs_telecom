@@ -1,0 +1,88 @@
+{% extends 'layouts/bases.html' %}
+{% load static %}
+{% block content %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Statistiques des Leads</title>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <style>
+        
+        h1,h2,h3{
+        color:black ;
+        text-align :center
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .chart {
+            margin: 20px 0;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+        }
+        </style>
+</head>
+
+<body>
+<div class="container">
+    <h1 class = 'mt-3'>Statistiques des Leads</h1>
+    {% if entreprise_selectionnee %}
+        <h2 class = 'mt-3'>Entreprise sélectionnée : {{ entreprise_selectionnee }}</h2>
+        <div class="chart">
+            <h3>Nombre d'offres de l'entreprise {{entreprise_selectionnee}} par localisation</h3>
+            <div id="chart0">{{ charts.0|safe }}</div>
+        </div>
+
+        <div class="chart">
+            <h3>Nombre d'offres de l'entreprise {{entreprise_selectionnee}} par localisation</h3>
+            <div id="chart1">{{ charts.1|safe }}</div>
+        </div>
+    {% endif %}
+    <h2 class="margin-top:20px;">Vue d'ensemble sur les statistiques générales des leads</h2>
+    <div class="chart">
+        <h3>Nombre d'offres par entreprise</h3>
+        <div id="chart2">{{ charts.2|safe }}</div>
+    </div>
+
+    <div class="chart">
+        <h3>Répartition des leads par statut</h3>
+        <div id="chart3">{{ charts.3|safe }}</div>
+    </div>
+
+    <div class="chart">
+        <h3>Répartition des leads par priorité</h3>
+        <div id="chart4">{{ charts.4|safe }}</div>
+    </div>
+
+    <div class="chart">
+        <h3>Nombre de leads par secteur d'activité</h3>
+        <div id="chart5">{{ charts.5|safe }}</div>
+    </div>
+
+    <div class="chart">
+        <h3>Nombre de leads par taille d'entreprise</h3>
+        <div id="chart6">{{ charts.6|safe }}</div>
+    </div>
+
+    <div class="chart">
+        <h3>Répartition des leads par source</h3>
+        <div id="chart7">{{ charts.7|safe }}</div>
+    </div>
+</div>
+<footer>
+    <p>&copy; 2024 Statistiques des Leads R&S TELECOM. Tous droits réservés.</p>
+</footer>
+</body>
+</html>
+{%endblock content%}

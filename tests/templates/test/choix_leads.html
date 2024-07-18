@@ -1,0 +1,402 @@
+{% extends 'layouts/bases.html' %}
+{% load static %}
+{% block title %}Leads RS Telecom{% endblock %}
+{% block css %}
+<!-- Main CSS -->
+<link href="{% static 'test/css/main.css' %}" rel="stylesheet" type="text/css" />
+
+<!-- Reset CSS pour la Nav Bar -->
+<style>
+  .navbar,
+  .navbar ul,
+  .navbar li,
+  .navbar a,
+  .navbar a:focus,
+  .navbar a:hover,
+  .navbar .dropdown ul,
+  .navbar .dropdown ul a,
+  .navbar .dropdown ul a:hover {
+    all: unset;
+    list-style: none;
+    box-sizing: border-box;
+    text-decoration: none;
+  }
+  .navbar {
+  padding: 0;
+}
+/* Réinitialisation des styles de la barre de navigation */
+.navbar,
+.navbar ul,
+.navbar li,
+.navbar a,
+.navbar a:focus,
+.navbar a:hover,
+.navbar .dropdown ul,
+.navbar .dropdown ul a,
+.navbar .dropdown ul a:hover {
+  all: unset;
+  list-style: none;
+  box-sizing: border-box;
+  text-decoration: none;
+}
+
+/* Styles de la barre de navigation */
+.navbar {
+  padding: 0;
+}
+
+.navbar ul {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  list-style: none;
+  align-items: center;
+}
+
+.navbar li {
+  position: relative;
+}
+
+.navbar a,
+  .navbar a:hover {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0 10px 30px;
+    font-family: var(--font-primary);
+    font-size: 16px;
+    font-weight: 400;
+    color: #000;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+.navbar a i,
+.navbar a:focus i {
+  font-size: 12px;
+  line-height: 0;
+  margin-left: 5px;
+}
+
+/* Suppression des effets de survol et de focus */
+.navbar a:hover,
+.navbar .active,
+.navbar .active:focus,
+.navbar li:hover > a,
+.navbar li:active > a {
+  color: #000;
+  font-size: 16px;
+}
+
+/* Styles du menu déroulant */
+.navbar .dropdown ul {
+  display: none;
+  position: absolute;
+  left: 14px;
+  top: calc(100% + 30px);
+  margin: 0;
+  padding: 10px 0;
+  z-index: 99;
+  background: #fff;
+  box-shadow: 0px 0px 30px rgba(127, 137, 161, 0.25);
+  border-radius: 4px;
+}
+
+.navbar .dropdown ul li {
+  min-width: 200px;
+}
+
+.navbar .dropdown ul a {
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 400;
+  color: #000;
+}
+
+/* Affichage des dropdowns au survol */
+.navbar .dropdown:hover > ul {
+  display: block;
+}
+
+.navbar .dropdown .dropdown ul {
+  top: 0;
+  left: calc(100% - 30px);
+}
+
+.navbar .dropdown .dropdown:hover > ul {
+  display: block;
+}
+
+/* Masquer la sous-navbar */
+.sub-navbar {
+  display: none;
+}
+</style>
+
+<!-- CSS tiers et Bootstrap -->
+<link href="{% static 'pulls/assets/css/vendor/fullcalendar.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'pulls/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'pulls/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style" />
+<link href="{% static 'pulls/assets/css/app-dark.min.css' %}" rel="stylesheet" type="text/css" id="dark-style" />
+<link href="{% static 'pulls/assets/css/vendor/responsive.bootstrap5.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'pulls/assets/css/vendor/dataTables.bootstrap5.css' %}" rel="stylesheet" type="text/css" />
+
+
+<!-- Styles personnalisés pour cette page -->
+<style>
+  .modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+    transform: translateY(-100%);
+  }
+  .modal.show .modal-dialog {
+    transform: translateY(0);
+  }
+  .modal-content {
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    border: none;
+  }
+  .modal-header {
+    background-color: #007bff;
+    color: white;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+  .modal-footer {
+    border-top: 2px solid #dee2e6;
+  }
+  .btn-close {
+    filter: invert(1) brightness(2);
+  }
+  .list-group-item-action {
+    transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+  }
+  .list-group-item-action:hover,
+  .list-group-item-action:focus {
+    background-color: #0c00b3;
+    color: white;
+  }
+  .card-zoom {
+    transition: transform 0.3s ease;
+    cursor: pointer;
+  }
+  .card-zoom:hover {
+    transform: scale(1.05);
+  }
+  .zoomed {
+    transform: scale(1.2);
+    z-index: 1000;
+    position: relative;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  }
+  .modal-content {
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+    border: none;
+    background: linear-gradient(to right, #003cb3, #2575fc);
+    color: white;
+  }
+  .modal-header {
+    background: linear-gradient(to right, #003cb3, #2575fc);
+    color: white;
+    border-top-left-radius: 15px;
+    border-top-right-radius: 15px;
+  }
+  .btn-close {
+    filter: invert(1) brightness(2);
+  }
+  .notification-content {
+    text-align: center;
+  }
+  .animated-text {
+    opacity: 0;
+    animation: fadeInText 2s forwards;
+  }
+  @keyframes fadeInText {
+    to {
+      opacity: 1;
+    }
+  }
+</style>
+{% endblock css %}
+
+{% block content %}
+<body class="vh-100">
+  <section id="service" class="services pt-0">
+    <div class="container" data-aos="fade-up">
+      <div class="section-header">
+        <span>LeadManaging</span>
+        <h2>Lead Managing</h2>
+      </div>
+      <div class="container">
+        <div class="row gy-4">
+          <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="100">
+            <div class="card card-zoom">
+              <img src="{% static 'test/images/rs-bg1.png' %}" class="card-img-top img-fluid" alt="">
+              <div class="card-body">
+                <h3 class="card-title"><a href="#" data-bs-toggle="modal" data-bs-target="#leadGenerationModal" class="stretched-link">Génération de Nouveaux Leads</a></h3>
+                <p class="card-text">Dans cette section, profitez d'un outil puissant automatisant la recherche de nouvelles opportunités directement sur LinkedIn. En un clic, notre script spécialisé scrute les offres d'emploi et les propositions commerciales pour détecter et ajouter automatiquement des leads pertinents à notre base de données. Vous pouvez également observer les tendances du marché et identifier les besoins spécifiques qui émergent. Cet outil est conçu pour vous donner un aperçu rapide des opportunités actuelles, vous permettant ainsi de cibler efficacement vos démarches commerciales.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="200">
+            <div class="card card-zoom">
+              <img src="{% static 'test/images/rs-bg.png' %}" class="card-img-top img-fluid" alt="">
+              <div class="card-body">
+                <h3 class="card-title"><a href="#" data-bs-toggle="modal" data-bs-target="#actionModal" class="stretched-link">Gestion des Leads</a></h3>
+                <p class="card-text">Utilisez cette section pour ajouter de nouveaux prospects à notre système ou pour mettre à jour les informations concernant les leads existants. Que vous ayez de nouvelles données à entrer ou que vous deviez modifier des informations déjà enregistrées, cet espace est conçu pour faciliter la mise à jour et l'organisation de vos données de contact. Ainsi, vous gardez toujours notre base de données à jour avec les dernières informations disponibles.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal pour les actions -->
+          <div class="modal fade" id="actionModal" tabindex="-1" aria-labelledby="actionModalLabel" aria-hidden="true">
+            <div class="modal-dialog">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="actionModalLabel">Gestion des Leads</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <p>Choisissez une action à réaliser :</p>
+                  <div class="list-group">
+                    <a href="{% url 'add_company' %}" class="list-group-item list-group-item-action">Ajouter un Lead</a>
+                    <a href="{% url 'view_leads' %}" class="list-group-item list-group-item-action">Mettre à jour un Lead</a>
+                    <a href="{% url 'display_leads' %}" class="list-group-item list-group-item-action">Supprimer un Lead</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="300">
+            <div class="card card-zoom">
+              <img src="{% static 'test/images/rs-bg2.png' %}" class="card-img-top img-fluid" alt="">
+              <div class="card-body">
+                <h3 class="card-title"><a href="{% url 'visualisation_leads' %}" class="stretched-link">Exploration des Leads</a></h3>
+                <p class="card-text">Cette page est votre fenêtre pour explorer et parcourir la liste complète des prospects que nous avons capturés. Vous pourrez y voir diverses informations sur chaque lead, permettant de comprendre rapidement avec qui nous avons affaire et quel est leur potentiel. Il s’agit d’un outil idéal pour obtenir une vue d’ensemble et pour choisir avec qui vous souhaitez engager une conversation. Pratique et visuelle, cette section simplifie la gestion des relations avec nos contacts</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="500">
+            <div class="card card-zoom">
+              <img src="{% static 'test/images/assigner_mission_candidat.png' %}" class="card-img-top img-fluid" alt="">
+              <div class="card-body">
+                <h3 class="card-title"><a href="{% url 'choix_lead_job_matching' %}" class="stretched-link">Meilleur Candidat à partir d'un lead</a></h3>
+                <p class="card-text">Utilisez cette section pour assigner un ou plusieurs candidats à chaque lead. Vous pouvez visualiser les profils des candidats, comparer leurs compétences et leurs expériences, et sélectionner les candidats les plus adaptés pour chaque opportunité. Cette fonctionnalité vous aide à maximiser le potentiel de chaque lead en assurant un suivi personnalisé et ciblé.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="600">
+            <div class="card card-zoom">
+              <img src="{% static 'test/images/visualiser_candidats_infos.png' %}" class="card-img-top img-fluid" alt="">
+              <div class="card-body">
+                <h3 class="card-title"><a href="{% url 'history' %}" class="stretched-link">Historique des Leads capturés / modifiés </a></h3>
+                <p class="card-text">Cette page sert d'historique, afin de voir quels ont été les leads qui ont été capturés tel jour, afin d'avoir un aperçu détaillé de ce que le générateur de leads a généré la veille...</p>
+              </div>
+            </div>
+          </div>
+            <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="700">
+              <div class="card card-zoom">
+                <img src="{% static 'test/images/cv-tech.png' %}" class="card-img-top img-fluid" alt="">
+                <div class="card-body">
+                  <h3 class="card-title"><a href="{% url 'cv_interface' %}" class="stretched-link">CV Tech</a></h3>
+                  <p class="card-text">Cette section vous permet de gérer et d'explorer les CVs des candidats potentiels. Vous pouvez visualiser les profils, évaluer les compétences et les expériences, et garder une trace des candidats intéressants pour des futures opportunités. Cet outil est conçu pour faciliter la gestion des candidatures et optimiser le processus de recrutement.</p>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="700">
+              <div class="card card-zoom">
+                <img src="{% static 'test/images/feedback-img.png' %}" class="card-img-top img-fluid" alt="">
+                <div class="card-body">
+                  <h3 class="card-title"><a href="{% url 'feedback' %}" class="stretched-link">Feedback & Conseils</a></h3>
+                  <p class="card-text">Cette section permet aux utilisateurs de donner leur avis et de recevoir des conseils d'utilisation pour nos services numériques. Améliorez votre expérience avec RS grâce aux retours des utilisateurs et des astuces pratiques pour une utilisation optimale de notre plateforme.</p>
+                </div>
+              </div>
+            </div>
+
+        </div>
+      </div>
+  </section>
+
+  <!-- Boîte Modale pour Génération de Leads -->
+  <div class="modal fade" id="leadGenerationModal" tabindex="-1" aria-labelledby="leadGenerationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="leadGenerationModalLabel">Génération de Leads</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Choisissez une action à réaliser :</p>
+          <div class="list-group">
+            <a href="{% url 'scraping_lead' %}" class="list-group-item list-group-item-action">Génération de Leads</a>
+            <a href="{% url 'programmation_leads' %}" class="list-group-item list-group-item-action">Programmer un Lead</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+
+  <!-- Boîte Modale pour la notification -->
+  <div class="modal fade" id="leadsModal" tabindex="-1" aria-labelledby="leadsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="leadsModalLabel">Notification</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <div class="notification-content">
+            <p class="animated-text">Souhaitez-vous voir les derniers leads capturés ?</p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Non</button>
+          <button type="button" id="viewLeadsBtn" class="btn btn-primary">Oui</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock content %}
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      var cards = document.querySelectorAll('.card-zoom');
+
+      cards.forEach(function(card) {
+        card.addEventListener('blur', function() {
+          if (card.classList.contains('zoomed')) {
+            card.classList.remove('zoomed');
+          } else {
+            cards.forEach(function(c) {
+              c.classList.remove('zoomed');
+            });
+            card.classList.add('zoomed');
+          }
+        });
+      });
+
+      // Passer la variable show_notification de Django à JavaScript
+      var showNotification = "{{ show_notification|yesno:'true,false' }}";
+
+      if (showNotification === "true") {
+        var leadsModal = new bootstrap.Modal(document.getElementById('leadsModal'), {
+          backdrop: 'static',
+          keyboard: false
+        });
+        leadsModal.show();
+      }
+
+      // Rediriger vers la page historique lorsqu'on clique sur "Oui"
+      document.getElementById('viewLeadsBtn').addEventListener('click', function() {
+        window.location.href = "{% url 'history' %}";
+      });
+    });
+  </script>
+</body>
+
+</html>

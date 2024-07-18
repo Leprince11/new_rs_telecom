@@ -1,0 +1,632 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ajouter une entreprise</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.min.js" crossorigin="anonymous"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <style> 
+        body {
+            padding-top: 50px;
+            background: url('{% static "test/css/rsbgAjoutLead.png" %}') no-repeat center center fixed;
+            background-size: cover;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            background-color: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+        h2 {
+            color: #1B4F72;
+            margin-bottom: 30px;
+        }
+        .form-control {
+            border: 2px solid #1B4F72;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .form-control:focus {
+            border-color: #1B4F72;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .form-control::placeholder {
+            color: #999;
+        }
+        .btn-primary {
+            background-color: #1B4F72;
+            border-color: #1B4F72;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn-primary:hover {
+            background-color: #00332e;
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 300px;
+            height: 300px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        #continueButton {
+            background-color: #1B4F72;
+            color: #FFFFFF;
+            padding: 10px 20px;
+            margin-top: 20px;
+        }
+        .error-message, .success-message {
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .error-message {
+            color: red;
+        }
+        .success-message {
+            color: green;
+        }
+        .input-text {
+            font-size: 16px;
+            padding: 8px;
+            margin: 4px 2px;
+            width: 300px;
+        }
+        .message-exists {
+            color: red;
+            margin-top: 4px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Saisie du lead trouvé</h2>
+        <form id="companyForm" class="needs-validation" novalidate method="post" action="">
+            {% csrf_token %}
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    <label for="nom_offre">Nom de l'offre *</label>
+                    <input type="text" class="form-control" id="nom_offre" name="nom_offre" placeholder="Entrez le nom de l'offre" required>
+                    <div class="invalid-feedback"  id="offerNameError">
+                        Veuillez fournir un nom d'offre valide.
+                    </div>
+                    <div id="offerNameExistsMessage" class="message-exists" style="display:none;">
+                        <!-- Message d'erreur -->
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="localisation">Localisation *</label>
+                    <input type="text" class="form-control" id="localisation" name="localisation" placeholder="Entrez la localisation de l'offre" required>
+                    <div class="invalid-feedback" id="localisationError">
+                        Veuillez fournir une localisation valide.
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    <label for="nom">Nom de l'entreprise *</label>
+                    <input type="text" class="form-control" id="nom" name="nom" placeholder="Entrez le nom de l'entreprise" required>
+                    <div class="invalid-feedback">
+                        Veuillez fournir un nom valide.
+                    </div>
+                    <div id="nameExistsMessage" class="message-exists" style="display:none;">
+                        Ce nom existe déjà dans le fichier.
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="nombre_offres">Nombre d'offres similaires *</label>
+                    <input type="number" class="form-control" id="nombre_offres" name="nombre_offres" value='1' placeholder="Nombre d'offres proposées" required>
+                    <div class="invalid-feedback">
+                        Veuillez entrer un nombre valide.
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    <label for="email">Email</label>
+                    <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+                    <div class="invalid-feedback" id="emailError">
+                        Veuillez fournir un email valide.
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="telephone">Numéro de téléphone</label>
+                    <input type="tel" class="form-control" id="telephone" name="telephone" placeholder="Numéro de téléphone">
+                    <div class="invalid-feedback" id="phoneError">
+                        Veuillez fournir un numéro de téléphone valide (chiffres uniquement).
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    <label for="taille">Taille de l'entreprise</label>
+                    <input type="text" class="form-control" id="taille" name="taille" placeholder="Entrez la taille dans l'intervalle (ex: 100-500)">
+                    <div id="tailleError" class="invalid-feedback" style="display: none;">Format non valide. Utilisez un format comme 100-500.</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="secteur">Secteur d'activité</label>
+                    <input type="text" class="form-control" id="secteur" name="secteur" placeholder="Secteur d'activité">
+                    <div id="secteurError" class="invalid-feedback">
+                        Veuillez fournir un secteur valide.
+                    </div>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="col-md-6 mb-3">
+                    <label for="chiffre_d_affaires">Chiffre d'affaires</label>
+                    <input type="text" class="form-control" id="chiffre_d_affaires" name="chiffre_d_affaires" placeholder="Ex: plus de 100 millions d'euros">
+                    <div id="chiffreError" class="invalid-feedback">
+                        Format non valide. Utilisez un des formats valides comme 'plus de X milliards d'euros', 'moins de X millions d'euros', 'X à Y M (EUR)'.
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="lien_site">Lien du site</label>
+                    <input type="url" class="form-control" id="lien_site" name="lien_site" placeholder="URL du site web">
+                    <div class="invalid-feedback" style="display: none;">
+                        Veuillez fournir une URL valide, incluant http:// ou https:// si nécessaire.
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="porteur_lead">Porteur du lead</label>
+                    <input type="text" class="form-control" id="porteur_lead" name="porteur_lead" placeholder="Entrez le nom du porteur du lead">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="url_profil_porteur_lead">URL du profil du porteur de lead</label>
+                    <input type="url" class="form-control" id="url_profil_porteur_lead" name="url_profil_porteur_lead" placeholder="URL du profil">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="source_lead">Source du lead</label>
+                    <input type="text" class="form-control" id="source_lead" name="source_lead" placeholder="Source du lead">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="statut_du_lead">Statut du lead</label>
+                    <select class="form-control" id="statut_du_lead" name="statut_du_lead">
+                        <option value="nouveau">Nouveau</option>
+                        <option value="en_cours">En cours</option>
+                        <option value="converti">Converti</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="date_publication_offre">Date de publication de l'offre</label>
+                    <input type="date" class="form-control" id="date_publication_offre" name="date_publication_offre">
+                    <div class="invalid-feedback">
+                        Veuillez fournir une Date valide.
+                    </div>
+                    <div id="offerNameExistsMessage" class="message-exists" style="display:none;">
+                        <!-- Message d'erreur -->
+                    </div>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="date_maj_lead">Date de mise à jour du lead</label>
+                    <input type="date" class="form-control" id="date_maj_lead" name="date_maj_lead">
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label for="remarques">Remarques</label>
+                    <textarea class="form-control" id="remarques" name="remarques" placeholder="Remarques"></textarea>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="priorite">Priorité</label>
+                    <select class="form-control" id="priorite" name="priorite">
+                        <option value="haute">Haute</option>
+                        <option value="moyenne">Moyenne</option>
+                        <option value="basse">Basse</option>
+                    </select>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label for="description_job">Description du job</label>
+                    <textarea class="form-control" id="description_job" name="description_job" placeholder="Description du job"></textarea>
+                </div>
+                <div class="col-md-12 mb-3">
+                    <label for="lien_vers_lead">Lien vers le lead</label>
+                    <input type="url" class="form-control" id="lien_vers_lead" name="lien_vers_lead" placeholder="URL vers le lead">
+                </div>
+            </div>
+            <button class="btn btn-primary" type="submit" id="submitBtn">Ajouter le lead</button>
+            <div id="formErrorMessage" class="error-message" style="display: none;"></div>
+            <div id="formSuccessMessage" class="success-message" style="display: none;"></div>
+        </form>
+        <div id="myModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <p id="popupMessage"></p>
+                <button id="continueButton" class="btn btn-primary">Continuer</button>
+            </div>
+        </div>
+    
+    </div>
+    
+    <script>
+        // les variables utilisées afin de soumettre le formulaire en toute sécurité et que rien ne manque 
+let isNomOffre=false;
+let isLocalisation=false;
+let isnomEntreprise=false;
+let isEmailValide=true;
+let isNumeroValide=true;
+let isTailleValide = true;
+let isSecteurValide=true;
+let isChiffreAffaire=true;
+let isLienSite=true;
+let isDatePublicationOffre=true;
+var variable_commune_offre_date_entreprise=false;
+
+// fonction pour le nom de l'entreprise
+document.getElementById('nom').addEventListener('input', function() {
+    let nom = this.value;
+    let pattern = /^[a-zA-Zàâçéèêëîïôûùüÿñæœ\s-]+$/;
+    let messageElement = document.getElementById('nameExistsMessage');
+    messageElement.style.display = 'none';
+    if (nom.length > 2) {
+        fetch(`/rstelecom/check-name?nom=${encodeURIComponent(nom)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                messageElement.textContent = "Le nom existe déjà dans la base de données.";
+                messageElement.style.display = 'block';
+                isnomEntreprise = false;
+            } else {
+                if (pattern.test(nom)) {
+                    messageElement.textContent = "";
+                    messageElement.style.display = 'none';
+                    isnomEntreprise = true;
+                } else {
+                    messageElement.textContent = "Veuillez saisir le nom de l'entreprise correctement.";
+                    messageElement.style.display = 'block';
+                    isnomEntreprise = false;
+                }
+            }
+        })
+        .catch(error => console.error('Erreur:', error));
+    } else {
+        messageElement.style.display = 'none';
+        isnomEntreprise = true;
+    }
+});
+
+document.getElementById('nom_offre').addEventListener('input', function() {
+    let nomOffre = this.value;
+    let messageElement = document.getElementById('offerNameExistsMessage');
+    messageElement.style.display = 'none';
+    if (nomOffre.length > 2) {
+        fetch(`/rstelecom/check-offre?nom_offre=${encodeURIComponent(nomOffre)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                messageElement.textContent = "Le nom de l'offre existe déjà dans la base de données.";
+                messageElement.style.display = 'block';
+                isNomOffre = false;
+            } else {
+                messageElement.textContent = "";
+                messageElement.style.display = 'none';
+                isNomOffre = true;
+            }
+        })
+        .catch(error => console.error('Erreur:', error));
+    } else {
+        messageElement.style.display = 'none';
+        isNomOffre = true;
+    }
+});
+
+document.getElementById('date_publication_offre').addEventListener('input', function() {
+    let datePublicationOffre = this.value;
+    let messageElement = document.getElementById('offerDateExistsMessage');
+    messageElement.style.display = 'none';
+    if (datePublicationOffre) {
+        fetch(`/rstelecom/check-date?date_publication_offre=${encodeURIComponent(datePublicationOffre)}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.exists) {
+                messageElement.textContent = "La date de publication de l'offre existe déjà dans la base de données.";
+                messageElement.style.display = 'block';
+                isDatePublicationOffre = false;
+            } else {
+                messageElement.textContent = "";
+                messageElement.style.display = 'none';
+                isDatePublicationOffre = true;
+            }
+        })
+        .catch(error => console.error('Erreur:', error));
+    } else {
+        messageElement.style.display = 'none';
+        isDatePublicationOffre = true;
+    }
+});
+
+// fonction pour vérifier si le champ taille inséré est conforme aux formes 
+function verifierFormatTaille() {
+    let input = document.getElementById('taille');
+    let errorDiv = document.getElementById('tailleError');
+    let valeur = input.value;
+    let pattern = /^\d+-\d+$/;  // Vérifie le format XXXX-YYYY
+
+    if (pattern.test(valeur)) {
+        let bornes = valeur.split('-').map(Number);
+        if (bornes[0] < bornes[1]) {  // Vérifie que le premier nombre est inférieur au second
+            errorDiv.style.display = 'none';
+            input.classList.remove('is-invalid');
+            isTailleValide=true;
+        } else {
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = 'Le second chiffre doit être plus grand que le premier.';
+            input.classList.add('is-invalid');
+            isTailleValide=false;
+        }
+    } else {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Format non valide. Utilisez un format comme 100-500.';
+        input.classList.add('is-invalid');
+        isTailleValide=false;
+    }
+}
+
+document.getElementById('taille').addEventListener('input', verifierFormatTaille);  // Validation en temps réel à chaque saisie
+
+// fonction pour vérifier le format du secteur d'activité rentré par l'utilisateur 
+function verifierSecteur() {
+    let input = document.getElementById('secteur');
+    let errorDiv = document.getElementById('secteurError');
+    let valeur = input.value;
+    let pattern = /^[a-zA-Zàâçéèêëîïôûùüÿñæœ\s-]+$/;  // Vérifie que la chaîne ne contient que des lettres, des tirets, des espaces et des caractères accentués 
+
+    if (pattern.test(valeur)) {
+        errorDiv.style.display = 'none';
+        input.classList.remove('is-invalid');
+        isSecteurValide=true;
+    } else {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Veuillez fournir un secteur valide (pas de chiffres ou de caractères spéciaux).';
+        input.classList.add('is-invalid');
+        isSecteurValide=false;
+    }
+}
+
+document.getElementById('secteur').addEventListener('input', verifierSecteur);  // Validation en temps réel à chaque saisie
+
+//fonction pour tester le chiffre d'affaire 
+function verifierChiffreAffaires() {
+    let input = document.getElementById('chiffre_d_affaires');
+    let errorDiv = document.getElementById('chiffreError');
+    let valeur = input.value;
+    let patternPlus = /^plus de \d+ milliards d'euros$/i;
+    let patternMoins = /^moins de \d+ millions d'euros$/i;
+    let patternRange = /^\d+ à \d+ M \(EUR\)$/i;
+
+    if (patternPlus.test(valeur) || patternMoins.test(valeur) || patternRange.test(valeur)) {
+        errorDiv.style.display = 'none';
+        input.classList.remove('is-invalid');
+        isChiffreAffaire=true;
+    } else {
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = "Format non valide. Utilisez un des formats valides comme 'plus de X milliards d'euros', 'moins de X millions d'euros', 'X à Y M (EUR)'.";
+        input.classList.add('is-invalid');
+        isChiffreAffaire=false;
+    }
+}
+
+document.getElementById('chiffre_d_affaires').addEventListener('input', verifierChiffreAffaires);  // Validation en temps réel à chaque saisie
+
+// fonction pour vérfiier le lien du site rentré 
+function validateURL(input) {
+    const urlPattern = /^(https?:\/\/)?([\da-z\.-]+)\.([a-z\.]{2,6})([\/\w \.-]*)*\/?$/;
+    const urlErrorDiv = input.nextElementSibling; // Récupère le div pour l'erreur qui est juste après l'input
+
+    if (!urlPattern.test(input.value)) {
+        input.classList.add('is-invalid'); // Ajoute la classe pour indiquer une saisie invalide
+        urlErrorDiv.style.display = 'block'; // Affiche le div d'erreur
+        urlErrorDiv.textContent = 'Veuillez fournir une URL valide, incluant http:// ou https:// si nécessaire.';
+        isLienSite=false;
+    } else {
+        input.classList.remove('is-invalid'); // Retire la classe d'invalidité
+        urlErrorDiv.style.display = 'none'; // Cache le div d'erreur
+        isLienSite=true;
+    }
+}
+
+document.getElementById('lien_site').addEventListener('input', function() {
+    validateURL(this);
+});
+
+// fonction pour vérifier le format de l'e-mail
+document.getElementById('email').addEventListener('input', function() {
+    validateEmail(this);
+});
+
+function validateEmail(input) {
+    const emailErrorDiv = document.getElementById('emailError');
+    // Regex pour valider l'email avec au moins deux caractères avant le '@'
+    const emailPattern = /^[^\s@]{2,}@[^\s@]+\.[^\s@]+$/;
+
+    if (!emailPattern.test(input.value)) {
+        input.classList.add('is-invalid');
+        emailErrorDiv.style.display = 'block';
+        emailErrorDiv.textContent = 'L’email doit être sous format example@xy.z et contenir au moins deux caractères avant le "@".';
+        isEmailValide=false;
+    } else {
+        input.classList.remove('is-invalid');
+        emailErrorDiv.style.display = 'none';
+        isEmailValide=true;
+    }
+}
+
+// fonction pour vérifier le format du numéro de telephone
+document.getElementById('telephone').addEventListener('input', function() {
+    validatePhoneNumber(this);
+});
+
+function validatePhoneNumber(input) {
+    const phoneErrorDiv = document.getElementById('phoneError');
+    // Regex pour valider que l'entrée est uniquement des chiffres
+    const phonePattern = /^\d+$/;
+
+    if (!phonePattern.test(input.value)) {
+        input.classList.add('is-invalid');
+        phoneErrorDiv.style.display = 'block';
+        phoneErrorDiv.textContent = 'Le numéro de téléphone doit contenir uniquement des chiffres.';
+        isNumeroValide=false;
+    } else {
+        input.classList.remove('is-invalid');
+        phoneErrorDiv.style.display = 'none';
+        isNumeroValide=true;
+    }
+}
+
+// fonction pour vérifier le format de la localisation 
+document.getElementById('localisation').addEventListener('input', function() {
+    validateLocation(this);
+});
+
+function validateLocation(input) {
+    const locationErrorDiv = document.getElementById('localisationError');
+    // Expression régulière pour valider la localisation avec les caractères autorisés
+    const locationPattern = /^[a-zA-ZàâäãåçéèêëíìîïñóòôõöùûüÿýÀÂÄÃÅÇÉÈÊËÍÌÎÏÑÓÒÔÕÖÙÛÜŸÝ\s'-]+$/;
+
+    if (!locationPattern.test(input.value) || input.value.trim() === "") {
+        input.classList.add('is-invalid');
+        locationErrorDiv.style.display = 'block';
+        locationErrorDiv.textContent = "Veuillez fournir une localisation valide. Seuls les lettres, espaces, tirets (-) et apostrophes (') sont autorisés.";
+        isLocalisation=false;
+    } else {
+        input.classList.remove('is-invalid');
+        locationErrorDiv.style.display = 'none';
+        isLocalisation=true;
+    }
+}
+
+// fonction qui teste la soumission du formulaire 
+document.getElementById('submitBtn').addEventListener('click', function(event) {
+    event.preventDefault();  // Empêche la soumission normale du formulaire
+    if (validateForm()) {
+        submitFormData();
+    } else {
+        displayPopup("Veuillez corriger les erreurs dans le formulaire avant de soumettre.");
+    }
+});
+
+function validateForm() {
+    (isNomOffre || isnomEntreprise) ? variable_commune_offre_date_entreprise=true : variable_commune_offre_date_entreprise=false;
+    
+    return variable_commune_offre_date_entreprise && isEmailValide &&
+           isNumeroValide && isTailleValide && isSecteurValide && isChiffreAffaire && isLienSite;
+}
+
+function getCsrfTokenFromForm() {
+    return document.querySelector('[name="csrfmiddlewaretoken"]').value;
+}
+
+const csrftoken = getCsrfTokenFromForm()
+
+
+function submitFormData() {
+            let formData = new FormData(document.getElementById('companyForm'));
+
+            fetch('/rstelecom/submit-form/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken  // Ajoute le jeton CSRF aux en-têtes
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    displayPopup("Les données ont été ajoutées avec succès !");
+                    document.getElementById('formSuccessMessage').textContent = "Les données ont été ajoutées avec succès !";
+                    document.getElementById('formSuccessMessage').style.display = 'block';
+                    document.getElementById('formErrorMessage').style.display = 'none';
+                } else {
+                    displayPopup("Une erreur s'est produite lors de la soumission du formulaire.");
+                    document.getElementById('formErrorMessage').textContent = "Une erreur s'est produite lors de la soumission du formulaire.";
+                    document.getElementById('formErrorMessage').style.display = 'block';
+                    document.getElementById('formSuccessMessage').style.display = 'none';
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                displayPopup("Une erreur s'est produite lors de la soumission du formulaire.");
+                document.getElementById('formErrorMessage').textContent = "Une erreur s'est produite lors de la soumission du formulaire.";
+                document.getElementById('formErrorMessage').style.display = 'block';
+                document.getElementById('formSuccessMessage').style.display = 'none';
+            });
+        }
+
+var modal = document.getElementById("myModal");
+var span = document.getElementsByClassName("close")[0];
+var continueButton = document.getElementById("continueButton");
+
+// Function to open the modal and display a message
+function displayPopup(message) {
+    document.getElementById('popupMessage').textContent = message;
+    modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the modal
+span.onclick = function() {
+    modal.style.display = "none";
+}
+
+// When the user clicks on the button, close the modal
+continueButton.onclick = function() {
+    modal.style.display = "none";
+}
+
+// Click outside of the modal will not close it
+window.onclick = function(event) {
+    if (event.target == modal) {
+        event.stopPropagation(); // Preventing the modal from closing when clicking outside of it
+    }
+}
+
+</script>
+</body>
+</html>

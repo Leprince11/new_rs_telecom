@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mettre à jour le lead</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 50px;
+            background: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);
+            font-family: 'Roboto', sans-serif;
+            animation: fadeInBackground 1s ease-in-out;
+        }
+
+        @keyframes fadeInBackground {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .container {
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            max-width: 600px;
+            margin: 50px auto;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            color: #1B4F72;
+            margin-bottom: 30px;
+            font-weight: 700;
+        }
+
+        .form-control {
+            border: 2px solid #1B4F72;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .form-control:focus {
+            border-color: #1B4F72;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+
+        .form-control::placeholder {
+            color: #999;
+        }
+
+        .btn-primary {
+            background-color: #1B4F72;
+            border-color: #1B4F72;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 18px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-primary:hover {
+            background-color: #00332e;
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Mettre à jour le lead</h2>
+        <form id="updateLeadForm" method="post" action="">
+            {% csrf_token %}
+            <div class="form-group">
+                {{ form.nom.label_tag }} {{ form.nom }}
+            </div>
+            <div class="form-group">
+                {{ form.nom_offre.label_tag }} {{ form.nom_offre }}
+            </div>
+            <div class="form-group">
+                {{ form.localisation_du_lead.label_tag }} {{ form.localisation_du_lead }}
+            </div>
+            <div class="form-group">
+                {{ form.nombre_offres.label_tag }} {{ form.nombre_offres }}
+            </div>
+            <!-- Reste des champs -->
+            <div class="form-group">
+                {{ form.adresse_mail_de_contact.label_tag }} {{ form.adresse_mail_de_contact }}
+            </div>
+            <div class="form-group">
+                {{ form.telephone.label_tag }} {{ form.telephone }}
+            </div>
+            <div class="form-group">
+                {{ form.taille_entreprise.label_tag }} {{ form.taille_entreprise }}
+            </div>
+            <div class="form-group">
+                {{ form.secteur_activite.label_tag }} {{ form.secteur_activite }}
+            </div>
+            <div class="form-group">
+                {{ form.chiffre_d_affaires.label_tag }} {{ form.chiffre_d_affaires }}
+            </div>
+            <div class="form-group">
+                {{ form.lien_vers_lead.label_tag }} {{ form.lien_vers_lead }}
+            </div>
+            <div class="form-group">
+                {{ form.porteur_lead.label_tag }} {{ form.porteur_lead }}
+            </div>
+            <div class="form-group">
+                {{ form.url_profil_porteur_lead.label_tag }} {{ form.url_profil_porteur_lead }}
+            </div>
+            <div class="form-group">
+                {{ form.source_lead.label_tag }} {{ form.source_lead }}
+            </div>
+            <div class="form-group">
+                {{ form.statut_du_lead.label_tag }} {{ form.statut_du_lead }}
+            </div>
+            <div class="form-group">
+                {{ form.date_publication_offre.label_tag }} {{ form.date_publication_offre }}
+            </div>
+            <div class="form-group">
+                {{ form.date_maj_lead.label_tag }} {{ form.date_maj_lead }}
+            </div>
+            <div class="form-group">
+                {{ form.remarques.label_tag }} {{ form.remarques }}
+            </div>
+            <div class="form-group">
+                {{ form.priorite.label_tag }} {{ form.priorite }}
+            </div>
+            <div class="form-group">
+                {{ form.description_job.label_tag }} {{ form.description_job }}
+            </div>
+            <button class="btn btn-primary" type="submit">Mettre à jour le lead</button>
+        </form>
+    </div>
+</body>
+</html>
