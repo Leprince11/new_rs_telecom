@@ -157,7 +157,7 @@
                 var formData = new FormData(form);
                 formData.append('cv_id', '{{ cv_id }}');
 
-                fetch('/rstelecom/add_comment/', {
+                fetch('{% url "add_comment" %}', {
                     method: 'POST',
                     headers: {
                         'X-CSRFToken': csrfToken

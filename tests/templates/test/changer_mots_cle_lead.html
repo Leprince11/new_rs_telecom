@@ -261,7 +261,7 @@
             var resultsTab = new bootstrap.Tab(document.getElementById('results-tab'));
             resultsTab.show();
 
-            fetch('/rstelecom/process_matching_v2/', {
+            fetch('{% url "process_matching_v2" %}', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrfToken
@@ -319,7 +319,7 @@
             var resultsTab = new bootstrap.Tab(document.getElementById('results-tab'));
             resultsTab.show();
 
-            fetch('/rstelecom/process_matching_v3/', {
+            fetch('{% url "process_matching_v3" %}', {
                 headers: {
                     'X-CSRFToken': csrfToken
                 },
@@ -334,7 +334,7 @@
             })
             .then(data => {
                 globalData = data;
-                renderResults(data);
+                renderResultsDB(data);
                 setupPagination(data.page, data.total_pages);
                 matchingResults.style.display = 'flex';
                 matchingResults.style.flexWrap = 'wrap';
@@ -342,6 +342,28 @@
             })
             .catch(error => {
                 console.error('Error:', error);
+            });
+        }
+
+        function renderResultsDB(data) {
+            const resultsList = document.getElementById('matching-results');
+            resultsList.innerHTML = '';
+
+            data.results.forEach((result, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card', 'col-md-4');
+                card.dataset.cvId = result.id;
+
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title"><a href="/leads_cvs/cv-tech/${result.id}/" target='_blank'>${index + 1}. ${result.filename} </a></h5>
+                        <p><strong>Correspondance:</strong> ${result.percentage.toFixed(2)}%</p>
+                        <p><strong>Remarque:</strong> ${result.remark}</p>
+                        <p><strong>Téléphone:</strong> ${result.phone ? result.phone : 'Cliquez sur le CV pour plus de détails'}</p>
+                        <button class="btn btn-info btn-sm" onclick="viewDetails(${index})">Voir Détails</button>
+                    </div>
+                `;
+                resultsList.appendChild(card);
             });
         }
 
@@ -356,8 +378,7 @@
 
                 card.innerHTML = `
                     <div class="card-body">
-                        <h5 class="card-title"><a href="/rstelecom/cv-tech/${result.id}/" target='_blank'>${index + 1}. ${result.filename} </a></h5>
-                        <p><strong>Score:</strong> ${result.score}</p>
+                        <h5 class="card-title">${index + 1}. ${result.filename}</h5>
                         <p><strong>Correspondance:</strong> ${result.percentage.toFixed(2)}%</p>
                         <p><strong>Remarque:</strong> ${result.remark}</p>
                         <p><strong>Téléphone:</strong> ${result.phone ? result.phone : 'Cliquez sur le CV pour plus de détails'}</p>
@@ -367,7 +388,6 @@
                 resultsList.appendChild(card);
             });
         }
-
         function setupPagination(currentPage, totalPages) {
             const paginationControls = document.getElementById('pagination-controls');
             paginationControls.innerHTML = '';

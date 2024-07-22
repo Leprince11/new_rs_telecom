@@ -307,7 +307,7 @@ document.getElementById('nom').addEventListener('input', function() {
     let messageElement = document.getElementById('nameExistsMessage');
     messageElement.style.display = 'none';
     if (nom.length > 2) {
-        fetch(`/rstelecom/check-name?nom=${encodeURIComponent(nom)}`)
+        fetch(`check-name?nom=${encodeURIComponent(nom)}`)
         .then(response => response.json())
         .then(data => {
             if (data.exists) {
@@ -338,7 +338,7 @@ document.getElementById('nom_offre').addEventListener('input', function() {
     let messageElement = document.getElementById('offerNameExistsMessage');
     messageElement.style.display = 'none';
     if (nomOffre.length > 2) {
-        fetch(`/rstelecom/check-offre?nom_offre=${encodeURIComponent(nomOffre)}`)
+        fetch(`check-offre?nom_offre=${encodeURIComponent(nomOffre)}`)
         .then(response => response.json())
         .then(data => {
             if (data.exists) {
@@ -363,7 +363,7 @@ document.getElementById('date_publication_offre').addEventListener('input', func
     let messageElement = document.getElementById('offerDateExistsMessage');
     messageElement.style.display = 'none';
     if (datePublicationOffre) {
-        fetch(`/rstelecom/check-date?date_publication_offre=${encodeURIComponent(datePublicationOffre)}`)
+        fetch(`check-date?date_publication_offre=${encodeURIComponent(datePublicationOffre)}`)
         .then(response => response.json())
         .then(data => {
             if (data.exists) {
@@ -570,7 +570,7 @@ const csrftoken = getCsrfTokenFromForm()
 function submitFormData() {
             let formData = new FormData(document.getElementById('companyForm'));
 
-            fetch('/rstelecom/submit-form/', {
+            fetch('submit-form/', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrftoken  // Ajoute le jeton CSRF aux en-têtes

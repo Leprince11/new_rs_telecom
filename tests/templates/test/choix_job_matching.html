@@ -133,7 +133,7 @@
 
     function selectLead(button) {
         var leadId = button.getAttribute('data-lead-id');
-        const url = "{% url 'lead_details' 0 %}".replace('/0/', '/' + leadId + '/');
+        const url = "{% url 'lead_matched' 0 %}".replace('/0/', '/' + leadId + '/');
         window.location.href = url;
     }
 </script>

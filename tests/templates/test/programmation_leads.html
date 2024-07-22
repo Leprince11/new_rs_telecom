@@ -162,7 +162,7 @@
                 suggestions.innerHTML = '';
 
                 if (query.length > 1) {
-                    fetch(`/rstelecom/search-city/?q=${query}`, {
+                    fetch(`search-city/?q=${query}`, {
                         method: 'GET',
                         headers: {
                             'Content-Type': 'application/json',

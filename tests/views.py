@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.db.models.functions import TruncMonth, Trunc
 from django.db.models import Sum, Count, Q, DateField
 from django.utils.timezone import now
+from django.conf import settings
 from django.utils.dateparse import parse_date
 from django.db import transaction
 from threading import Thread
@@ -226,15 +227,8 @@ def get_graph(fig):
     string = base64.b64encode(buf.read())
     uri = urllib.parse.quote(string)
     return uri
-##################################################################
-# Mise à jour du lead 
 
-
-
-
-def test_base_template(request):
-    return render(request, 'test/base.html')
-
+#################################################################
 
 
 @csrf_protect
@@ -254,6 +248,7 @@ def view_leads(request):
     leads = Leads.objects.all()
     updated_id = request.GET.get('updated_id')
     return render(request, 'test/leads.html', {'leads': leads, 'updated_id': updated_id})
+
 #####################################
 
 
@@ -387,31 +382,7 @@ def search_city(request):
 @login_required_connect
 def scrapingPage(request):
     return render(request,'test/scraping.html')
-######################################################################
 
-
-
-# @require_http_methods(["GET"])
-# def search_results(request):
-#     query = request.GET.get('query', '').lower()
-#     search_type = request.GET.get('type', 'offre')
-#     path_to_csv = 'donnees_lead.csv'
-#     results = []
-#     with open(path_to_csv, newline='', encoding='utf-8') as csv_file:
-#         reader = csv.reader(csv_file, delimiter=";")
-#         next(reader, None)  # Ignorer la première ligne du header
-#         for row in reader:
-#             if search_type == 'entreprise' and query in row[2].lower():
-#                 results.append(row)
-#             elif search_type == 'offre' and query in row[0].lower():
-#                 results.append(row)
-
-#     # Tri des résultats
-#     results.sort(key=lambda x: x[0] if search_type == 'offre' else x[2])
-#     return JsonResponse(results, safe=False)
-
-
-###########################################################################
 @login_required_connect
 def matching_cv_view(request):
     return render(request, 'test/matching_cv.html')
@@ -869,28 +840,39 @@ def programmation_view(request):
              'default_data':default_data}
     return render(request, 'test/programmation_leads.html', context)
 
-# Fonction qui simule une requête HTTP POST
+
+from django.test import RequestFactory
+from django.urls import reverse
+import json
+from .views import recup_donnees_programmees, start_scraping
+
 def simulate_request():
     try:
         print('La simulation de la tâche est en train de commencer')
         factory = RequestFactory()
-        request = factory.post('/rstelecom/recup-donnees-programmees/', data={}, content_type='application/json')
+
+        # Créez une requête POST pour récupérer les données programmées
+        recup_donnees_url = reverse('recup_donnees_programmees')
+        request = factory.post(recup_donnees_url, data={}, content_type='application/json')
         response = recup_donnees_programmees(request)
-        
+
         if response.status_code == 200:
             updated_data = json.loads(response.content).get('data', default_data)
             print(f"Data utilisée pour le scraping: {updated_data}")
 
-            # Utiliser les données mises à jour pour la requête de scraping
-            scraping_request = factory.post('/rstelecom/start-scraping/', data=json.dumps(updated_data), content_type='application/json')
+            # Utilisez les données mises à jour pour la requête de scraping
+            start_scraping_url = reverse('start_scraping')
+            scraping_request = factory.post(start_scraping_url, data=json.dumps(updated_data), content_type='application/json')
             scraping_response = start_scraping(scraping_request)
-            
-            # Afficher la réponse pour vérifier
+
+            # Affichez la réponse pour vérifier
             print(f"Réponse reçue: {scraping_response.content}")
         else:
             print("Erreur lors de la récupération des données mises à jour.")
     except Exception as e:
         print(f"Erreur dans simulate_request: {e}")
+
+
 
 notification_triggered = False
 
@@ -900,7 +882,7 @@ def send_notification():
     notification_triggered = True
 
 
-# Fonction pour exécuter les tâches planifiées
+
 def run_schedule():
     schedule.every(1000).minutes.do(simulate_request)
     last_run = datetime.now() - timedelta(minutes=1000)  # Initialiser pour permettre l'exécution immédiate
@@ -1090,20 +1072,10 @@ def get_noms_cvs(nom_cv):
     return cvs[0]
 
 
-
-
-
-
-
-def cv_list(request):
-    cvs = get_cvs()
-    return render(request, 'test/cv_list.html', {'cvs': cvs})
-
-
 def cv_detail(request, cv_id):
     # Définir le chemin des fichiers CV
     actual_path= f"{os.getcwd()}/tests"
-    CV_ROOT = os.path.join(actual_path,'static/test/CV/filestore/')
+    CV_ROOT = "/media/CV/filestore/"
 
     cvs = get_cvs()  # Assurez-vous que cette fonction est définie pour obtenir les CVs
     cv = next((cv for cv in cvs if int(cv[0]) == cv_id), None)
@@ -1175,7 +1147,7 @@ def get_facs():
 
 def fac_detail(request, fac_id):
     actual_path= f"{os.getcwd()}/tests"
-    CV_ROOT = os.path.join(actual_path,'static/test/CV/filestore/')
+    CV_ROOT = "/media/CV/filestore/"
     facs = get_facs()
     fac = next((fac for fac in facs if int(fac[0]) == fac_id), None)
     if fac is None:
@@ -1274,7 +1246,7 @@ def recuperer_num_mail(cv_id):
 def process_matching_v3(request):
     try:
         actual_path = f"{os.getcwd()}/tests"
-        CV_ROOT = os.path.join(actual_path, 'static/test/CV/filestore/')
+        CV_ROOT = "/media/CV/filestore/"
         mission_text = request.POST.get('mission_text')
         keywords_text = request.POST.get('keywords_text')
         poids_lead = request.POST.get('poids_lead')
@@ -1332,10 +1304,12 @@ def process_matching_v3(request):
 
         cv_texts = []
         for cv in cvs:
-            cv_file_path = os.path.join(CV_ROOT, cv[2] + ".pdf")
+            cv_file_path = os.path.join(settings.CV_ROOT, cv[2] + ".pdf")
             if not os.path.isfile(cv_file_path):
                 print(f"File not found: {cv_file_path}")
                 continue
+            else:
+                print(f"ok pour le cv {cv_file_path}")
             cv_text = extract_text_from_pdf_path(cv_file_path)
             preprocessed_cv_text = preprocess_text_mission(cv_text)
             cv_texts.append((cv[0], cv[1], preprocessed_cv_text))

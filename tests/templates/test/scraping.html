@@ -227,7 +227,7 @@ document.getElementById('startBtn').addEventListener('click', async function() {
     }, 10000);
 
     try {
-        const response = await fetch('/rstelecom/start-scraping/', {
+        const response = await fetch('start-scraping/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -276,7 +276,7 @@ async function setupSearch() {
 
         if (query.length > 1) {
             try {
-                const response = await fetch(`/rstelecom/search-city/?q=${query}`, {
+                const response = await fetch(`search-city/?q=${query}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -344,7 +344,7 @@ function populateTable(data) {
 
 function viewDetails(nom, nom_offre) {
     const queryString = `?nom=${encodeURIComponent(nom)}&nom_offre=${encodeURIComponent(nom_offre)}`;
-    window.location.href = `/rstelecom/lead/details/${queryString}`;
+    window.location.href = `lead_details/${queryString}`;
 }
     </script>
 </body>

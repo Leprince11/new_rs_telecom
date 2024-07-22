@@ -177,7 +177,7 @@
             console.log('Form submitted with comment:', comment, 'for CV ID:', cvId);
     
             if (comment && cvId) {
-                fetch('/rstelecom/add_comment/', {
+            fetch('{% url "add_comment" %}', {
                     method: 'POST',
                     headers: {
                         'X-CSRFToken': getCookie('csrftoken')
