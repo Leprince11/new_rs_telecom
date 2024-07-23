@@ -62,13 +62,13 @@ urlpatterns = [
     path('process_matching_v3/', views.process_matching_v3, name='process_matching_v3'),
     path('add_comment/',views.add_comment,name='add_comment'),
     path('update_comment_status/', views.update_comment_status, name='update_comment_status'),
-    path('historique_commentaires/<int:cv_id>/',views.historique_commentaires,name='commentaires'),
     path('matching/',views.matching,name='matching'),
     path('api/leads-stats/', views.get_leads_stats, name='leads_stats'),
     path('feedback/',views.feedback , name='feedback'),
     path('add_feedback/', views.add_feedback, name='add_feedback'),
     path('pin_feedback/<int:id>/', views.pin_feedback, name='pin_feedback'),
     path('unpin_feedback/<int:id>/', views.unpin_feedback, name='unpin_feedback'),
+    path('commentaires/<int:cv_id>/', views.historique_commentaires, name='commentaires'),
     ]
 
 

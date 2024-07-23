@@ -304,15 +304,17 @@ def main_extraction(keywords, location, time_frame):
     max_attempts = 3  # Nombre maximum de tentatives
     pause_duration = 5  # Durée de la pause en secondes
     attempts = 0
+    new_data = []
+    search_url = None  # Initialiser search_url
 
-    while attempts < max_attempts:
+    while attempts < max_attempts and (new_data is None or not new_data):
         print('je suis à l\'intérieur de la fonction, tentative:', attempts + 1)
-        company_job_pairs, company_counts, search_url = fetch_job_listings_selenium(keywords, location, time_frame, max_jobs)
-        new_data = []
-        print(new_data)
+        
         try:
+            company_job_pairs, company_counts, search_url = fetch_job_listings_selenium(keywords, location, time_frame, max_jobs)
             job_details = fetch_and_display_job_details_from_search_url(search_url, max_jobs)
             print(job_details)
+
             for (company, job_name, job_id, datetime_value, job_link), (recruiter_name, job_description, recruiter_profile_link) in zip(company_job_pairs, job_details):
                 linkedin_info = get_linkedin_company_info(company)  # Appel de la nouvelle fonction pour obtenir les informations LinkedIn
 
@@ -338,12 +340,12 @@ def main_extraction(keywords, location, time_frame):
                     'lien_profil_linkedin': recruiter_profile_link,
                     'date_publication_offre': date_publication
                 }
+                insert_lead_to_db(row_data)
                 new_data.append(row_data)
             print(new_data)
 
             if new_data:
-                write_to_db(new_data)  # Écrire dans la base de données
-                break  # Sortir de la boucle si les données sont obtenues
+                return search_url, new_data
             else:
                 attempts += 1
                 print(f"new_data est vide. Tentative {attempts}. Attente de {pause_duration} secondes avant la nouvelle tentative.")
@@ -351,6 +353,7 @@ def main_extraction(keywords, location, time_frame):
 
         except Exception as e:
             print(f"Le crash est causé par {e}")
-            break  # En cas d'erreur, arrêter les tentatives
+            attempts += 1
+            time.sleep(pause_duration)  # Attendre avant la prochaine tentative
 
     return search_url, new_data

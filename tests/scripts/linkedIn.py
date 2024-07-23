@@ -11,9 +11,11 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from django.db.models import Q
-from tests.models import Leads
 import requests
 from chromedriver_py import binary_path # Cette ligne importe le chemin du binaire
+import urllib.parse
+from ..models import Leads
+# from tests.models import Leads
 
 # Liste de différents User-Agents
 user_agents = [
@@ -303,3 +305,151 @@ def get_linkedin_company_info(company_name, max_attempts=3):
         'fondee_en': 'non mentionné',
         'specialisations': 'non mentionné'
     }
+
+
+def convert_date(date_str):
+    try:
+        # Nettoyer la chaîne de caractères pour éliminer les espaces insécables
+        clean_date_str = date_str.replace('\xa0', '').strip()
+        return datetime.strptime(clean_date_str, '%d/%m/%Y').date()
+    except ValueError as e:
+        print(f"Erreur lors de la conversion de la date: {e}")
+        return None
+
+def build_url(base_url, location, keywords, salary_min, salary_max):
+    params = {
+        'lieux': location,
+        'motsCles': keywords,
+        'salaireMinimum': salary_min,
+        'salaireMaximum': salary_max
+    }
+    query_string = urllib.parse.urlencode(params)
+    return f"{base_url}?{query_string}"
+
+def scraping_apec(base_url, location, keywords, salary_min, salary_max):
+    url = build_url(base_url, location, keywords, salary_min, salary_max)
+    driver = create_driver()
+    driver.get(url)
+    wait = WebDriverWait(driver, 10)
+    offers = wait.until(EC.presence_of_all_elements_located((By.CLASS_NAME, 'card-offer')))
+
+    data = []
+    for offer in offers:
+        try:
+            parent_a = offer.find_element(By.XPATH, 'ancestor::a')
+            detail_url = parent_a.get_attribute('href')
+
+            company_name = offer.find_element(By.CLASS_NAME, 'card-offer__company').text
+            job_title = offer.find_element(By.CLASS_NAME, 'card-title').text
+            job_description = offer.find_element(By.CLASS_NAME, 'card-offer__description').text
+            salary = offer.find_element(By.XPATH, './/ul[@class="details-offer"]/li[1]').text if offer.find_elements(By.XPATH, './/ul[@class="details-offer"]/li[1]') else 'Non spécifié'
+            contract_type = offer.find_element(By.XPATH, './/ul[@class="details-offer important-list"]/li[1]').text
+            location = offer.find_element(By.XPATH, './/ul[@class="details-offer important-list"]/li[2]').text
+            publication_date_str = offer.find_element(By.XPATH, './/ul[@class="details-offer important-list"]/li[3]').text
+
+            publication_date = convert_date(publication_date_str)
+
+            if not publication_date:
+                continue
+
+            # Scrape job details page
+            job_details = scrape_apec_job_details(detail_url)
+            full_description = f"{job_description}\n\nProfil recherché:\n{job_details['profil_recherche']}"
+
+            # Check if the lead already exists
+            lead, created = Leads.objects.update_or_create(
+                nom=company_name,
+                nom_offre=job_title,
+                defaults={
+                    'nombre_offres': 1,
+                    'localisation_du_lead': location,
+                    'description_job': full_description,
+                    'source_lead': 'apec',
+                    'date_publication_offre': publication_date,
+                    'type_contrat': contract_type,
+                    'lien_vers_lead': detail_url,
+                    'porteur_lead': job_details['charge_recrutement']
+                }
+            )
+
+            if created:
+                print(f"New lead created: {company_name} - {job_title}")
+            else:
+                print(f"Existing lead updated: {company_name} - {job_title}")
+
+            offer_data = {
+                'company_name': company_name,
+                'job_title': job_title,
+                'job_description': full_description,
+                'salary': salary,
+                'contract_type': contract_type,
+                'location': location,
+                'publication_date': publication_date_str,
+                'detail_url': detail_url,
+                'porteur_lead': job_details['charge_recrutement'],
+                'profil_recherche': job_details['profil_recherche']
+            }
+            data.append(offer_data)
+        except Exception as e:
+            print(f"Erreur lors du scraping de l'offre: {e}")
+    
+    print(data)
+    driver.quit()
+    return data
+
+def scrape_apec_job_details(url):
+    driver = create_driver()
+    driver.get(url)
+    
+    # Attendre que la page soit complètement chargée
+    wait = WebDriverWait(driver, 10)
+    wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'details-post')))
+    
+    # Imprimer le code source de la page pour le débogage
+    print(driver.page_source)
+    
+    # Extraire le contenu de la page
+    job_details = {}
+    
+    # Descriptif du poste
+    try:
+        job_details['descriptif_de_mission'] = driver.find_element(By.XPATH, '//div[@class="details-post"]/h4[text()="Descriptif du poste"]/following-sibling::p').text.strip()
+    except Exception as e:
+        job_details['descriptif_de_mission'] = 'Non spécifié'
+        print(f"Erreur lors de l'extraction du descriptif de mission: {e}")
+
+    # Profil recherché
+    try:
+        job_details['profil_recherche'] = driver.find_element(By.XPATH, '//h4[text()="Profil recherché"]/following-sibling::p').text.strip()
+    except Exception as e:
+        job_details['profil_recherche'] = 'Non spécifié'
+        print(f"Erreur lors de l'extraction du profil recherché: {e}")
+
+    # Entreprise
+    try:
+        job_details['entreprise'] = driver.find_element(By.XPATH, '//h4[text()="Entreprise"]/following-sibling::p').text.strip()
+    except Exception as e:
+        job_details['entreprise'] = 'Non spécifié'
+        print(f"Erreur lors de l'extraction de l'entreprise: {e}")
+
+    # Chargé de recrutement
+    try:
+        charge_recrutement_element = driver.find_element(By.XPATH, '//p[strong[text()="Personne en charge du recrutement"]]')
+        job_details['charge_recrutement'] = charge_recrutement_element.text.replace('Personne en charge du recrutement\n', '').strip()
+    except Exception as e:
+        job_details['charge_recrutement'] = 'Non spécifié'
+        print(f"Erreur lors de l'extraction du chargé de recrutement: {e}")
+
+    driver.quit()
+    
+    return job_details
+
+# # URL de l'offre d'emploi
+# url = 'https://www.apec.fr/candidat/recherche-emploi.html/emploi/detail-offre/174165620W?lieux=75&motsCles=d%C3%A9veloppeur&salaireMinimum=20&salaireMaximum=200&typesConvention=143684&typesConvention=143685&typesConvention=143686&typesConvention=143687&typesConvention=143706&selectedIndex=0&page=0'
+
+# # Appel de la fonction
+# job_details = scrape_apec_job_details(url)
+
+# # Affichage des résultats
+# for key, value in job_details.items():
+#     print(f"{key}: {value}")
