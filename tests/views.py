@@ -1277,7 +1277,6 @@ def get_commentaires(request, cv_id):
 
     return JsonResponse({'comments': comments})
 
-
 @require_http_methods(["POST"])
 def process_matching_v3(request):
     try:
@@ -1346,7 +1345,11 @@ def process_matching_v3(request):
                 continue
             else:
                 print(f"ok pour le cv {cv_file_path}")
-            cv_text = extract_text_from_pdf_path(cv_file_path)
+            try:
+                cv_text = extract_text_from_pdf_path(cv_file_path)
+            except Exception as e:
+                print(f"Error extracting text from {cv_file_path}: {str(e)}")
+                continue
             preprocessed_cv_text = preprocess_text_mission(cv_text)
             cv_texts.append((cv[0], cv[1], preprocessed_cv_text))
 
@@ -1402,9 +1405,8 @@ def process_matching_v3(request):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
-##############################""" récupération des commentaires dans la table des CVs"
 
-
+# récuperation des commentaires de la table des cvs
 def recuperer_commentaires(cv_id):
   
 

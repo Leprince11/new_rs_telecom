@@ -110,7 +110,9 @@
                     <tbody>
                         {% for lead in leads %}
                         <tr>
-                            <td>{{ lead.nom }}</td>
+                            <td>
+                                <a href="{% url 'lead_detail' lead.id %}">{{ lead.nom }}</a>
+                            </td>
                             <td>{{ lead.nom_offre }}</td>
                             <td>{{ lead.secteur_activite }}</td>
                             <td>{{ lead.localisation_du_lead }}</td>

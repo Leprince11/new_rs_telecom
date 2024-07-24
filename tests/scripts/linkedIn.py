@@ -354,7 +354,7 @@ def scraping_apec(base_url, location, keywords, salary_min, salary_max):
 
             # Scrape job details page
             job_details = scrape_apec_job_details(detail_url)
-            full_description = f"{job_description}\n\nProfil recherché:\n{job_details['profil_recherche']}"
+            full_description = f"{job_details['descriptif_de_mission']}\n\nProfil recherché:\n{job_details['profil_recherche']}"
 
             # Check if the lead already exists
             lead, created = Leads.objects.update_or_create(
@@ -404,9 +404,6 @@ def scrape_apec_job_details(url):
     # Attendre que la page soit complètement chargée
     wait = WebDriverWait(driver, 10)
     wait.until(EC.presence_of_element_located((By.CLASS_NAME, 'details-post')))
-    
-    # Imprimer le code source de la page pour le débogage
-    print(driver.page_source)
     
     # Extraire le contenu de la page
     job_details = {}
