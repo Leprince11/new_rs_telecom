@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détails du Lead</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <style>
+        body {
+            background-color: #e0f7fa;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            max-width: 900px;
+            margin: auto;
+            animation: fadeIn 1s ease-in-out;
+        }
+        h1, h2 {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #00796b;
+        }
+        table {
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 15px;
+            text-align: left;
+            vertical-align: middle;
+        }
+        
+        td {
+            background-color: #ffffff;
+            color: #333;
+        }
+        .mission-description {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin-top: 20px;
+            position: relative;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .mission-description p {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .mission-description a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+        .mission-description a:hover {
+            text-decoration: underline;
+        }
+        .btn-custom {
+            background-color: #00796b;
+            border-color: #00796b;
+            color: #ffffff;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn-custom:hover {
+            background-color: #005f56;
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .btn-link {
+            color: #00796b;
+        }
+        .btn-link:hover {
+            color: #005f56;
+        }
+        .fade-in {
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .slide-up {
+            animation: slideUp 1s ease-in-out;
+        }
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        @media (max-width: 768px) {
+            h1, h2 {
+                font-size: 2rem;
+            }
+            th, td {
+                display: block;
+                width: 100%;
+                text-align: right;
+                padding-left: 50%;
+                position: relative;
+            }
+            th::before, td::before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                width: calc(50% - 20px);
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: bold;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-5">
+        <h1 class="fade-in">Détails de l'entreprise</h1>
+        <table class="table table-striped mt-4 slide-up">
+            <tbody>
+                <tr>
+                    <th data-label="Nom">Nom</th>
+                    <td data-label="Nom">{{ lead.nom }}</td>
+                </tr>
+                <tr>
+                    <th data-label="Nombre d'offres">Nombre d'offres similaire de l'entreprise</th>
+                    <td data-label="Nombre d'offres">{{ lead.nombre_offres }}</td>
+                </tr>
+                <tr>
+                    <th data-label="Nom de l'offre">Nom de l'offre</th>
+                    <td data-label="Nom de l'offre">{{ lead.nom_offre }}</td>
+                </tr>
+                <tr>
+                    <th data-label="Localisation">Localisation</th>
+                    <td data-label="Localisation">{{ lead.localisation_du_lead }}</td>
+                </tr>
+                <tr>
+                    <th data-label="Taille">Taille</th>
+                    <td data-label="Taille">{{ lead.taille_entreprise }}</td>
+                </tr>
+                <tr>
+                    <th data-label="Secteur">Secteur</th>
+                    <td data-label="Secteur">{{ lead.secteur_activite }}</td>
+                </tr>
+                <tr>
+                    <th data-label="Chiffre d'affaires">Chiffre d'affaires</th>
+                    <td data-label="Chiffre d'affaires">{{ lead.chiffre_d_affaires }}</td>
+                </tr>
+                <tr>
+                    <th data-label="Lien vers le lead">Lien vers le lead</th>
+                    <td data-label="Lien vers le lead"><a href="{{ lead.lien_vers_lead }}" target="_blank" class="btn btn-custom">Voir l'offre</a></td>
+                </tr>
+                <tr>
+                    <th data-label="Porteur du lead">Porteur du lead</th>
+                    <td data-label="Porteur du lead">{{ lead.porteur_lead }}</td>
+                </tr>
+                <tr>
+                    <th data-label="Date de capturation">Date de capturation du lead</th>
+                    <td data-label="Date de capturation">{{ lead.date_maj_lead }}</td>
+                </tr>
+                <tr>
+                    <th data-label="Date de publication de l'offre">Date de publication de l'offre</th>
+                    <td data-label="Date de publication de l'offre">{{ lead.date_publication_offre }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <h2 class="fade-in">Description de la mission</h2>
+        <div class="mission-description slide-up" id="missionDescription">
+            <p id="descriptionText">{{ lead.description_job | safe }}</p>
+            <button id="seeMoreBtn" class="btn btn-link">Voir plus</button>
+            <button id="seeLessBtn" class="btn btn-link" style="display: none;">Voir moins</button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const descriptionText = document.getElementById('descriptionText');
+            const seeMoreBtn = document.getElementById('seeMoreBtn');
+            const seeLessBtn = document.getElementById('seeLessBtn');
+            
+            if (descriptionText) {
+                const fullText = descriptionText.innerHTML;
+                const truncatedText = fullText.substring(0, 200) + '...';
+                
+                if (fullText.length > 200) {
+                    descriptionText.innerHTML = truncatedText;
+                    seeMoreBtn.style.display = 'inline';
+                } else {
+                    seeMoreBtn.style.display = 'none';
+                }
+
+                seeMoreBtn.addEventListener('click', function() {
+                    descriptionText.innerHTML = fullText;
+                    seeMoreBtn.style.display = 'none';
+                    seeLessBtn.style.display = 'inline';
+                });
+
+                seeLessBtn.addEventListener('click', function() {
+                    descriptionText.innerHTML = truncatedText;
+                    seeMoreBtn.style.display = 'inline';
+                    seeLessBtn.style.display = 'none';
+                });
+            }
+        });
+    </script>
+</body>
+</html>

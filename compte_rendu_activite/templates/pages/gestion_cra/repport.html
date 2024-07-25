@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid black;
+        }
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Rapport d'activités - {users_names} - 02/2019</h1>
+    <table>
+        <thead>
+            <tr>
+                <th>Activité(s)</th>
+                {% for i in range(1, 29) %}
+                    <th>{{ i }}</th>
+                {% endfor %}
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{nom de la Mission}}</td>
+                {% for day in days %}
+                    <td>{{ day }}</td>
+                {% endfor %}
+                <td>{{ total }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div style="margin-top: 50px;">
+        <div style="float: left; width: 45%;">
+            <p>Le collaborateur :</p>
+            <p>Le :</p>
+        </div>
+        <div style="float: right; width: 45%;">
+            <p>Le client :</p>
+            <p>Le :</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,11 +1,16 @@
 import re
 from django.core.exceptions import ValidationError
+from django.http import HttpResponseForbidden
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core import exceptions
-from .models import User,UserTwoFactorAuthData
+from .models import Users,UserTwoFactorAuthData
 from six import text_type
-import pyotp
+import pyotp # type: ignore
+from django.shortcuts import redirect
+from functools import wraps
+
+
 
 USERNAME_MIN_LENGTH = 9
 
@@ -31,7 +36,7 @@ def is_valid_password(password, user):
 
 
 def is_valid_email(email):
-    if User.objects.filter(users_mail=email).exists():
+    if Users.objects.filter(users_mail=email).exists():
         return {
             "success": False,
             "reason": "Cette adresse mail existe dans nos archives, merci.",
@@ -55,7 +60,7 @@ def is_valid_email(email):
 
 
 def validate_email(email):
-    if User.objects.filter(users_mail=email).exists():
+    if Users.objects.filter(users_mail=email).exists():
         return {"success": False, "reason": "Email Address already exists"}
     if not re.match(r"^\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$", email):
         return {"success": False, "reason": "Invalid Email Address"}
@@ -129,3 +134,51 @@ def AdminSetupTwoFactorAuthView(user):
         context["form_errors"]=exc.message
     return context
 
+def login_required_connect(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        user_id = request.session.get('user_id')
+        print(request.session.get(user_id))
+        if not user_id:
+            return redirect('login')
+ 
+        try:
+            user = Users.objects.get(id_user=user_id)
+        except Users.DoesNotExist:
+            return redirect('login')
+ 
+    
+        request.user = user
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view
+
+# Décorateur pour vérifier le type d'utilisateur
+def utilisateur_autorise(types_autorises):
+    def decorateur(vue_fonction):
+        @wraps(vue_fonction)
+        def vue_modifiee(request, *args, **kwargs):
+            if not hasattr(request, 'user'):
+                return HttpResponseForbidden("Vous n'êtes pas autorisé à accéder à cette page")
+
+            match request.user.users_type:
+                case 'paie':
+                    users_type = "Ressources humaines"
+                case 'admin':
+                    users_type = "Direction"
+                case 'stt':
+                    users_type = "Freelance"
+                case 'con':
+                    users_type = "Consultant"
+                case 'com':
+                    users_type = "Commerciaux"
+                case 'sup':
+                    users_type = "Super admin"
+                case _:
+                    users_type = "Inconnu"
+
+            if users_type not in types_autorises:
+                return HttpResponseForbidden("Vous n'êtes pas autorisé à accéder à cette page")
+
+            return vue_fonction(request, *args, **kwargs)
+        return vue_modifiee
+    return decorateur

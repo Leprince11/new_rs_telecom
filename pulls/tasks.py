@@ -1,6 +1,6 @@
 from django.conf import settings
 from django.core import mail
-from .models import User
+from .models import Users
 from django.template.loader import render_to_string
 from django.utils.html import strip_tags
 
@@ -15,7 +15,7 @@ def send_email_message(subject,header_from, template_name, user_id, ctx,simple):
         subject=subject,
         message=plain_message,
         from_email=header_from,
-        recipient_list=[User.objects.get(id_user=user_id).users_mail if simple else user_id],
+        recipient_list=[Users.objects.get(id_user=user_id).users_mail if simple else user_id],
         fail_silently=False,
         html_message=html_message,
     )

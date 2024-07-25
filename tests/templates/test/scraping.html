@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <title>Scraping</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding-top: 50px;
+            background-color: #e0f7fa;
+            font-family: 'Arial', sans-serif;
+        }
+        .container {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            max-width: 800px;
+            margin: auto;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+        h1 {
+            color: #00796b;
+        }
+        .form-control, .form-select {
+            border: 2px solid #00796b;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #004d40;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .form-control::placeholder {
+            color: #999;
+        }
+        .btn-primary {
+            background-color: #004d40;
+            border-color: #004d40;
+            border-radius: 25px;
+            padding: 10px 20px;
+            font-size: 18px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .btn-primary:hover {
+            background-color: #00332e;
+            transform: scale(1.05);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        a {
+            color: #00796b;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s ease, text-shadow 0.3s ease;
+        }
+        a:hover {
+            color: #004d40;
+            text-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        #status {
+            transition: opacity 0.3s;
+        }
+        table {
+            margin-top: 20px;
+            animation: fadeIn 1s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #suggestions {
+            max-height: 200px;
+            overflow-y: auto;
+            position: absolute;
+            z-index: 1000;
+            width: 100%;
+        }
+        .list-group-item {
+            border: none;
+            border-radius: 0;
+            padding: 10px 20px;
+            transition: background-color 0.3s ease;
+        }
+        .list-group-item:hover {
+            background-color: #f1f1f1;
+        }
+        .loading-message {
+            display: none;
+            color: #ff5722;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+        .loading-spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-radius: 50%;
+            border-top: 4px solid #00796b;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: auto;
+        }
+        .table-container {
+            max-width: 100%;
+            overflow-x: auto;
+            padding: 20px 0;
+        }
+        .table {
+            width: 100%;
+            table-layout: auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="mb-4">Générateur de Leads</h1>
+        <div class="row mb-4">
+            <div class="col">
+                <p><strong>Sélectionnez une source à partir de laquelle vous souhaitez récupérer des besoins</strong></p>
+                <select id="sourceLead" class="form-select">
+                    <option value="">Sélectionnez une source</option>
+                    <option value="apec">APEC</option>
+                    <option value="linkedin">LinkedIn</option>
+                </select>
+            </div>
+        </div>
+        <div class="row mb-3" id="apecFields" style="display: none;">
+            <div class="row">
+                <div class="col">
+                    <p><strong>Mots clés correspondant au besoin</strong></p>
+                    <input type="text" id="keywords" class="form-control" placeholder="Ex : ingénieur cloud devops">
+                </div>
+                <div class="col">
+                    <p><strong>Salaire minimum à l'année en "k"</strong></p>
+                    <input type="number" id="salaryMin" class="form-control" placeholder="Ex : pour 10000£ brut écrire 10">
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col">
+                    <p><strong>Salaire max à l'année en "k"</strong></p>
+                    <input type="number" id="salaryMax" class="form-control" placeholder="Ex : pour 100000£ brut écrire 100">
+                </div>
+                <div class="col">
+                    <p><strong>Numéro de département</strong></p>
+                    <input type="text" id="searchNom" class="form-control" placeholder="écrire 75 pour désigner Paris">
+                </div>
+            </div>
+        </div>
+        <div class="row mb-4" id="linkedinFields" style="display: none;">
+            <div class="row">
+                <div class="col position-relative">
+                    <p><strong>Nom de la ville</strong></p>
+                    <input type="text" id="searchCity" class="form-control" placeholder="Entrez le début du nom de la ville puis choisissez votre choix">
+                    <div id="suggestions" class="list-group mt-1"></div>
+                </div>
+                <div class="col">
+                    <p><strong>Nom de la région </strong></p>
+                    <select id="selectRegion" class="form-select">
+                        <option value="">Sélectionnez une région</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3">
+                
+                <div class="col">
+                    <p><strong>Nom du besoin</strong></p>
+                    <input type="text" id="keywordsLinkedIn" class="form-control" placeholder="Entrez les mots-clés">
+                </div>
+                
+                <div class="col">
+                    <p><strong>Date de capturation des leads</strong></p>
+                    <select id="selectTimeFrame" class="form-select">
+                        <option value="dernières 24h">Dernières 24 heures</option>
+                        <option value="semaine dernière">Semaine dernière</option>
+                        <option value="mois dernier">Mois dernier</option>
+                    </select>
+                </div>
+            </div>
+               
+    </div>
+        <button id="startBtn" class="btn btn-primary mt-3">Démarrer l'Extraction</button>
+        <div id="status" class="alert alert-info mt-4" style="display: none;"></div>
+        <div class="loading-message" id="loadingMessage">
+            <div class="loading-spinner"></div>
+            <p>Ce processus peut prendre un peu de temps, veuillez patienter...</p>
+        </div>
+        <div class="table-container">
+            <table class="table table-striped mt-4" id="resultsTable" style="display: none;">
+                <thead id="tableHeader">
+                    <tr>
+                        <th>Entreprise</th>
+                        <th>Nom de l'offre</th>
+                        <th>Localisation</th>
+                        <th>Salaire</th>
+                        <th>Type de contrat</th>
+                        <th>Date de publication</th>
+                        <th>Job Description</th>
+                        <th>Porteur du lead</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Les données seront injectées ici -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+
+        document.addEventListener('DOMContentLoaded', function() {
+            setupSearch();
+            document.getElementById('sourceLead').addEventListener('change', toggleFields);
+        });
+
+        function toggleFields() {
+            const source = document.getElementById('sourceLead').value;
+            const apecFields = document.getElementById('apecFields');
+            const linkedinFields = document.getElementById('linkedinFields');
+            if (source === 'linkedin') {
+                apecFields.style.display = 'none';
+                linkedinFields.style.display = 'flex';
+            } else if (source === 'apec') {
+                linkedinFields.style.display = 'none';
+                apecFields.style.display = 'flex';
+            } else {
+                linkedinFields.style.display = 'none';
+                apecFields.style.display = 'none';
+            }
+        }
+
+        document.getElementById('startBtn').addEventListener('click', async function() {
+            var statusDiv = document.getElementById('status');
+            var resultsTable = document.getElementById('resultsTable');
+            var sourceLead = document.getElementById('sourceLead').value;
+            var searchNom = document.getElementById('searchNom').value;
+            var searchCity = document.getElementById('searchCity').value;
+            var selectRegion = document.getElementById('selectRegion').value;
+            var keywords = document.getElementById('keywords').value;
+            var keywordsLinkedIn = document.getElementById('keywordsLinkedIn').value;
+            var salaryMin = document.getElementById('salaryMin').value;
+            var salaryMax = document.getElementById('salaryMax').value;
+            var selectTimeFrame = document.getElementById('selectTimeFrame').value;
+            var loadingMessage = document.getElementById('loadingMessage');
+
+            statusDiv.style.display = 'block';
+            statusDiv.textContent = 'Processus de génération de leads en cours...';
+            statusDiv.classList.remove('alert-danger', 'alert-success');
+            statusDiv.classList.add('alert-info');
+            resultsTable.style.display = 'none';
+            loadingMessage.style.display = 'none';
+
+            setTimeout(() => {
+                loadingMessage.style.display = 'block';
+            }, 10000);
+
+            try {
+                let requestBody = {
+                    sourceLead: sourceLead
+                };
+
+                if (sourceLead === 'apec') {
+                    requestBody = {
+                        ...requestBody,
+                        searchNom: searchNom,
+                        keywords: keywords,
+                        salaryMin: salaryMin,
+                        salaryMax: salaryMax
+                    };
+                } else if (sourceLead === 'linkedin') {
+                    requestBody = {
+                        ...requestBody,
+                        searchCity: searchCity,
+                        selectRegion: selectRegion,
+                        keywords: keywordsLinkedIn,
+                        selectTimeFrame: selectTimeFrame
+                    };
+                }
+
+                const response = await fetch('start-scraping/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    populateTable(data.data, sourceLead);
+                    resultsTable.style.display = 'table';
+                    statusDiv.classList.remove('alert-info');
+                    statusDiv.classList.add('alert-success');
+                    statusDiv.textContent = 'Extraction terminée avec succès!';
+                } else {
+                    throw new Error(data.message || 'Failed to fetch data');
+                }
+            } catch (error) {
+                statusDiv.classList.remove('alert-info');
+                statusDiv.classList.add('alert-danger');
+                statusDiv.textContent = 'Erreur lors de l\'extraction.';
+                console.error('Error:', error);
+            } finally {
+                loadingMessage.style.display = 'none';
+            }
+        });
+
+        async function setupSearch() {
+            const searchInput = document.getElementById('searchCity');
+            const suggestions = document.getElementById('suggestions');
+
+            searchInput.addEventListener('input', async function() {
+                const query = this.value.toLowerCase();
+                suggestions.innerHTML = '';
+
+                if (query.length > 1) {
+                    try {
+                        const response = await fetch(`search-city/?q=${query}`, {
+                            method: 'GET',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            }
+                        });
+
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok ' + response.statusText);
+                        }
+
+                        const data = await response.json();
+
+                        data.forEach(item => {
+                            const suggestionItem = document.createElement('a');
+                            suggestionItem.href = '#';
+                            suggestionItem.className = 'list-group-item list-group-item-action';
+                            suggestionItem.textContent = item['Nom (minuscules)'];
+                            suggestionItem.addEventListener('click', function() {
+                                searchInput.value = this.textContent;
+                                updateRegion(this.textContent, data);
+                                suggestions.innerHTML = '';
+                            });
+                            suggestions.appendChild(suggestionItem);
+                        });
+                    } catch (error) {
+                        console.error('Error:', error);
+                    }
+                }
+            });
+        }
+
+        function updateRegion(nom, data) {
+            const regionSelect = document.getElementById('selectRegion');
+            regionSelect.innerHTML = '<option value="">Sélectionnez une région</option>';
+
+            const regions = [...new Set(data.filter(item => item['Nom (minuscules)'] === nom).map(item => item['Région']))];
+            regions.forEach(region => {
+                let option = document.createElement('option');
+                option.value = region;
+                option.textContent = region;
+                regionSelect.appendChild(option);
+            });
+        }
+
+        function populateTable(data, sourceLead) {
+            const tbody = document.querySelector('#resultsTable tbody');
+            const tableHeader = document.getElementById('tableHeader');
+            tbody.innerHTML = ''; // Clear existing rows
+
+            if (sourceLead === 'apec') {
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Entreprise</th>
+                        <th>Nom de l'offre</th>
+                        <th>Localisation</th>
+                        <th>Salaire</th>
+                        <th>Type de contrat</th>
+                        <th>Date de publication</th>
+                        <th>Job Description</th>
+                        <th>Porteur du lead</th>
+                        <th>Actions</th>
+                    </tr>`;
+                data.forEach(item => {
+                    let row = `<tr>
+                        <td>${item.company_name}</td>
+                        <td>${item.job_title}</td>
+                        <td>${item.location}</td>
+                        <td>${item.salary}</td>
+                        <td>${item.contract_type}</td>
+                        <td>${item.publication_date}</td>
+                        <td>
+                            <div class="job-description">
+                                <p class="short">${item.job_description.slice(0, 100)}...</p>
+                                <p class="full" style="display: none;">${item.job_description}</p>
+                                <button class="btn btn-link show-more">Show more</button>
+                                <button class="btn btn-link show-less" style="display: none;">Show less</button>
+                            </div>
+                        </td>
+                        <td>${item.porteur_lead}</td>
+                        <td>
+                            <a href="${item.detail_url}" target="_blank" class="btn btn-primary btn-sm">lien de l'offre</a>
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+
+                document.querySelectorAll('.show-more').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const jobDescription = this.parentElement;
+                        jobDescription.querySelector('.short').style.display = 'none';
+                        jobDescription.querySelector('.full').style.display = 'block';
+                        jobDescription.querySelector('.show-more').style.display = 'none';
+                        jobDescription.querySelector('.show-less').style.display = 'inline';
+                    });
+                });
+
+                document.querySelectorAll('.show-less').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const jobDescription = this.parentElement;
+                        jobDescription.querySelector('.short').style.display = 'block';
+                        jobDescription.querySelector('.full').style.display = 'none';
+                        jobDescription.querySelector('.show-more').style.display = 'inline';
+                        jobDescription.querySelector('.show-less').style.display = 'none';
+                    });
+                });
+            } else if (sourceLead === 'linkedin') {
+                tableHeader.innerHTML = `
+                    <tr>
+                        <th>Entreprise</th>
+                        <th>Nom de l'offre</th>
+                        <th>Localisation</th>
+                        <th>Taille</th>
+                        <th>Secteur</th>
+                        <th>Année de création</th>
+                        <th>Lien vers le lead</th>
+                        <th>Porteur du lead</th>
+                        <th>Actions</th>
+                    </tr>`;
+                data.forEach(item => {
+                    let row = `<tr data-nom="${item.nom}" data-nom_offre="${item.nom_offre}" data-localisation="${item.localisation}" data-joblien="${item.joblien}">
+                        <td>${item.nom}</td>
+                        <td>${item.nom_offre}</td>
+                        <td>${item.localisation}</td>
+                        <td>${item.taille}</td>
+                        <td>${item.secteur}</td>
+                        <td>${item.chiffre_d_affaires}</td>
+                        <td><a href="${item.joblien}" target="_blank">Voir l'offre</a></td>
+                        <td>${item.porteur_lead}</td>
+                        <td>
+                            <button class="btn btn-primary btn-update btn-sm" onclick="viewDetails('${item.nom}', '${item.nom_offre}')">Voir détails</button>
+                        </td>
+                    </tr>`;
+                    tbody.innerHTML += row;
+                });
+            }
+        }
+
+        function viewDetails(nom, nom_offre) {
+            const queryString = `?nom=${encodeURIComponent(nom)}&nom_offre=${encodeURIComponent(nom_offre)}`;
+            window.location.href = `lead_details/${queryString}`;
+        }
+    </script>
+</body>
+</html>
