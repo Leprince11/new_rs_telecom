@@ -138,14 +138,10 @@
     <div class="rightbar-overlay"></div>
     <!-- /End-bar -->
 
-    <!-- bundle -->
-    <script src="{% static 'test/assets/js/vendor.min.js' %}"></script>
-    <script src="{% static 'test/assets/js/app.min.js' %}"></script>
     <!-- third party js -->
     <script src="{% static 'test/assets/js/vendor/Chart.bundle.min.js' %}"></script>
     <!-- third party js ends -->
     <!-- demo app -->
-    <script src="{% static 'test/assets/js/pages/demo.project-detail.js' %}"></script>
     <!-- end demo js-->
 
     <script type="text/javascript">
@@ -213,3 +209,9 @@
 </body>
 </html>
 {%endblock content%}
+
+{% block js%}
+<script src="{% static 'pulls/assets/js/pages/demo.project-detail.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/responsive.bootstrap5.min.js' %}"></script>
+
+{%endblock%}

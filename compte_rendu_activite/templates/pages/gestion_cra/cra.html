@@ -1,0 +1,630 @@
+{% extends 'layouts/bases.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="javascript: void(0);">R&S TELECOM</a></li>
+                        <li class="breadcrumb-item"><a href="javascript: void(0);">Application</a></li>
+                        <li class="breadcrumb-item active">Comptes Rendus d'Activité</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Comptes Rendus d'Activité</h4>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <ul class="nav nav-tabs nav-justified nav-bordered mb-3">
+                            <li class="nav-item">
+                                <a href="#home-b2" data-bs-toggle="tab" aria-expanded="false" class="nav-link active">
+                                    <i class="mdi mdi-home-variant d-md-none d-block"></i>
+                                    <span class="d-none d-md-block">Compte rendu d'activité (CRA)</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#profile-b2" data-bs-toggle="tab" aria-expanded="true" class="nav-link ">
+                                    <i class="mdi mdi-account-circle d-md-none d-block"></i>
+                                    <span class="d-none d-md-block">Heures supplémentaire</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="#settings-b2" data-bs-toggle="tab" aria-expanded="false" class="nav-link">
+                                    <i class="mdi mdi-settings-outline d-md-none d-block"></i>
+                                    <span class="d-none d-md-block">Justificatif</span>
+                                </a>
+                            </li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane show active" id="home-b2">
+                                <div class="container-fluid">
+                                    <div class="row mb-2">
+                                        <div class="col-sm-4">
+                                            <button class="btn btn-lg font-16 btn-danger" id="created-cra" 
+                                                {% if exit %}disabled{%else%}{%endif%}><i class="mdi mdi-plus-circle-outline " ></i>
+                                                    Comptes Rendus
+                                                    d'Activité
+                                            </button>
+                                        </div>
+                                        <div class="col-sm-8">
+                                            <div class="text-sm-end">
+                                                <button type="button"
+                                                    class="btn {% if exit %}btn-success  {%else%}btn-light{%endif%} mb-2 me-1"
+                                                    {% if not exit %} disabled {% else %} id="export" {%endif%}><i
+                                                        class="mdi mdi-file-download me-1"></i><span>Export</span></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="mt-4 mt-lg-0">
+                                        <div id="calendar"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="tab-pane " id="profile-b2">
+                                <p>...</p>
+                            </div>
+                            <div class="tab-pane" id="settings-b2">
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-sm-8">
+                                            <div class="dropdown btn-group">
+                                                <button class="btn btn-light dropdown-toggle mb-2 me-1" type="button"
+                                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    Tous les types
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-animated">
+                                                    <a class="dropdown-item" href="#">Restaurant</a>
+                                                    <a class="dropdown-item" href="#">Another action</a>
+                                                    <a class="dropdown-item" href="#">....</a>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown btn-group">
+                                                <button class="btn btn-light dropdown-toggle mb-2 me-1" type="button"
+                                                    data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                                    Tous les status
+                                                </button>
+                                                <div class="dropdown-menu dropdown-menu-animated mb-2 me-1">
+                                                    <a class="dropdown-item" href="#">Restaurant</a>
+                                                    <a class="dropdown-item" href="#">Another action</a>
+                                                    <a class="dropdown-item" href="#">....</a>
+                                                </div>
+                                            </div>
+                                            <div class="dropdown btn-group">
+                                                
+                                                <button class="btn btn-light mb-2 me-1" type="button" disabled>
+                                                    {{Annee}}
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4">
+                                            <div class="text-sm-end">
+                                                <a href="javascript:void(0);" class="btn btn-primary mb-2"
+                                                    data-bs-toggle="modal" data-bs-target="#info-modal-justificatif"><i
+                                                        class="mdi mdi-plus-circle me-2"></i>Ajouter un justificatif </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="tab-content">
+                                        <div class="tab-pane show active" id="buttons-table-preview">
+                                            <table id="datatable-buttons"
+                                                class="table table-striped dt-responsive table-centered nowrap w-100">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Periode</th>
+                                                        <th>type</th>
+                                                        <th>Montant</th>
+                                                        <th>Status</th>
+                                                        <th>Description</th>
+                                                        <th>Justificatif</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <!-- Row for CRA Justificatif -->
+                                                    <tr>
+                                                        <td>Mai 2022</td>
+                                                        <td>CRA</td>
+                                                        <td>N/A</td>
+                                                        <td class="text-warning">En attente de validation</td>
+                                                        <td>CRA du 05/05/2022</td>
+                                                        <td>cra_document.pdf</td>
+                                                        <td class="table-action">
+                                                            <a href="#" class="action-icon" data-toggle="modal" data-target="#modal-view"> <i class="mdi mdi-eye"></i></a>
+                                                            
+                                                            <a href="#" class="action-icon"> <i class="mdi mdi-close-thick text-danger"></i></a>
+                                                        </td>
+                                                    </tr>
+                                                    <!-- Row for Arrêt Maladie Justificatif -->
+                                                    <tr>
+                                                        <td>Juin 2022</td>
+                                                        <td>Arrêt Maladie</td>
+                                                        <td>N/A</td>
+                                                        <td class="text-warning">En attente de validation</td>
+                                                        <td>Arrêt maladie du 10/06/2022</td>
+                                                        <td>arret_maladie.pdf</td>
+                                                        <td class="table-action">
+                                                            <a href="#" class="action-icon" data-toggle="modal" data-target="#modal-view"> <i class="mdi mdi-eye"></i></a>
+                                                            
+                                                            <a href="#" class="action-icon"> <i class="mdi mdi-close-thick text-danger"></i></a>
+                                                        </td>
+                                                    </tr>
+                                                    <!-- Row for Note de Frais Justificatif -->
+                                                    <tr>
+                                                        <td>Avril 2022</td>
+                                                        <td>Note de Frais</td>
+                                                        <td>150.00 €</td>
+                                                        <td class="text-warning">En attente de validation</td>
+                                                        <td>Repas client le 20/04/2022</td>
+                                                        <td>note_de_frais.pdf</td>
+                                                        <td class="table-action">
+                                                            <a href="#" class="action-icon" data-toggle="modal" data-target="#modal-view"> <i class="mdi mdi-eye"></i></a>
+                                                            
+                                                            <a href="#" class="action-icon"> <i class="mdi mdi-close-thick text-danger"></i></a>
+                                                        </td>
+                                                    </tr>
+                                                    <!-- Row for Transport Justificatif -->
+                                                    <tr>
+                                                        <td>Juillet 2022</td>
+                                                        <td>Transport</td>
+                                                        <td>50.00 €</td>
+                                                        <td class="text-warning">En attente de validation</td>
+                                                        <td>Déplacement professionnel</td>
+                                                        <td>billet_transport.pdf</td>
+                                                        <td class="table-action">
+                                                            <a href="#" class="action-icon" data-toggle="modal" data-target="#modal-view"> <i class="mdi mdi-eye"></i></a>
+                                                            <a href="#" class="action-icon"> <i class="mdi mdi-close-thick text-danger"></i></a>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+    
+                    </div> <!-- end row -->
+                </div> <!-- end card body-->
+            </div> <!-- end card -->
+    
+            <!-- Add New Event MODAL -->
+            <div class="modal fade" id="event-modal" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form class="needs-validation" name="event-form" id="form-event" novalidate="">
+                            <div class="modal-header py-3 px-4 border-bottom-0">
+                                <h5 class="modal-title" id="modal-title"></h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body px-4 pb-4 pt-0">
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label class="control-label form-label">Activité</label>
+                                            <select class="form-select" name="category-mission" id="event-category-mission"
+                                                required="">
+                                                <option  selected disabled>Selectionner le type de travaille</option>
+                                                <option value="Mission">Mission</option>
+                                                <option value="Absence">Absence</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="mb-3">
+                                            <label class="control-label form-label">Temps</label>
+                                            <select class="form-select" name="category-temps" id="event-category-temps"
+                                                required="">
+                                                <option  selected disabled>Selectionner le temps de travaille</option>
+                                                <option value="allDay">Journée </option>
+                                                <option value="half-day">Demi-journée </option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-6">
+                                        <button type="button" class="btn btn-light me-1"
+                                            data-bs-dismiss="modal">Fermer</button>
+                                    </div>
+                                    <div class="col-6 text-end">
+                                        <button type="submit" class="btn btn-success"
+                                            id="btn-save-event">Enregistrer</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- <div id="info-header-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="info-header-modalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="row">
+                <div class="modal-header modal-colored-header bg-primary">
+                    <h4 class="modal-title" id="info-header-modalLabel">Comptes Rendus d'Activité</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form class="ps-3 pe-3" action="#">
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">Absences</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Pas de conge</option>
+                                <option value="1">Conge</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">Mission</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Non travailler</option>
+                                <option value="0.5">Demi-journee</option>
+                                <option value="1">Journee</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">Astreintes</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Aucun astreintes</option>
+                                <option value="0.5">Astreintes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">HNOs sur site</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Aucun</option>
+                                <option value="1">HNOs</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">Autre motif</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Aucun autre</option>
+                                <option value="1">Autres</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">Valider</button>
+            </div>
+        </div>
+    </div>
+</div> -->
+
+<div id="info-modal-justificatif" class="modal fade" tabindex="-1" role="dialog"
+    aria-labelledby="info-modal-justificatifLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modal-colored-header bg-primary">
+                <h4 class="modal-title" id="info-modal-justificatifLabel">Ajout de justificatif</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <div class="modal-body">
+                <form class="ps-3 pe-3" action="#">
+                    <div class="row mb-3">
+                        <label for="username" class="col-4 col-form-label">Types</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-select">
+                                <option selected disabled>Selectionner le type de justificatif</option>
+                                <option value="RTT">Transport</option>
+                                <option value="Malade">Repas</option>
+                                <option value="CP">Telephonie</option>
+                                <option value="CP2">materiel</option>
+                                <option value="cra">createElement</option>
+                                <option value="CP3">Autres</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="example-textarea" class="col-4 col-form-label">Description</label>
+                        <div class="col-8">
+                            <textarea class="form-control" id="example-textarea" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="example-montant" class="col-4 col-form-label">Montant</label>
+                        <div class="col-8">
+                            <input type="text" id="example-montant" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="dateEnd" class="col-4 col-form-label">Date</label>
+                        <div class="col-8">
+                            <input class="form-control" id="dateEnd" type="date" name="date">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-justificatif" class="col-4 col-form-label">Justificatif</label>
+                        <div class="col-8">
+                            <input type="file" id="example-fileinput" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-select" class="col-4 col-form-label">Status RH</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-select" disabled>
+                                <option selected>Demandé</option>
+                                <option>Accordé</option>
+                                <option>Refusé</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">Valider</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{%endblock%}
+
+{% block js %}
+
+<script src="{% static 'pulls/assets/js/vendor/fullcalendar.min.js'%}"></script>
+<script>
+    $(document).ready(function () {
+        // Fonction pour créer le compte rendu
+        $('#created-cra').on('click', function () {
+            var today = new Date();
+            var day = String(today.getDate()).padStart(2, '0');
+            var month = String(today.getMonth() + 1).padStart(2, '0');
+            var year = today.getFullYear();
+            var formattedDateTime = year + '-' + month + '-' + day;
+
+            $.ajax({
+                url: "CRA",
+                type: 'POST',
+                data: {
+                    'datetime': formattedDateTime,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function (response) {
+                    $.NotificationApp.send("Success", "Compte rendu d'activité créé avec succès!", "top-right", "#28a745", "success");
+                    window.jQuery.CalendarApp.refreshCalendar(); // Rafraîchir le calendrier
+                    window.location.reload()
+                },
+                error: function (xhr, status, error) {
+                    $.NotificationApp.send("Erreur", "Erreur lors de la création du CRA.", "bottom-right", "bg-danger", "mdi mdi-alert");
+                }
+            });
+        });
+
+
+
+        $('#export').on('click', function () {
+            generatePDF() 
+        });
+        function generatePDF() {
+            const userId = "{{ userId }}";
+            const url = `generate_cra_pdf/${userId}/`;
+
+            fetch(url)
+                .then(response => response.blob())
+                .then(blob => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `CRA_${userId}.pdf`;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+                })
+                .catch(error => console.error('Error generating PDF:', error));
+        }
+
+        function determineEventType(start, end) {
+            const startTime = new Date(start);
+            const endTime = new Date(end);
+            const diffInHours = (endTime - startTime) / (1000 * 60 * 60); // Convert milliseconds to hours
+
+            return diffInHours === 4 ? 'half-day' : 'allDay';
+        }
+
+        !function (l) {
+            "use strict";
+            function e() {
+                this.$body = l("body"),
+                this.$modal = new bootstrap.Modal(document.getElementById("event-modal"), {
+                    backdrop: "static"
+                }),
+                this.$calendar = l("#calendar"),
+                this.$formEvent = l("#form-event"),
+                this.$btnNewEvent = l("#btn-new-event"),
+                this.$btnDeleteEvent = l("#btn-delete-event"),
+                this.$btnSaveEvent = l("#btn-save-event"),
+                this.$modalTitle = l("#modal-title"),
+                this.$calendarObj = null,
+                this.$selectedEvent = null,
+                this.$newEventData = null
+            }
+
+            e.prototype.onEventClick = function (e) {
+                const event = e.event;
+                const categoryMission = event.title;
+                const categoryTemps = event.extendedProps.categoryTemps;
+
+                this.$formEvent[0].reset();
+                this.$formEvent.removeClass("was-validated");
+                this.$newEventData = null;
+                this.$btnDeleteEvent.show();
+                this.$modalTitle.text("Modification de l'activité journalière");
+                this.$modal.show();
+                this.$selectedEvent = event;
+
+                $("#event-category-mission").val(categoryMission);
+                $("#event-category-temps").val(determineEventType(event.start, event.end));
+            }
+
+            e.prototype.onSelect = function (e) {
+                this.$formEvent[0].reset();
+                this.$formEvent.removeClass("was-validated");
+                this.$selectedEvent = null;
+                this.$newEventData = e;
+                this.$btnDeleteEvent.hide();
+                this.$modalTitle.text("Ajoute une activité");
+                this.$modal.show();
+                this.$calendarObj.unselect();
+            }
+
+            e.prototype.init = function () {
+                fetch('liste_cra')
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                        this.$calendarObj = new FullCalendar.Calendar(this.$calendar[0], {
+                            slotDuration: "00:15:00",
+                            slotMinTime: "09:00:00",
+                            slotMaxTime: "18:00:00",
+                            themeSystem: "bootstrap",
+                            buttonText: {
+                                today: "Aujourd'hui",
+                                month: "Mois",
+                                week: "Semaine",
+                                day: "Jour",
+                                list: "Liste",
+                                prev: "Arrière",
+                                next: "Suivant"
+                            },
+                            initialView: "dayGridMonth",
+                            handleWindowResize: true,
+                            height: $(window).height() - 200,
+                            headerToolbar: {
+                                left: "prev,next today",
+                                center: "title",
+                                right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth"
+                            },
+                            initialEvents: data,
+                            editable: true,
+                            selectable: true,
+                            dateClick: (e) => {
+                                const date = new Date(e.dateStr);
+                                const day = date.getUTCDay();
+                                if (day === 6 || day === 0) {
+                                    this.onSelect({
+                                        date: e.dateStr,
+                                        allDay: e.allDay
+                                    });
+                                }
+                            },
+                            eventClick: (e) => {
+                                this.onEventClick(e);
+                            }
+                        });
+                        this.$calendarObj.setOption('locale', 'fr');
+                        this.$calendarObj.render();
+                    });
+
+                // Gestion de la soumission du formulaire
+                this.$formEvent.on("submit", (e) => {
+                    e.preventDefault();
+                    const form = this.$formEvent[0];
+                    
+                    if (form.checkValidity()) {
+                        const formData = new FormData(form);
+                        let start, end;
+                        if (this.$newEventData) {
+                            // Creating a new event
+                            start = new Date(`${this.$newEventData.start}`);
+                            if ($("#event-category-temps").val() === "half-day") {
+                                end = new Date(start);
+                                end.setHours(12, 0, 0);         
+                            } else {
+                                end = new Date(start);
+                                end.setHours(18, 0, 0);
+                            }
+                        } else if (this.$selectedEvent) {
+                            end = new Date(this.$selectedEvent.end);
+                            var day = String(end.getDate()).padStart(2, '0');
+                            var month = String(end.getMonth() + 1).padStart(2, '0');
+                            var year = end.getFullYear();
+                            var formattedDateTime = year + '-' + month + '-' + day;
+                        }
+
+                        formData.append('end', formattedDateTime);
+
+                        const url = this.$selectedEvent ? `manage_event/${this.$selectedEvent.id}/` : '/manage_event/';
+
+                        console.log(url)
+
+                        fetch(url, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            },
+                            body: formData
+                        })
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(data);
+                                this.$modal.hide();
+                                this.refreshCalendar(); 
+                            })
+                            .catch(error => {
+                                console.error('Erreur lors de la soumission du formulaire:', error);
+                            })
+                            .finally(()=>{
+
+                            });
+                    } else {
+                        e.stopPropagation();
+                        form.classList.add("was-validated");
+                    }
+                });
+
+                this.$btnDeleteEvent.on("click", () => {
+                    if (this.$selectedEvent) {
+                        this.$selectedEvent.remove();
+                        this.$selectedEvent = null;
+                        this.$modal.hide();
+                        this.refreshCalendar(); 
+                    }
+                });
+            }
+
+            e.prototype.refreshCalendar = function () {
+                fetch('liste_cra')
+                    .then(response => response.json())
+                    .then(data => {
+                        this.$calendarObj.removeAllEvents();
+                        this.$calendarObj.addEventSource(data);
+                        this.$calendarObj.refetchEvents();
+                    });
+            }
+
+            l.CalendarApp = new e();
+            l.CalendarApp.init();
+        }(window.jQuery);
+    });
+</script>
+{% endblock js %}

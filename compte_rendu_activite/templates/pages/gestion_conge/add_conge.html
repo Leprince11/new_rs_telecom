@@ -1,0 +1,377 @@
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">R&S TELECOM</a></li>
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">Application</a></li>
+                    <li class="breadcrumb-item active">Comptes Rendus d'Activité</li>
+                </ol>
+            </div>
+            <h4 class="page-title">Comptes Rendus d'Activité</h4>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row">
+                    <div class="tab-content">
+                        <div class="tab-pane show active" id="home-b2">
+                            <div class="container-fluid">
+                                <div class="row mb-2">
+                                    <div class="col-sm-4">
+                                        <button class="btn btn-lg font-16 btn-danger" id="created-cra" {% if exit
+                                            %}disabled{%else%}{%endif%}><i class="mdi mdi-plus-circle-outline"></i>
+                                            Comptes Rendus
+                                            d'Activité</button>
+                                    </div>
+                                    <div class="col-sm-8">
+                                        <div class="text-sm-end">
+                                            <button class="btn btn-light mb-2 me-1" type="button" disabled>
+                                                {{Annee}}
+                                            </button>
+                                            <button type="button"
+                                                class="btn {% if exit %}btn-success{%else%}btn-light{%endif%} mb-2 me-1"
+                                                {% if exit %}{%else%}disabled{%endif%}><i
+                                                    class="mdi mdi-file-download me-1"></i><span>Export</span></button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 mt-lg-0">
+
+                                    <div id="calendar"></div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- end row -->
+            </div> <!-- end card body-->
+        </div> <!-- end card -->
+
+        <!-- Add New Event MODAL -->
+        <div class="modal fade" id="event-modal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <form class="needs-validation" name="event-form" id="form-event" novalidate="">
+                        <div class="modal-header py-3 px-4 border-bottom-0">
+                            <h5 class="modal-title" id="modal-title">Event</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body px-4 pb-4 pt-0">
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="control-label form-label">Projet</label>
+                                        <input class="form-control" placeholder="" type="text" name="title"
+                                            id="event-title" required="">
+                                        <div class="invalid-feedback"></div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="control-label form-label">Category</label>
+                                        <select class="form-select" name="category" id="event-category" required="">
+                                            <option value="" selected="">Journee</option>
+                                            <option value="">Demi-journee</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="mb-3">
+                                        <label class="control-label form-label">Temps</label>
+                                        <select class="form-select" name="category" id="event-category" required="">
+                                            <option value="" selected="">Journee</option>
+                                            <option value="">Demi-journee</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-6">
+                                    <button type="button" class="btn btn-danger"
+                                        id="btn-delete-event">Supprimer</button>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <button type="button" class="btn btn-light me-1"
+                                        data-bs-dismiss="modal">Fermer</button>
+                                    <button type="submit" class="btn btn-success"
+                                        id="btn-save-event">Enregistrer</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="info-header-modal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="info-header-modalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="row">
+                <div class="modal-header modal-colored-header bg-primary">
+                    <h4 class="modal-title" id="info-header-modalLabel">Comptes Rendus d'Activité</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <form class="ps-3 pe-3" action="#">
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">Absences</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Pas de conge</option>
+                                <option value="1">Conge</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">Mission</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Non travailler</option>
+                                <option value="0.5">Demi-journee</option>
+                                <option value="1">Journee</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">Astreintes</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Aucun astreintes</option>
+                                <option value="0.5">Astreintes</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">HNOs sur site</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Aucun</option>
+                                <option value="1">HNOs</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-time" class="col-4 col-form-label">Autre motif</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-time">
+                                <option value="0" selected>Aucun autre</option>
+                                <option value="1">Autres</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">Valider</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="info-modal-justificatif" class="modal fade" tabindex="-1" role="dialog"
+    aria-labelledby="info-modal-justificatifLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header modal-colored-header bg-primary">
+                <h4 class="modal-title" id="info-modal-justificatifLabel">Justificatif</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+            </div>
+            <div class="modal-body">
+                <form class="ps-3 pe-3" action="#">
+                    <div class="row mb-3">
+                        <label for="username" class="col-4 col-form-label">Types</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-select">
+                                <option selected disabled>Selectionner le type de justificatif </option>
+                                <option value="RTT">Transport</option>
+                                <option value="Malade">Repas</option>
+                                <option value="CP">Telephonie</option>
+                                <option value="CP2">materiel</option>
+                                <option value="cra">cra</option>
+                                <option value="CP3">Autres</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="example-textarea" class="col-4 col-form-label">Description</label>
+                        <div class="col-8">
+                            <textarea class="form-control" id="example-textarea" rows="3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="example-montant" class="col-4 col-form-label">Montant</label>
+                        <div class="col-8">
+                            <input type="text" id="example-montant" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <label for="dateEnd" class="col-4 col-form-label">Date</label>
+                        <div class="col-8">
+                            <input class="form-control" id="dateEnd" type="date" name="date">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-justificatif" class="col-4 col-form-label">Justificatif</label>
+                        <div class="col-8">
+                            <input type="file" id="example-fileinput" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <label for="example-select" class="col-4 col-form-label">Status RH</label>
+                        <div class="col-8">
+                            <select class="form-select" id="example-select" disabled>
+                                <option selected>Demandé</option>
+                                <option>Accordé</option>
+                                <option>Refusé</option>
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-primary">Valider</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{%endblock%}
+
+{% block page_specific_js %}
+
+<script src="{% static 'pulls/assets/js/vendor/fullcalendar.min.js'%}"></script>
+<script>
+    !function (l) {
+        "use strict";
+        function e() {
+            this.$body = l("body"),
+                this.$modal = new bootstrap.Modal(document.getElementById("event-modal"), {
+                    backdrop: "static"
+                }),
+                this.$calendar = l("#calendar"),
+                this.$formEvent = l("#form-event"),
+                this.$btnNewEvent = l("#btn-new-event"),
+                this.$btnDeleteEvent = l("#btn-delete-event"),
+                this.$btnSaveEvent = l("#btn-save-event"),
+                this.$modalTitle = l("#modal-title"),
+                this.$calendarObj = null,
+                this.$selectedEvent = null,
+                this.$newEventData = null
+        }
+        e.prototype.onEventClick = function (e) {
+            this.$formEvent[0].reset(),
+                this.$formEvent.removeClass("was-validated"),
+                this.$newEventData = null,
+                this.$btnDeleteEvent.show(),
+                this.$modalTitle.text("Modification de l'activite journalière"),
+                this.$modal.show(),
+                this.$selectedEvent = e.event,
+                l("#event-title").val(this.$selectedEvent.title),
+                l("#event-category").val(this.$selectedEvent.classNames[0])
+        }
+            ,
+            e.prototype.onSelect = function (e) {
+                this.$formEvent[0].reset(),
+                    this.$formEvent.removeClass("was-validated"),
+                    this.$selectedEvent = null,
+                    this.$newEventData = e,
+                    this.$btnDeleteEvent.hide(),
+                    this.$modalTitle.text("Add New Event"),
+                    this.$modal.show(),
+                    this.$calendarObj.unselect()
+            }
+            ,
+            e.prototype.init = function () {
+                var e = new Date(l.now());
+                var a = this;
+
+                a.$calendarObj = new FullCalendar.Calendar(a.$calendar[0], {
+                    slotDuration: "00:15:00",
+                    slotMinTime: "09:00:00",
+                    slotMaxTime: "18:00:00",
+                    themeSystem: "bootstrap",
+                    bootstrapFontAwesome: !1,
+                    buttonText: {
+                        today: "Aujourd'hui",
+                        month: "Mois",
+                        week: "Semaine",
+                        day: "Jour",
+                        list: "Liste",
+                        prev: "Arriere",
+                        next: "Suivant"
+                    },
+                    initialView: "dayGridMonth",
+                    handleWindowResize: !0,
+                    height: l(window).height() - 200,
+                    headerToolbar: {
+                        left: "prev,next today",
+                        center: "title",
+                        right: "dayGridMonth,timeGridWeek,timeGridDay,listMonth"
+                    },
+                    initialEvents: data,
+                    editable: !0,
+                    selectable: !0,
+                    dateClick: function (e) {
+                        var date = new Date(e.dateStr);
+                        var day = date.getUTCDay();
+                        if (day === 6 || day === 0) {
+                            a.onSelect({
+                                date: e.dateStr,
+                                allDay: e.allDay
+                            });
+                        }
+                    },
+                    eventClick: function (e) {
+                        a.onEventClick(e)
+                    }
+                }),
+                    a.$calendarObj.setOption('locale', 'fr')
+                a.$calendarObj.render();
+                a.$formEvent.on("submit", function (e) {
+                    e.preventDefault();
+                    var t, n = a.$formEvent[0];
+                    n.checkValidity() ? (a.$selectedEvent ? (a.$selectedEvent.setProp("title", l("#event-title").val()),
+                        a.$selectedEvent.setProp("classNames", [l("#event-category").val()])) : (t = {
+                            title: l("#event-title").val(),
+                            start: a.$newEventData.date,
+                            allDay: a.$newEventData.allDay,
+                            className: l("#event-category").val()
+                        },
+                            a.$calendarObj.addEvent(t)),
+                        a.$modal.hide()) : (e.stopPropagation(),
+                            n.classList.add("was-validated"))
+                }),
+                    l(a.$btnDeleteEvent.on("click", function (e) {
+                        a.$selectedEvent && (a.$selectedEvent.remove(),
+                            a.$selectedEvent = null,
+                            a.$modal.hide())
+                    }))
+            }
+            ,
+            l.CalendarApp = new e,
+            l.CalendarApp.Constructor = e
+    }(window.jQuery),
+        function () {
+            "use strict";
+            window.jQuery.CalendarApp.init()
+        }();
+
+
+</script>
+{% endblock page_specific_js %}

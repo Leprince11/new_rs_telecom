@@ -271,7 +271,7 @@ def insert_lead_to_db(data):
                 'localisation_du_lead': data['localisation'],
                 'porteur_lead': data.get('porteur_lead', 'non mentionné'),
                 'url_profil_porteur_lead': data.get('lien_profil_linkedin', 'non mentionné'),
-                'adresse_mail_de_contact': data.get('adresse_mail_de_contact', 'non@rstelecom.com'),
+                'adresse_mail_de_contact': data.get('adresse_mail_de_contact', 'non mentionné'),
                 'telephone': data.get('telephone', 'non mentionné'),
                 'secteur_activite': data.get('secteur', 'non mentionné'),
                 'taille_entreprise': data.get('taille', 'non mentionné'),

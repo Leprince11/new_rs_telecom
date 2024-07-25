@@ -1,5 +1,5 @@
 from django.db import models 
-from pulls.models import User  # Import du modèle User de l'application pulls
+from pulls.models import Users  # Import du modèle User de l'application pulls
 
 class Leads(models.Model):
     nom = models.CharField(max_length=255, null=False)  # company_name
@@ -32,7 +32,7 @@ class Leads(models.Model):
 
 
 class Feedback(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(Users, on_delete=models.CASCADE)
     comment = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     status = models.CharField(max_length=50, default='nouveau')

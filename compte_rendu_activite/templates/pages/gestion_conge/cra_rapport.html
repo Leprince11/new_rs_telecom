@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Rapport d'activités</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f8f9fa;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-size: 12px;
+      position: relative;
+      min-height: 100vh;
+    }
+    .header {
+      position: absolute;
+      background-color: #333;
+      top: 0;
+      left: 0;
+      right: 0;
+      padding: 10px;
+      margin: 10px;
+      display: flex;
+      align-items: center;
+    }
+    .header .logo {
+      height: 60px;
+      width: auto;
+      margin: 10px;
+    }
+    .header .report-title {
+      flex-grow: 1;
+      font-size: 2rem;
+      font-weight: bold;
+      text-align: center;
+      margin: 0;
+      color: #f8f9fa;
+    }
+    .header .report-date {
+      font-size: 1.3rem;
+      text-align: right;
+      color:#f8f9fa;
+      margin: 0;
+    }
+    .content {
+      margin-top: 70px; 
+      margin-bottom: 110px; 
+      padding-bottom: 60px; 
+    }
+    .table-wrapper {
+      margin-top: 20px;
+      display: flex;
+      justify-content: center;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      table-layout: fixed;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 5px;
+      text-align: center;
+    }
+    .signatures {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 80px;
+      padding: 20px 30px;
+    }
+    .signature-box {
+      border: 3px solid #000;
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .signature-box p {
+      margin: 0px;
+      padding-right: 10px;
+    }
+    .footer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding: 10px 0 10px 0;
+      margin: 100px 0 0 0;
+      background-color: #333;
+      color: white;
+      width: 100%;
+      font-size: 0.8rem;
+    }
+    @page {
+      size: A4 landscape;
+      margin: 5mm;
+    }
+  </style>
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row header">
+      <div class="col-2 text-center">
+        <img src="{{ logo_url }}" alt="R&S Telecom" class="logo">
+      </div>
+      <div class="col-8">
+        <div class="report-title">
+          Rapport d'activités - {{ user_name }} - {{ current_month }}</p>
+        </div>
+      </div>
+      <div class="col-2 text-end">
+        <div class="report-date">
+          Le {{ report_date }}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="table-wrapper">
+      <table class="table mb-0">
+        <thead>
+          <tr>
+            <th colspan="4">Activité(s)</th>
+            {% for day in days %}
+              <th>{{ day.day }}<br>{{ day.short_weekday }}</th>
+              {% endfor %}
+            <th colspan="2">Total</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td colspan="4">Creation d'une application de Gestion</td>
+            {% for day in days %}
+              <td>{{ day.hours }}</td>
+              {% endfor %}
+            <td colspan="2">{{ total_hours }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="signatures">
+      <div class="signature-box">
+        <p style="padding: 20px;">Le Manager :  <strong>{{mission.mission_manager}}</strong></p>
+        <p style="padding: 20px;">Le : <strong>{{report_date}}</strong></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    © R&S Telecom
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js" integrity="sha384-IQsoLXl5PILFyFXs5f6Y8VtKfQ4g6i3sBME2y+vF6/3ZX1zTShQPR6pOVNBYTB2q" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js" integrity="sha384-cVKIPhGvoiPpDkeEzPef3zEJ07nQ2mDXfbPBO6dHEUjlgB00QsA5eDfN7z6j5G+t" crossorigin="anonymous"></script>
+</body>
+</html>
