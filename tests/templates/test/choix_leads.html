@@ -133,12 +133,9 @@
 </style>
 
 <!-- CSS tiers et Bootstrap -->
-<link href="{% static 'pulls/assets/css/vendor/fullcalendar.min.css' %}" rel="stylesheet" type="text/css" />
 <link href="{% static 'pulls/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
 <link href="{% static 'pulls/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style" />
 <link href="{% static 'pulls/assets/css/app-dark.min.css' %}" rel="stylesheet" type="text/css" id="dark-style" />
-<link href="{% static 'pulls/assets/css/vendor/responsive.bootstrap5.css' %}" rel="stylesheet" type="text/css" />
-<link href="{% static 'pulls/assets/css/vendor/dataTables.bootstrap5.css' %}" rel="stylesheet" type="text/css" />
 
 
 <!-- Styles personnalisés pour cette page -->
@@ -333,7 +330,6 @@
           <p>Choisissez une action à réaliser :</p>
           <div class="list-group">
             <a href="{% url 'scraping_lead' %}" class="list-group-item list-group-item-action">Génération de Leads</a>
-            <a href="{% url 'programmation_leads' %}" class="list-group-item list-group-item-action">Programmer un Lead</a>
           </div>
         </div>
       </div>

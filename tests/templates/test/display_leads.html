@@ -185,7 +185,7 @@
         function fetchSearchResults(page) {
             const searchValue = document.getElementById('searchInput').value;
             const searchType = document.getElementById('searchType').value;
-            fetch(`/rstelecom/search-results?query=${encodeURIComponent(searchValue)}&type=${encodeURIComponent(searchType)}&page=${page}`)
+            fetch(`search-results?query=${encodeURIComponent(searchValue)}&type=${encodeURIComponent(searchType)}&page=${page}`)
             .then(response => response.json())
             .then(data => {
                 const resultsContainer = document.querySelector('#results tbody');
@@ -231,7 +231,7 @@
 
         function deleteLead(id) {
             if (confirm('Êtes-vous sûr de vouloir supprimer ce lead ?')) {
-                fetch('/rstelecom/delete-lead/', {
+                fetch('delete-lead/', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/x-www-form-urlencoded',

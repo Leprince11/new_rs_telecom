@@ -271,7 +271,7 @@ def insert_lead_to_db(data):
                 'localisation_du_lead': data['localisation'],
                 'porteur_lead': data.get('porteur_lead', 'non mentionné'),
                 'url_profil_porteur_lead': data.get('lien_profil_linkedin', 'non mentionné'),
-                'adresse_mail_de_contact': data.get('adresse_mail_de_contact', 'non@rstelecom.com'),
+                'adresse_mail_de_contact': data.get('adresse_mail_de_contact', 'non mentionné'),
                 'telephone': data.get('telephone', 'non mentionné'),
                 'secteur_activite': data.get('secteur', 'non mentionné'),
                 'taille_entreprise': data.get('taille', 'non mentionné'),
@@ -301,46 +301,59 @@ def write_to_db(data):
 # Fonction principale d'extraction
 def main_extraction(keywords, location, time_frame):
     max_jobs = 10  # Limite à 10 jobs
-    
-    print('je suis a linterieur de la fct')
-    company_job_pairs, company_counts, search_url = fetch_job_listings_selenium(keywords, location, time_frame, max_jobs)
+    max_attempts = 3  # Nombre maximum de tentatives
+    pause_duration = 5  # Durée de la pause en secondes
+    attempts = 0
     new_data = []
-    print(new_data)
-    try :
-        job_details = fetch_and_display_job_details_from_search_url(search_url, max_jobs)
-        print(job_details)
-        for (company, job_name, job_id, datetime_value, job_link), (recruiter_name, job_description, recruiter_profile_link) in zip(company_job_pairs, job_details):
-            linkedin_info = get_linkedin_company_info(company)  # Appel de la nouvelle fonction pour obtenir les informations LinkedIn
+    search_url = None  # Initialiser search_url
 
-            # Conversion de la chaîne datetime en objet date
-            try:
-                date_publication = datetime.strptime(datetime_value, '%Y-%m-%d').date()
-            except ValueError:
-                date_publication = None
-            except Exception as m:
-                print(m)
+    while attempts < max_attempts and (new_data is None or not new_data):
+        print('je suis à l\'intérieur de la fonction, tentative:', attempts + 1)
+        
+        try:
+            company_job_pairs, company_counts, search_url = fetch_job_listings_selenium(keywords, location, time_frame, max_jobs)
+            job_details = fetch_and_display_job_details_from_search_url(search_url, max_jobs)
+            print(job_details)
 
-            row_data = {
-                'nom': company,
-                'nombre_offres': company_counts.get(company, 1),
-                'nom_offre': job_name,
-                'localisation': location,
-                'taille': linkedin_info.get('taille', 'non mentionné'),
-                'secteur': linkedin_info.get('secteur', 'non mentionné'),
-                'chiffre_d_affaires': linkedin_info.get('fondee_en', 'non mentionné'),  # Placeholder pour chiffre d'affaires
-                'job_description': job_description,
-                'porteur_lead': recruiter_name if recruiter_name is not None else 'non mentionné',
-                'joblien': job_link,
-                'lien_profil_linkedin': recruiter_profile_link,
-                'date_publication_offre': date_publication
-            }
-            new_data.append(row_data)
-        print(new_data)
+            for (company, job_name, job_id, datetime_value, job_link), (recruiter_name, job_description, recruiter_profile_link) in zip(company_job_pairs, job_details):
+                linkedin_info = get_linkedin_company_info(company)  # Appel de la nouvelle fonction pour obtenir les informations LinkedIn
 
-        write_to_db(new_data)  # Écrire dans la base de données
-    except Exception as e :
-        print(f"le crash est cause par {e}")    
+                # Conversion de la chaîne datetime en objet date
+                try:
+                    date_publication = datetime.strptime(datetime_value, '%Y-%m-%d').date()
+                except ValueError:
+                    date_publication = None
+                except Exception as m:
+                    print(m)
+
+                row_data = {
+                    'nom': company,
+                    'nombre_offres': company_counts.get(company, 1),
+                    'nom_offre': job_name,
+                    'localisation': location,
+                    'taille': linkedin_info.get('taille', 'non mentionné'),
+                    'secteur': linkedin_info.get('secteur', 'non mentionné'),
+                    'chiffre_d_affaires': linkedin_info.get('fondee_en', 'non mentionné'),  # Placeholder pour chiffre d'affaires
+                    'job_description': job_description,
+                    'porteur_lead': recruiter_name if recruiter_name is not None else 'non mentionné',
+                    'joblien': job_link,
+                    'lien_profil_linkedin': recruiter_profile_link,
+                    'date_publication_offre': date_publication
+                }
+                insert_lead_to_db(row_data)
+                new_data.append(row_data)
+            print(new_data)
+
+            if new_data:
+                return search_url, new_data
+            else:
+                attempts += 1
+                print(f"new_data est vide. Tentative {attempts}. Attente de {pause_duration} secondes avant la nouvelle tentative.")
+                time.sleep(pause_duration)
+
+        except Exception as e:
+            print(f"Le crash est causé par {e}")
+            attempts += 1
+            time.sleep(pause_duration)  # Attendre avant la prochaine tentative
+
     return search_url, new_data
-
-
-

@@ -31,13 +31,13 @@
                         <h3 class="mt-0">R&S TELECOM - Matching CV</h3>
                         <div class="mt-3">
                             <h4>Descriptif de mission</h4>
-                            <p class="mt-2" id="lead-description">{{ lead.description_job }}</p>
+                            <p class="mt-2" id="lead-description" >{{ lead.description_job }}</p>
                             <div class="form-group">
-                                <label for="poids_lead">Degré d'importance du Lead :</label>
-                                <select class="form-control weight-control" id="poids_lead" name="poids_lead">
-                                    <option value="1">Pas très important</option>
+                                <label for="poids_lead" style="display: none;">Degré d'importance du Lead :</label>
+                                <select class="form-control weight-control" id="poids_lead" name="poids_lead" style="display: none;">
+                                    <option value="1" selected >Pas très important</option>
                                     <option value="2">Peu important</option>
-                                    <option value="3" selected>Modérément important</option>
+                                    <option value="3">Modérément important</option>
                                     <option value="4">Important</option>
                                     <option value="5">Très important</option>
                                 </select>
@@ -54,9 +54,9 @@
                                 <select class="form-control weight-control" id="poids_keywords" name="poids_keywords">
                                     <option value="1">Pas très important</option>
                                     <option value="2">Peu important</option>
-                                    <option value="3" selected>Modérément important</option>
+                                    <option value="3">Modérément important</option>
                                     <option value="4">Important</option>
-                                    <option value="5">Très important</option>
+                                    <option value="5" selected>Très important</option>
                                 </select>
                             </div>
                         </div>
@@ -223,7 +223,13 @@
             performMatching();
         });
 
-        document.getElementById('fetch-cv-button').addEventListener('click', function() {
+        document.getElementById('fetch-cv-button').addEventListener('click', function(e) {
+            const valeur = document.getElementById('number_of_cvs').value;
+            if (valeur >= 10000) {
+                e.preventDefault();
+                alert("le nombre de CVs à matcher que vous avez choisi dépasse le nombre de CVs dans le CVthèque , veuillez choisir un autre nombre inférieur à 10000")
+                return ; 
+            }
             currentPage = 1;
             performMatchingFromDB();
         });
@@ -261,7 +267,7 @@
             var resultsTab = new bootstrap.Tab(document.getElementById('results-tab'));
             resultsTab.show();
 
-            fetch('/rstelecom/process_matching_v2/', {
+            fetch('{% url "process_matching_v2" %}', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrfToken
@@ -319,7 +325,7 @@
             var resultsTab = new bootstrap.Tab(document.getElementById('results-tab'));
             resultsTab.show();
 
-            fetch('/rstelecom/process_matching_v3/', {
+            fetch('{% url "process_matching_v3" %}', {
                 headers: {
                     'X-CSRFToken': csrfToken
                 },
@@ -334,7 +340,7 @@
             })
             .then(data => {
                 globalData = data;
-                renderResults(data);
+                renderResultsDB(data);
                 setupPagination(data.page, data.total_pages);
                 matchingResults.style.display = 'flex';
                 matchingResults.style.flexWrap = 'wrap';
@@ -342,6 +348,28 @@
             })
             .catch(error => {
                 console.error('Error:', error);
+            });
+        }
+
+        function renderResultsDB(data) {
+            const resultsList = document.getElementById('matching-results');
+            resultsList.innerHTML = '';
+
+            data.results.forEach((result, index) => {
+                const card = document.createElement('div');
+                card.classList.add('card', 'col-md-4');
+                card.dataset.cvId = result.id;
+
+                card.innerHTML = `
+                    <div class="card-body">
+                        <h5 class="card-title"><a href="/leads_cvs/cv-tech/${result.id}/" target='_blank'>${index + 1}. ${result.filename} </a></h5>
+                        <p><strong>Correspondance:</strong> ${result.percentage.toFixed(2)}%</p>
+                        <p><strong>Remarque:</strong> ${result.remark}</p>
+                        <p><strong>Téléphone:</strong> ${result.phone ? result.phone : 'Cliquez sur le CV pour plus de détails'}</p>
+                        <button class="btn btn-info btn-sm" onclick="viewDetails(${index})">Voir Détails</button>
+                    </div>
+                `;
+                resultsList.appendChild(card);
             });
         }
 
@@ -356,8 +384,7 @@
 
                 card.innerHTML = `
                     <div class="card-body">
-                        <h5 class="card-title"><a href="/rstelecom/cv-tech/${result.id}/" target='_blank'>${index + 1}. ${result.filename} </a></h5>
-                        <p><strong>Score:</strong> ${result.score}</p>
+                        <h5 class="card-title">${index + 1}. ${result.filename}</h5>
                         <p><strong>Correspondance:</strong> ${result.percentage.toFixed(2)}%</p>
                         <p><strong>Remarque:</strong> ${result.remark}</p>
                         <p><strong>Téléphone:</strong> ${result.phone ? result.phone : 'Cliquez sur le CV pour plus de détails'}</p>
@@ -367,7 +394,6 @@
                 resultsList.appendChild(card);
             });
         }
-
         function setupPagination(currentPage, totalPages) {
             const paginationControls = document.getElementById('pagination-controls');
             paginationControls.innerHTML = '';

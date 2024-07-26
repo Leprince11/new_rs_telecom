@@ -135,7 +135,7 @@
                         <td>{{ lead.nombre_offres }}</td>
                         <td>{{ lead.localisation_du_lead }}</td>
                         <td>
-                            <button class="btn btn-primary btn-update btn-sm" onclick="window.location.href='/rstelecom/update-lead/{{ lead.id }}'">Mettre à jour</button>
+                            <button class="btn btn-primary btn-update btn-sm" onclick="window.location.href='{{ lead.id }}'">Mettre à jour</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -155,7 +155,7 @@
         function fetchSearchResults(page) {
             const searchValue = document.getElementById('searchInput').value;
             const searchType = document.getElementById('searchType').value;
-            fetch(`/rstelecom/search-results?query=${encodeURIComponent(searchValue)}&type=${encodeURIComponent(searchType)}&page=${page}`)
+            fetch(`search-results?query=${encodeURIComponent(searchValue)}&type=${encodeURIComponent(searchType)}&page=${page}`)
             .then(response => response.json())
             .then(data => {
                 const resultsContainer = document.querySelector('#results tbody');
@@ -169,7 +169,7 @@
                             <td>${row.nombre_offres}</td>
                             <td>${row.localisation_du_lead}</td>
                             <td>
-                                <button class="btn btn-primary btn-update btn-sm" onclick="window.location.href='/rstelecom/update-lead/${row.id}'">Mettre à jour</button>
+                                <button class="btn btn-primary btn-update btn-sm" onclick="window.location.href='${row.id}'">Mettre à jour</button>
                             </td>
                         `;
                         resultsContainer.appendChild(newRow);

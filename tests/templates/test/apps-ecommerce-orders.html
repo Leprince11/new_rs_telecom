@@ -10,11 +10,11 @@
         <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description">
         <meta content="Coderthemes" name="author">
         <!-- App favicon -->
-        <link rel="shortcut icon" href="{% static 'test/assets/images/favicon.ico' %}">
+        <link rel="shortcut icon" href="{% static 'pulls/assets/images/favicon.ico' %}">
 
         <!-- App css -->
-        <link href="{% static 'test/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css">
-        <link href="{% static 'test/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style">
+        <link href="{% static 'pulls/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css">
+        <link href="{% static 'pulls/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style">
 
     </head>
 
@@ -71,16 +71,12 @@
                                                     <tr>
                                                         <th>Nom</th>
                                                         <th>Nom Offre</th>
-                                                        <th>Statistiques</th>
                                                         <th>Localisation</th>
                                                         <th>Porteur Lead</th>
                                                         <th>Email</th>
                                                         <th>Téléphone</th>
-                                                        <th>Statut</th>
                                                         <th>Date de capturation du Lead</th>
-                                                        <th>Priorité</th>
-                                                        <th>Description Job</th>
-                                                        <th>Lien</th>
+                                                        <th>Statistiques</th>
                                                         <th style="width: 125px;">Action</th>
                                                     </tr>
                                                 </thead>
@@ -89,36 +85,20 @@
                                                         <tr>
                                                             <td>{{ lead.nom }}</td>
                                                             <td>{{ lead.nom_offre }}</td>
-                                                            <td>
-                                                                <a href="{% url 'statistiques_leads' %}?entreprise={{ lead.nom }}" class="btn btn-sm btn-primary">Voir statistiques</a>
-                                                            </td>
                                                             <td>{{ lead.localisation_du_lead }}</td>
                                                             <td>{{ lead.porteur_lead }}</td>
                                                             <td>{{ lead.adresse_mail_de_contact }}</td>
                                                             <td>{{ lead.telephone }}</td>
-                                                            <td>
-                                                                {% if lead.statut_du_lead == 'nouveau' or lead.statut_du_lead == 'Nouveau' %}
-                                                                    <span class="badge badge-success-lighten">Nouveau</span>
-                                                                {% elif lead.statut_du_lead == 'en cours' or lead.statut_du_lead == 'En cours'%}
-                                                                    <span class="badge badge-warning-lighten">En cours</span>
-                                                                {% elif lead.statut_du_lead == 'converti' or lead.statut_du_lead == 'Converti'%}
-                                                                    <span class="badge badge-danger-lighten">Terminé</span>
-                                                                {% else %}
-                                                                    <span class="badge badge-secondary-lighten">{{ lead.statut_du_lead }}</span>
-                                                                {% endif %}
-                                                            </td>
+                                                            
                                                             <td>{{ lead.date_maj_lead }}</td>
-                                                            <td>{{ lead.priorite }}</td>
-                                                            <td>
-                                                                <button class="btn btn-sm btn-primary show-more" onclick="toggleDescription(this)">Show More</button>
-                                                                <div class="description" style="display: none;">{{ lead.description_job }}</div>
+                                                            <td class="text-center">
+                                                                <a href="{% url 'statistiques_leads' %}?entreprise={{ lead.nom }}" class="btn btn-sm "> <i class="mdi mdi-chart-bar text-primary"></i></a>
                                                             </td>
-                                                            <td><a href="{{ lead.lien_vers_lead }}" target="_blank" class="btn btn-sm btn-primary">Lien ves l'offre</a></td>
 
                                                             <td>
-                                                                <a href="{% url 'lead_detail' lead.id %}" class="action-icon"> <i class="mdi mdi-eye"></i></a>
-                                                                <a href="{% url 'update_lead' lead.id %}" class="action-icon"> <i class="mdi mdi-square-edit-outline"></i></a>
-                                                                <a href="{% url 'display_leads' %}" class="action-icon"> <i class="mdi mdi-delete"></i></a>
+                                                                <a href="{% url 'lead_detail' lead.id %}" class="action-icon"> <i class="mdi mdi-eye text-success"></i></a>
+                                                                <a href="{% url 'update_lead' lead.id %}" class="action-icon"> <i class="mdi mdi-square-edit-outline text-warning"></i></a>
+                                                                <a href="{% url 'display_leads' %}" class="action-icon"> <i class="mdi mdi-delete text-danger"></i></a>
                                                             </td>
                                                         </tr>
                                                     {% endfor %}
@@ -251,18 +231,6 @@
         </div>
 
         <div class="rightbar-overlay"></div>
-        <!-- /End-bar -->
-
-        <!-- bundle -->
-        <script src="{% static 'test/assets/js/vendor.min.js' %}"></script>
-        <script src="{% static 'test/assets/js/app.min.js' %}"></script>
-
-        <!-- Datatables js -->
-        <script src="{% static 'assets/js/vendor/jquery.dataTables.min.js' %}"></script>
-        <script src="{% static 'assets/js/vendor/dataTables.bootstrap5.js' %}"></script>
-        <script src="{% static 'assets/js/vendor/dataTables.responsive.min.js' %}"></script>
-        <script src="{% static 'assets/js/vendor/responsive.bootstrap5.min.js' %}"></script>
-
         <!-- Datatable Init js -->
         <script>
             $(document).ready(function() {
@@ -284,5 +252,35 @@
         
     </body>
 </html>
+
+{% endblock %}
+{% block js%}
+
+        <!-- Datatables js -->
+        <script src="{% static 'pulls/assets/js/vendor/dataTables.buttons.min.js' %}"></script>
+        <script src="{% static 'pulls/assets/js/vendor/jquery.dataTables.min.js' %}"></script>
+        <script src="{% static 'pulls/assets/js/vendor/dataTables.bootstrap5.js' %}"></script>
+        <script src="{% static 'pulls/assets/js/vendor/dataTables.responsive.min.js' %}"></script>
+        <script src="{% static 'pulls/assets/js/vendor/responsive.bootstrap5.min.js' %}"></script>
+        <script src="{% static 'pulls/assets/js/pages/demo.datatable-init.js' %}"></script>
+
+        <!-- Datatable Init js -->
+        <script>
+            $(document).ready(function() {
+                // Initialize Datatables
+                $('#leads-datatable').DataTable();
+            });
+
+            function toggleDescription(button) {
+                const description = button.nextElementSibling;
+                if (description.style.display === 'none' || description.style.display === '') {
+                    description.style.display = 'block';
+                    button.textContent = 'Show Less';
+                } else {
+                    description.style.display = 'none';
+                    button.textContent = 'Show More';
+                }
+            }
+        </script>
 
 {% endblock %}

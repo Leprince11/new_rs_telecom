@@ -7,6 +7,7 @@ from django.core.paginator import Paginator
 from django.db.models.functions import TruncMonth, Trunc
 from django.db.models import Sum, Count, Q, DateField
 from django.utils.timezone import now
+from django.conf import settings
 from django.utils.dateparse import parse_date
 from django.db import transaction
 from threading import Thread
@@ -226,15 +227,8 @@ def get_graph(fig):
     string = base64.b64encode(buf.read())
     uri = urllib.parse.quote(string)
     return uri
-##################################################################
-# Mise à jour du lead 
 
-
-
-
-def test_base_template(request):
-    return render(request, 'test/base.html')
-
+#################################################################
 
 
 @csrf_protect
@@ -254,6 +248,7 @@ def view_leads(request):
     leads = Leads.objects.all()
     updated_id = request.GET.get('updated_id')
     return render(request, 'test/leads.html', {'leads': leads, 'updated_id': updated_id})
+
 #####################################
 
 
@@ -326,6 +321,7 @@ def delete_lead(request):
 from django.http import JsonResponse
 from threading import Thread
 from .scripts.extract_companies import read_csv_data,main_extraction
+from.scripts.linkedIn import scraping_apec
 import json
 
 async def run_in_executor(func, *args):
@@ -335,32 +331,45 @@ async def run_in_executor(func, *args):
 
 
 @require_http_methods(["POST"])
-async def start_scraping(request):
+def start_scraping(request):
     try:
-        
         data = json.loads(request.body.decode('utf-8'))
-        nom = data.get('nom')
-        region = data.get('region')
-        keywords = data.get('keywords')
-        time_frame = data.get('time_frame')
+        source_lead = data.get('sourceLead')
+        
+        if not source_lead:
+            return JsonResponse({'status': 'error', 'message': 'La source du lead est obligatoire.'}, status=400)
 
-        if not nom or not region or not keywords or not time_frame:
-            return JsonResponse({'status': 'error', 'message': 'Tous les champs sont obligatoires.'}, status=400)
+        if source_lead == 'apec':
+            keywords = data.get('keywords')
+            salary_min = data.get('salaryMin')
+            salary_max = data.get('salaryMax')
+            search_nom = data.get('searchNom')
 
-        location = f"{nom}, {region}, France"
-        print(f"Nom: {nom}, Région: {region}, Localisation: {location}, Keywords: {keywords}, Time Frame: {time_frame}")
-        #fonction qui se charge de l'extraction des données avec selenium et beautifulSoup
-        lien, new_data = await run_in_executor(main_extraction, keywords, location, time_frame)
+            if not keywords or not salary_min or not salary_max or not search_nom:
+                return JsonResponse({'status': 'error', 'message': 'Tous les champs sont obligatoires pour APEC.'}, status=400)
 
-        # Log the data to verify the structure
-        for row in new_data:
-            print("Row data:", row)
+            base_url = 'https://www.apec.fr/candidat/recherche-emploi.html/emploi'
+            location = search_nom
+            new_data = scraping_apec(base_url, location, keywords, salary_min, salary_max)
+        elif source_lead == 'linkedin':
+            search_city = data.get('searchCity')
+            select_region = data.get('selectRegion')
+            keywords = data.get('keywords')
+            time_frame = data.get('selectTimeFrame')
 
-        return JsonResponse({'status': 'success', 'data': new_data, 'lien': lien}, safe=False)
+            if not search_city or not select_region or not keywords or not time_frame:
+                return JsonResponse({'status': 'error', 'message': 'Tous les champs sont obligatoires pour LinkedIn.'}, status=400)
+
+            location = f"{search_city}, {select_region}, France"
+            lien ,new_data = main_extraction(keywords, location, time_frame)
+        else:
+            return JsonResponse({'status': 'error', 'message': 'Source du lead inconnue.'}, status=400)
+        
+        return JsonResponse({'status':'success' , 'data' : new_data} , safe=False )
+
     except Exception as e:
         print(f"Error in start_scraping: {e}")
         return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-    
 
 
 @require_http_methods(["GET"])
@@ -387,31 +396,7 @@ def search_city(request):
 @login_required_connect
 def scrapingPage(request):
     return render(request,'test/scraping.html')
-######################################################################
 
-
-
-# @require_http_methods(["GET"])
-# def search_results(request):
-#     query = request.GET.get('query', '').lower()
-#     search_type = request.GET.get('type', 'offre')
-#     path_to_csv = 'donnees_lead.csv'
-#     results = []
-#     with open(path_to_csv, newline='', encoding='utf-8') as csv_file:
-#         reader = csv.reader(csv_file, delimiter=";")
-#         next(reader, None)  # Ignorer la première ligne du header
-#         for row in reader:
-#             if search_type == 'entreprise' and query in row[2].lower():
-#                 results.append(row)
-#             elif search_type == 'offre' and query in row[0].lower():
-#                 results.append(row)
-
-#     # Tri des résultats
-#     results.sort(key=lambda x: x[0] if search_type == 'offre' else x[2])
-#     return JsonResponse(results, safe=False)
-
-
-###########################################################################
 @login_required_connect
 def matching_cv_view(request):
     return render(request, 'test/matching_cv.html')
@@ -869,28 +854,39 @@ def programmation_view(request):
              'default_data':default_data}
     return render(request, 'test/programmation_leads.html', context)
 
-# Fonction qui simule une requête HTTP POST
+
+from django.test import RequestFactory
+from django.urls import reverse
+import json
+from .views import recup_donnees_programmees, start_scraping
+
 def simulate_request():
     try:
         print('La simulation de la tâche est en train de commencer')
         factory = RequestFactory()
-        request = factory.post('/rstelecom/recup-donnees-programmees/', data={}, content_type='application/json')
+
+        # Créez une requête POST pour récupérer les données programmées
+        recup_donnees_url = reverse('recup_donnees_programmees')
+        request = factory.post(recup_donnees_url, data={}, content_type='application/json')
         response = recup_donnees_programmees(request)
-        
+
         if response.status_code == 200:
             updated_data = json.loads(response.content).get('data', default_data)
             print(f"Data utilisée pour le scraping: {updated_data}")
 
-            # Utiliser les données mises à jour pour la requête de scraping
-            scraping_request = factory.post('/rstelecom/start-scraping/', data=json.dumps(updated_data), content_type='application/json')
+            # Utilisez les données mises à jour pour la requête de scraping
+            start_scraping_url = reverse('start_scraping')
+            scraping_request = factory.post(start_scraping_url, data=json.dumps(updated_data), content_type='application/json')
             scraping_response = start_scraping(scraping_request)
-            
-            # Afficher la réponse pour vérifier
+
+            # Affichez la réponse pour vérifier
             print(f"Réponse reçue: {scraping_response.content}")
         else:
             print("Erreur lors de la récupération des données mises à jour.")
     except Exception as e:
         print(f"Erreur dans simulate_request: {e}")
+
+
 
 notification_triggered = False
 
@@ -900,7 +896,7 @@ def send_notification():
     notification_triggered = True
 
 
-# Fonction pour exécuter les tâches planifiées
+
 def run_schedule():
     schedule.every(1000).minutes.do(simulate_request)
     last_run = datetime.now() - timedelta(minutes=1000)  # Initialiser pour permettre l'exécution immédiate
@@ -1089,23 +1085,14 @@ def get_noms_cvs(nom_cv):
     # Retourner les résultats
     return cvs[0]
 
-
-
-
-
-
-
-def cv_list(request):
-    cvs = get_cvs()
-    return render(request, 'test/cv_list.html', {'cvs': cvs})
-
-
+@login_required_connect
 def cv_detail(request, cv_id):
     # Définir le chemin des fichiers CV
     actual_path= f"{os.getcwd()}/tests"
-    CV_ROOT = os.path.join(actual_path,'static/test/CV/filestore/')
+    CV_ROOT = "/media/CV/filestore/"
 
-    cvs = get_cvs()  # Assurez-vous que cette fonction est définie pour obtenir les CVs
+    cvs = get_cvs()  
+
     cv = next((cv for cv in cvs if int(cv[0]) == cv_id), None)
     if cv is None:
         print(f'Le CV avec l\'ID {cv_id} n\'a pas été trouvé.')
@@ -1122,7 +1109,7 @@ def cv_detail(request, cv_id):
         prenom = proprietaire_cv
     
     nom_du_cv = cv[1]
-    nom_cv = get_noms_cvs(nom_du_cv)  # Assurez-vous que cette fonction est définie
+    nom_cv = get_noms_cvs(nom_du_cv)  
     
     liste_info = [nom, prenom, nom_cv]
     # cv_file_url = f'file:///{cv_file_path.replace("\\\\", "/")}'
@@ -1140,7 +1127,7 @@ def cv_detail(request, cv_id):
         port=3306
     )
     cursor = db.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT * FROM comments WHERE cv_id = %s ORDER BY created_at ASC", [cv_id])
+    cursor.execute("SELECT * FROM comments WHERE cv_id = %s ORDER BY created_at DESC", [cv_id])
     comments = cursor.fetchall()
     db.close()
 
@@ -1175,7 +1162,7 @@ def get_facs():
 
 def fac_detail(request, fac_id):
     actual_path= f"{os.getcwd()}/tests"
-    CV_ROOT = os.path.join(actual_path,'static/test/CV/filestore/')
+    CV_ROOT = "/media/CV/filestore/"
     facs = get_facs()
     fac = next((fac for fac in facs if int(fac[0]) == fac_id), None)
     if fac is None:
@@ -1269,12 +1256,32 @@ def recuperer_num_mail(cv_id):
         return phone, email
     return None, None
 
+def get_commentaires(request, cv_id):
+    # Connexion à la base de données
+    db = MySQLdb.connect(
+        host=config('DB_HOST'),
+        user=config('DB_USER'),
+        passwd=config('DB_PASSWORD'),
+        db=config('DB_NAME'),
+        port=3306
+    )
+    cursor = db.cursor(MySQLdb.cursors.DictCursor)
+
+    try:
+        # Récupération des commentaires associés au CV
+        cursor.execute("SELECT * FROM comments WHERE cv_id = %s ORDER BY created_at DESC", [cv_id])
+        comments = cursor.fetchall()
+
+    finally:
+        db.close()
+
+    return JsonResponse({'comments': comments})
 
 @require_http_methods(["POST"])
 def process_matching_v3(request):
     try:
         actual_path = f"{os.getcwd()}/tests"
-        CV_ROOT = os.path.join(actual_path, 'static/test/CV/filestore/')
+        CV_ROOT = "/media/CV/filestore/"
         mission_text = request.POST.get('mission_text')
         keywords_text = request.POST.get('keywords_text')
         poids_lead = request.POST.get('poids_lead')
@@ -1332,11 +1339,17 @@ def process_matching_v3(request):
 
         cv_texts = []
         for cv in cvs:
-            cv_file_path = os.path.join(CV_ROOT, cv[2] + ".pdf")
+            cv_file_path = os.path.join(settings.CV_ROOT, cv[2] + ".pdf")
             if not os.path.isfile(cv_file_path):
                 print(f"File not found: {cv_file_path}")
                 continue
-            cv_text = extract_text_from_pdf_path(cv_file_path)
+            else:
+                print(f"ok pour le cv {cv_file_path}")
+            try:
+                cv_text = extract_text_from_pdf_path(cv_file_path)
+            except Exception as e:
+                print(f"Error extracting text from {cv_file_path}: {str(e)}")
+                continue
             preprocessed_cv_text = preprocess_text_mission(cv_text)
             cv_texts.append((cv[0], cv[1], preprocessed_cv_text))
 
@@ -1392,9 +1405,8 @@ def process_matching_v3(request):
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         return JsonResponse({"error": str(e)}, status=500)
-##############################""" récupération des commentaires dans la table des CVs"
 
-
+# récuperation des commentaires de la table des cvs
 def recuperer_commentaires(cv_id):
   
 
@@ -1441,8 +1453,6 @@ import logging
 logger = logging.getLogger(__name__)
 @login_required_connect
 def add_comment(request):
-
-    print(request.method)
     if request.method == 'POST':
         cv_id = request.POST.get('cv_id')
         comment = request.POST.get('comment')
@@ -1456,30 +1466,31 @@ def add_comment(request):
         if cv_id and comment:
             try:
                 db = MySQLdb.connect(
-                host=config('DB_HOST'),
-                user=config('DB_USER'),
-                passwd=config('DB_PASSWORD'),
-                db=config('DB_NAME'),
-                port=3306
-            )
+                    host=config('DB_HOST'),
+                    user=config('DB_USER'),
+                    passwd=config('DB_PASSWORD'),
+                    db=config('DB_NAME'),
+                    port=3306
+                )
                 cursor = db.cursor()
                 cursor.execute(
-                    "INSERT INTO comments (cv_id, user_name, comment, created_at , status ) VALUES (%s, %s, %s, %s , %s)", 
-                    (cv_id, user_name, comment, current_date ,status)
+                    "INSERT INTO comments (cv_id, user_name, comment, created_at, status) VALUES (%s, %s, %s, %s, %s)", 
+                    (cv_id, user_name, comment, current_date, status)
                 )
                 db.commit()
                 db.close()
                 logger.info('Commentaire ajouté avec succès')
-                return JsonResponse({'message': 'Commentaire ajouté avec succès'})
+                return JsonResponse({'message': 'Commentaire ajouté avec succès', 'user_name': user_name, 'comment': comment, 'created_at': current_date})
             except MySQLdb.Error as e:
                 logger.error(f"Erreur MySQLdb: {e}")
                 return JsonResponse({'error': 'Erreur lors de l\'ajout du commentaire'}, status=500)
         else:
             logger.warning('Données invalides: cv_id ou comment manquant')
+            print(cv_id , comment)
             return JsonResponse({'error': 'Données invalides'}, status=400)
-    logger.error('Méthode non autorisée')
-    return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
-
+    else:
+        logger.error('Méthode non autorisée')
+        return JsonResponse({'error': 'Méthode non autorisée'}, status=405)
 
 from django.views.decorators.http import require_POST
 
@@ -1523,7 +1534,7 @@ def historique_commentaires(request, cv_id):
         port=3306
     )
     cursor = db.cursor(MySQLdb.cursors.DictCursor)
-    
+
     try:
         # Récupération des commentaires associés au CV
         cursor.execute("SELECT * FROM comments WHERE cv_id = %s ORDER BY created_at DESC", [cv_id])
@@ -1540,8 +1551,11 @@ def historique_commentaires(request, cv_id):
     context['cv_name'] = cv_name['name'] if cv_name else 'Nom du CV non trouvé'
     context['cv_id'] = cv_id
 
+    # Si la requête est faite via AJAX, renvoyer seulement les commentaires en JSON
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        return JsonResponse({'comments': comments, 'cv_name': context['cv_name'], 'cv_id': cv_id})
+
     return render(request, 'test/apps-projects-details.html', context)
-    
 
 def matching(request):
     return render(request , 'test/matching.html')

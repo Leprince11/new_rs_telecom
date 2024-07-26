@@ -1,10 +1,12 @@
-{%load static%}
+{% extends 'layouts/bases.html' %}
+{% load static %}
+{% block content %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Détails du CV</title>
+    <title>Détails du CV et Commentaires</title>
     <!-- Inclure les fichiers CSS et JS de Bootstrap -->
     <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
@@ -14,6 +16,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <!-- Polices Google -->
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="{% static 'test/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'test/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style">
     <style>
         body {
             font-family: 'Roboto', sans-serif;
@@ -55,86 +59,275 @@
             }
         }
         .cv-details {
-    display: none;
-}
+            display: none;
+        }
+        .comment-item {
+            position: relative;
+            padding-bottom: 1.5em;
+        }
+        .comment-item .created-at {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            font-size: 0.8em;
+            color: gray;
+        }
+        .comment-feedback {
+            margin-top: 5px;
+        }
     </style>
 </head>
-<body>
+<body class="loading" data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":false, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true}'>
+
     <div class="container mt-5">
         <div class="card shadow-lg p-4 animate__animated animate__fadeInDown">
             <div class="card-body">
                 <h1 class="card-title custom-title mb-4">CV : {{ proprietaire.2 }}</h1>
-                    <p class="card-text"><strong>Type du fichier :</strong> {{ cv.3 }}</p>
-                    <p class="card-text"><strong>Mail du propriétaire :</strong> {{ cv.6 }}</p>
-                    {% if proprietaire.0 != proprietaire.1 %}
-                    <p class="card-text"><strong>Nom :</strong> {{ proprietaire.0 }}</p>
-                    <p class="card-text"><strong>Prénom :</strong> {{ proprietaire.1 }}</p>
-                    {% endif %}
-                    <p class="card-text"><strong>Date de récupération du CV:</strong> {{ cv.7 }}</p>
-                    <p class="card-text"><strong>Date de dernière mise à jour du CV:</strong> {{ cv.8 }}</p>
-                    <div id="cvDetails" class="cv-details">
+                <p class="card-text"><strong>Mail du propriétaire :</strong> {{ cv.6 }}</p>
+                {% if proprietaire.0 != proprietaire.1 %}
+                <p class="card-text"><strong>Nom :</strong> {{ proprietaire.0 }}</p>
+                <p class="card-text"><strong>Prénom :</strong> {{ proprietaire.1 }}</p>
+                {% endif %}
+                <p class="card-text"><strong>Date de récupération du CV:</strong> {{ cv.7 }}</p>
+                <p class="card-text"><strong>Date de dernière mise à jour du CV:</strong> {{ cv.8 }}</p>
+                <div id="cvDetails" class="cv-details">
                     <p class="card-text"><strong>Identifiant du CV :</strong> {{ cv.0 }}</p>
                     <p class="card-text"><strong>Chemin vers le fichier :</strong> {{ cv.2 }}</p>
                     <p class="card-text"><strong>Taille du fichier:</strong> <span id="fileSize" data-size="{{ cv.9 }}"></span></p>
-                    </div>
+                </div>
                 <button id="toggleButton" class="btn btn-primary mt-3" onclick="toggleDetails()">Voir plus</button>
             </div>
         </div>
 
         <!-- Afficher le fichier directement -->
-        <div id="fileContainer" class="embed-responsive embed-responsive-16by9">
+        <div id="fileContainer" class="embed-responsive embed-responsive-16by9 mt-4">
             <iframe id="fileViewer" class="embed-responsive-item" width="100%" height="600px"></iframe>
         </div>
     </div>
 
-    <!-- JavaScript pour définir dynamiquement l'URL du fichier -->
+    <!-- Section des commentaires -->
+    <div class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="mt-0 mb-3" data_id = {{cv.0}} id="cv_id">Commentaires du CV ID: {{ cv.0 }}</h4>
+                
+                <!-- Formulaire de soumission de commentaire -->
+                <form id="comment-form" enctype="multipart/form-data">
+                    <textarea class="form-control form-control-light mb-2" placeholder="Écrire un commentaire" id="example-textarea" rows="3" name="comment"></textarea>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-primary btn-sm" id="submit-comment">Soumettre</button>
+                    </div>
+                    <div class="comment-feedback" id="comment-feedback"></div>
+                </form>
+
+                <!-- Affichage des commentaires -->
+                <div id="comments-container">
+                    {% for comment in comments %}
+                    <div class="d-flex align-items-start mt-2 comment-item">
+                        <img class="me-3 avatar-sm rounded-circle" src="{% static 'test/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                        <div class="w-100 overflow-hidden">
+                            <h5 class="mt-0">{{ comment.user_name }} {{comment.users_fname}}</h5>
+                            {{ comment.comment }}
+                            <span class="created-at">{{ comment.created_at }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                <div class="text-center mt-2">
+                    <a href="javascript:void(0);" class="text-danger">Charger plus </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Sidebar -->
+    <div class="end-bar">
+        <div class="rightbar-title">
+            <a href="javascript:void(0);" class="end-bar-toggle float-end">
+                <i class="dripicons-cross noti-icon"></i>
+            </a>
+            <h5 class="m-0">Paramètres</h5>
+        </div>
+        <div class="rightbar-content h-100" data-simplebar="">
+            <div class="p-3">
+                <div class="alert alert-warning" role="alert">
+                    <strong>Personnaliser </strong> le schéma de couleur global, le menu de la barre latérale, etc.
+                </div>
+                <h5 class="mt-3">Schéma de couleur</h5>
+                <hr class="mt-1">
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="color-scheme-mode" value="light" id="light-mode-check" checked="">
+                    <label class="form-check-label" for="light-mode-check">Mode clair</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="color-scheme-mode" value="dark" id="dark-mode-check">
+                    <label class="form-check-label" for="dark-mode-check">Mode sombre</label>
+                </div>
+                <h5 class="mt-4">Largeur</h5>
+                <hr class="mt-1">
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="width" value="fluid" id="fluid-check" checked="">
+                    <label class="form-check-label" for="fluid-check">Fluide</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="width" value="boxed" id="boxed-check">
+                    <label class="form-check-label" for="boxed-check">Boxed</label>
+                </div>
+                <h5 class="mt-4">Barre latérale gauche</h5>
+                <hr class="mt-1">
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="theme" value="default" id="default-check">
+                    <label class="form-check-label" for="default-check">Défaut</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="theme" value="light" id="light-check" checked="">
+                    <label class="form-check-label" for="light-check">Clair</label>
+                </div>
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" name="theme" value="dark" id="dark-check">
+                    <label class="form-check-label" for="dark-check">Sombre</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="compact" value="fixed" id="fixed-check" checked="">
+                    <label class="form-check-label" for="fixed-check">Fixé</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="compact" value="condensed" id="condensed-check">
+                    <label class="form-check-label" for="condensed-check">Condensé</label>
+                </div>
+                <div class="form-check form-switch mb-1">
+                    <input class="form-check-input" type="checkbox" name="compact" value="scrollable" id="scrollable-check">
+                    <label class="form-check-label" for="scrollable-check">Déroulable</label>
+                </div>
+                <div class="d-grid mt-4">
+                    <button class="btn btn-primary" id="resetBtn">Réinitialiser par défaut</button>
+                    <a href="../../product/hyper-responsive-admin-dashboard-template/index.html" class="btn btn-danger mt-3" target="_blank"><i class="mdi mdi-basket me-1"></i> Acheter maintenant</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="rightbar-overlay"></div>
+    <!-- /End-bar -->
+
+    <!-- bundle -->
+    <script src="{% static 'test/assets/js/vendor.min.js' %}"></script>
+    <script src="{% static 'test/assets/js/app.min.js' %}"></script>
+    <!-- third party js -->
+    <script src="{% static 'test/assets/js/vendor/Chart.bundle.min.js' %}"></script>
+    <!-- third party js ends -->
+    <!-- demo app -->
+    <script src="{% static 'test/assets/js/pages/demo.project-detail.js' %}"></script>
+    <!-- end demo js-->
+
     <script type="text/javascript">
-        document.addEventListener("DOMContentLoaded", function() {
-            var filename = "{{ cv.2 }}";
-            var mimeType = "{{ cv.3 }}";
-            var fileUrlBase = "{% static 'test/CV/filestore/' %}" + filename;
-            var fileUrl = fileUrlBase; // Default to the base URL
+       document.addEventListener("DOMContentLoaded", function() {
+    var csrfToken = getCookie('csrftoken');
 
-            // Mapping MIME types to file extensions
-            var mimeToExtension = {
-                'application/pdf': '.pdf',
-                'application/msword': '.doc',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
-                'image/png': '.png',
-                'image/jpeg': '.jpeg',
-                'text/vnd.graphviz': '.gv',
-                'application/vnd.oasis.opendocument.text': '.odt',
-                'application/zip': '.zip',
-                'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
-                'Null': '.pdf'
-            };
+    document.getElementById('submit-comment').addEventListener('click', function() {
+        var cv_id = document.getElementById('cv_id').getAttribute('data_id'); // Correction ici
+        var comment = document.getElementsByName("comment")[0].value;
 
-            // Add the appropriate extension based on the MIME type
-            if (mimeToExtension[mimeType]) {
-                fileUrl += mimeToExtension[mimeType];
+        var formData = new FormData();
+        formData.append('cv_id', cv_id);
+        formData.append('comment', comment);
+
+        fetch('{% url "add_comment" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            var feedback = document.getElementById('comment-feedback');
+            if (data.message) {
+                feedback.innerText = 'Commentaire ajouté : ' + data.message;
+                feedback.classList.add('text-success');
+                setTimeout(() => feedback.innerText = '', 3000);
+                document.getElementById('comment-form').reset();
+                // Ajouter le nouveau commentaire à la liste des commentaires
+                var commentsContainer = document.getElementById('comments-container');
+                var newComment = document.createElement('div');
+                newComment.className = 'd-flex align-items-start mt-2 comment-item';
+                newComment.innerHTML = `
+                    <img class="me-3 avatar-sm rounded-circle" src="{% static 'test/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                    <div class="w-100 overflow-hidden">
+                        <h5 class="mt-0">${data.user_name}</h5>
+                        ${data.comment}
+                        <span class="created-at">${data.created_at}</span>
+                    </div>`;
+                commentsContainer.prepend(newComment);
+            } else {
+                feedback.innerText = 'Erreur : ' + data.error;
+                feedback.classList.add('text-danger');
+                setTimeout(() => feedback.innerText = '', 3000);
             }
-
-            // Update the src attribute of the iframe
-            document.getElementById('fileViewer').src = fileUrl;
-        });
-
-        function toggleDetails() {
-        var details = document.getElementById('cvDetails');
-        var button = document.getElementById('toggleButton');
-        if (details.style.display === 'none' || details.style.display === '') {
-            details.style.display = 'block';
-            button.textContent = 'Voir moins';
-        } else {
-            details.style.display = 'none';
-            button.textContent = 'Voir plus';
-        }
-    }
-    document.addEventListener('DOMContentLoaded', function() {
-        var fileSizeElement = document.getElementById('fileSize');
-        var sizeInBytes = parseInt(fileSizeElement.getAttribute('data-size'), 10);
-        var sizeInMB = (sizeInBytes / (1024)).toFixed(2);
-        fileSizeElement.textContent = sizeInMB + 'Ko';
+        })
+        .catch(error => console.error('Fetch error:', error));
     });
+
+    // Fonction pour récupérer le token CSRF
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
+    var filename = "{{ cv.2 }}";
+    var mimeType = "{{ cv.3 }}";
+    var fileUrlBase = "/media/CV/filestore/" + filename;
+    var fileUrl = fileUrlBase; // Default to the base URL
+
+    // Mapping MIME types to file extensions
+    var mimeToExtension = {
+        'application/pdf': '.pdf',
+        'application/msword': '.doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+        'image/png': '.png',
+        'image/jpeg': '.jpeg',
+        'text/vnd.graphviz': '.gv',
+        'application/vnd.oasis.opendocument.text': '.odt',
+        'application/zip': '.zip',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+        'Null': '.pdf'
+    };
+
+    // Add the appropriate extension based on the MIME type
+    if (mimeToExtension[mimeType]) {
+        fileUrl += mimeToExtension[mimeType];
+    }
+
+    // Update the src attribute of the iframe
+    document.getElementById('fileViewer').src = fileUrl;
+
+    var fileSizeElement = document.getElementById('fileSize');
+    var sizeInBytes = parseInt(fileSizeElement.getAttribute('data-size'), 10);
+    var sizeInMB = (sizeInBytes / (1024)).toFixed(2);
+    fileSizeElement.textContent = sizeInMB + ' Ko';
+});
+
+function toggleDetails() {
+    var details = document.getElementById('cvDetails');
+    var button = document.getElementById('toggleButton');
+    if (details.style.display === 'none' || details.style.display === '') {
+        details.style.display = 'block';
+        button.textContent = 'Voir moins';
+    } else {
+        details.style.display = 'none';
+        button.textContent = 'Voir plus';
+    }
+}
     </script>
 </body>
 </html>
+{% endblock content %}

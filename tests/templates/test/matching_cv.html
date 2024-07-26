@@ -391,7 +391,7 @@
 
       const startTime = Date.now();
 
-      fetch('/rstelecom/process_matching/', {
+      fetch('{% url "process_matching" %}', {
           method: 'POST',
           body: formData,
       })
