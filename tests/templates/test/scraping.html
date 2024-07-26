@@ -1,3 +1,4 @@
+{%load static%}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,7 +10,7 @@
     <style>
         body {
             padding-top: 50px;
-            background-color: #e0f7fa;
+            background:url('{% static "test/images/lead_generator.png" %}');
             font-family: 'Arial', sans-serif;
         }
         .container {
@@ -23,10 +24,10 @@
             animation: fadeIn 1s ease-in-out;
         }
         h1 {
-            color: #00796b;
+            color: #03396c;
         }
         .form-control, .form-select {
-            border: 2px solid #00796b;
+            border: 2px solid #03396c;
             border-radius: 25px;
             padding: 10px 20px;
             font-size: 16px;
@@ -34,15 +35,15 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .form-control:focus, .form-select:focus {
-            border-color: #004d40;
+            border-color: #03396c;
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
         .form-control::placeholder {
             color: #999;
         }
         .btn-primary {
-            background-color: #004d40;
-            border-color: #004d40;
+            background-color: #03396c;
+            border-color: #03396c;
             border-radius: 25px;
             padding: 10px 20px;
             font-size: 18px;
@@ -50,18 +51,18 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .btn-primary:hover {
-            background-color: #00332e;
+            background-color: #03396c;
             transform: scale(1.05);
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
         a {
-            color: #00796b;
+            color: #03396c;
             text-decoration: none;
             font-weight: bold;
             transition: color 0.3s ease, text-shadow 0.3s ease;
         }
         a:hover {
-            color: #004d40;
+            color:#03396c;
             text-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         #status {
@@ -93,14 +94,14 @@
         }
         .loading-message {
             display: none;
-            color: #ff5722;
+            color: #264da3;
             font-weight: bold;
             margin-top: 20px;
         }
         .loading-spinner {
-            border: 4px solid rgba(0, 0, 0, 0.1);
+            border: 4px solid rgba(25, 12, 65, 0.1);
             border-radius: 50%;
-            border-top: 4px solid #00796b;
+            border-top: 4px solid #03396c;
             width: 40px;
             height: 40px;
             animation: spin 1s linear infinite;
@@ -204,7 +205,6 @@
                         <th>Salaire</th>
                         <th>Type de contrat</th>
                         <th>Date de publication</th>
-                        <th>Job Description</th>
                         <th>Porteur du lead</th>
                         <th>Actions</th>
                     </tr>
@@ -391,7 +391,6 @@
                         <th>Salaire</th>
                         <th>Type de contrat</th>
                         <th>Date de publication</th>
-                        <th>Job Description</th>
                         <th>Porteur du lead</th>
                         <th>Actions</th>
                     </tr>`;
@@ -403,14 +402,6 @@
                         <td>${item.salary}</td>
                         <td>${item.contract_type}</td>
                         <td>${item.publication_date}</td>
-                        <td>
-                            <div class="job-description">
-                                <p class="short">${item.job_description.slice(0, 100)}...</p>
-                                <p class="full" style="display: none;">${item.job_description}</p>
-                                <button class="btn btn-link show-more">Show more</button>
-                                <button class="btn btn-link show-less" style="display: none;">Show less</button>
-                            </div>
-                        </td>
                         <td>${item.porteur_lead}</td>
                         <td>
                             <a href="${item.detail_url}" target="_blank" class="btn btn-primary btn-sm">lien de l'offre</a>
@@ -446,7 +437,6 @@
                         <th>Localisation</th>
                         <th>Taille</th>
                         <th>Secteur</th>
-                        <th>Année de création</th>
                         <th>Lien vers le lead</th>
                         <th>Porteur du lead</th>
                         <th>Actions</th>
@@ -458,7 +448,6 @@
                         <td>${item.localisation}</td>
                         <td>${item.taille}</td>
                         <td>${item.secteur}</td>
-                        <td>${item.chiffre_d_affaires}</td>
                         <td><a href="${item.joblien}" target="_blank">Voir l'offre</a></td>
                         <td>${item.porteur_lead}</td>
                         <td>

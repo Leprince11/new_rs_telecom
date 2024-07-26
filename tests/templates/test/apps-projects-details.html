@@ -14,8 +14,8 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
-    <link href="{% static 'test/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css">
-    <link href="{% static 'test/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style">
+    <link href="{% static 'pulls/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css">
+    <link href="{% static 'pulls/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style">
     <style>
         .comment-item {
             position: relative;
@@ -53,7 +53,7 @@
                 <div id="comments-container">
                     {% for comment in comments %}
                     <div class="d-flex align-items-start mt-2 comment-item">
-                        <img class="me-3 avatar-sm rounded-circle" src="{% static 'test/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                        <img class="me-3 avatar-sm rounded-circle" src="{% static 'pulls/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
                         <div class="w-100 overflow-hidden">
                             <h5 class="mt-0">{{ comment.user_name }} {{comment.users_fname}}</h5>
                             {{ comment.comment }}
@@ -139,7 +139,7 @@
     <!-- /End-bar -->
 
     <!-- third party js -->
-    <script src="{% static 'test/assets/js/vendor/Chart.bundle.min.js' %}"></script>
+    <script src="{% static 'pulls/assets/js/vendor/Chart.bundle.min.js' %}"></script>
     <!-- third party js ends -->
     <!-- demo app -->
     <!-- end demo js-->
@@ -173,7 +173,7 @@
                         var newComment = document.createElement('div');
                         newComment.className = 'd-flex align-items-start mt-2 comment-item';
                         newComment.innerHTML = `
-                            <img class="me-3 avatar-sm rounded-circle" src="{% static 'test/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                            <img class="me-3 avatar-sm rounded-circle" src="{% static 'pulls/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
                             <div class="w-100 overflow-hidden">
                                 <h5 class="mt-0">${data.user_name}</h5>
                                 ${data.comment}

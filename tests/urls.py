@@ -26,10 +26,10 @@ urlpatterns = [
     
     path('submit-form-update/',views.update_lead,name='submit_form_update'),
 
-    path('display-leads/search-results/', views.search_results, name='search_results'),
+    path('display-leads-to-delete/search-results/', views.search_results, name='search_results'),
     #pour la suppression des leads ( affichage du tableau des leads + logique de suppression du lead )
-    path('display-leads/', views.display_leads, name='display_leads'),
-   path('display-leads/delete-lead/', views.delete_lead, name='delete_lead'),
+    path('display-leads-to-delete/', views.display_leads_to_delete, name='display_leads_to_delete'),
+   path('display-leads-to-delete/delete-lead/', views.delete_lead, name='delete_lead'),
     #path pour la génération des leads 
     path('GenerateLead/', views.scrapingPage, name='scraping_lead'),
     path('GenerateLead/start-scraping/' , views.start_scraping , name='start_scraping'),
@@ -69,6 +69,8 @@ urlpatterns = [
     path('pin_feedback/<int:id>/', views.pin_feedback, name='pin_feedback'),
     path('unpin_feedback/<int:id>/', views.unpin_feedback, name='unpin_feedback'),
     path('commentaires/<int:cv_id>/', views.historique_commentaires, name='commentaires'),
+    path('update_cv/',views.update_cv_fields,name='update_cv_fields')
+
     ]
 
 

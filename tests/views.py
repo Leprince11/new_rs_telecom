@@ -296,9 +296,10 @@ def update_lead(request):
 
 ############################################"
 @login_required_connect
-def display_leads(request):
+def display_leads_to_delete(request):
     leads = Leads.objects.all()
-    return render(request, 'test/display_leads.html', {'leads': leads})
+    return render(request, 'test/display_leads_to_delete.html', {'leads': leads})
+
 ###############################################"
 @login_required_connect
 def delete_lead(request):
@@ -592,7 +593,7 @@ def search_results(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    leads_data = list(page_obj.object_list.values('id', 'nom_offre', 'nom', 'nombre_offres', 'localisation_du_lead'))
+    leads_data = list(page_obj.object_list.values('id', 'nom_offre', 'nom', 'nombre_offres', 'localisation_du_lead','porteur_lead'))
     return JsonResponse({
         'leads': leads_data,
         'num_pages': paginator.num_pages,
@@ -942,7 +943,7 @@ def get_cvs():
     cursor = db.cursor()
 
     # Exécuter la requête SQL pour récupérer les données de la table cv
-    cursor.execute("SELECT c.id, c.name, c.store_fname , c.mimetype , c.create_uid as cv_proprio, u.id as user_id, u.login as email_utilisateur , c.create_date , c.write_date , c.file_size c from cv as c left join odoo_users as u on c.create_uid = u.id ;")
+    cursor.execute("SELECT c.id, c.name, c.store_fname , c.mimetype , c.create_uid as cv_proprio, u.id as user_id, u.login as email_utilisateur , c.create_date , c.write_date , c.file_size , c.tjm , c.description c from cv as c left join odoo_users as u on c.create_uid = u.id ;")
 
     # Récupérer les résultats de la requête
     cvs = cursor.fetchall()
@@ -1133,7 +1134,32 @@ def cv_detail(request, cv_id):
 
     return render(request, 'test/cv_detail.html', {'cv': cv, 'cv_file_url': cv_file_url, 'proprietaire': liste_info, 'comments': comments})
     
+def update_cv_fields(request, cv_id):
+    if request.method == 'POST':
+        tjm = request.POST.get('tjm')
+        description = request.POST.get('description')
 
+        try:
+            # Connexion à la base de données
+            db = MySQLdb.connect(
+                host=config('DB_HOST'),
+                user=config('DB_USER'),
+                passwd=config('DB_PASSWORD'),
+                db=config('DB_NAME'),
+                port=3306
+            )
+            cursor = db.cursor()
+            if tjm is not None:
+                cursor.execute("UPDATE cv SET tjm = %s WHERE id = %s", (tjm, cv_id))
+            if description is not None:
+                cursor.execute("UPDATE cv SET description = %s WHERE id = %s", (description, cv_id))
+            db.commit()
+            db.close()
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 def get_facs():
     # Configuration de la connexion à la base de données Odoo
@@ -1650,3 +1676,6 @@ def unpin_feedback(request, id):
     return JsonResponse({'message': 'Requête invalide'}, status=400)
 
 
+
+def cv_det(request):
+    return render(request,'test/cv_detail.html')
