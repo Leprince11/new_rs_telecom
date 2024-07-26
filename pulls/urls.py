@@ -15,24 +15,19 @@ urlpatterns = [
 
     path('anonymise',views.anonymise, name='anonymise'),
 
-    path("profil", views.profil, name="profil"),
-    path("verification", views.verification, name="verification"),
+    path("Informations", views.profil, name="profil"),
+    path('Informations/<uuid:user_id>/', views.profil, name='edith_profil'),
+    path('Informations/update_profile/', views.update_profile_ajax, name='update_profile'),
     path('change_pass', views.change_password, name='change_passe'),
+    path("verification", views.verification, name="verification"),
+
+    #gestion de fiche de paie
+    path('Employes', views.fiche_paie,name='employes'),
+    path('employes_all', views.getEmploye,name='getEmployes'),
     
 
 
 
     path('Home', views.home , name='dashboard'),
-    #gestion du copmte rendu d'activite
-    path('CRA', views.getcra,name='cra'),
-    #gestion de demande de conges
-    path('conge', views.conge,name='conge'),
-    #gestion de fiche de paie
-    path('fiche_de_paie', views.fiche_paie,name='fiche_paie'),
-    #gestion de note de fraie
-    path('note_de_fraie', views.note_frais,name='note_frais'),
-
-
-
 
 ]

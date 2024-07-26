@@ -1,0 +1,156 @@
+{% extends 'layouts/bases.html' %}
+{% load static %}
+
+{% block content %}
+                        
+     <!-- start page title -->
+     <div class="row">
+        <div class="col-12">
+            <div class="page-title-box">
+                <div class="page-title-right">
+                    <ol class="breadcrumb m-0">
+                        <li class="breadcrumb-item"><a href="javascript: void(0);">R&S-TELECOM</a></li>
+                        <li class="breadcrumb-item"><a href="javascript: void(0);">Application</a></li>
+                        <li class="breadcrumb-item active">Employés</li>
+                    </ol>
+                </div>
+                <h4 class="page-title">Employés</h4>
+            </div>
+        </div>
+    </div>
+    <!-- end page title -->
+    
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-sm-4">
+                            <a href="javascript:void(0);" class="btn btn-danger mb-2"><i class="mdi mdi-plus-circle me-2"></i> Employé</a>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="text-sm-end">
+                                <button type="button" class="btn btn-success mb-2 me-1"><i class="mdi mdi-cog"></i></button>
+                                <button type="button" class="btn btn-light mb-2 me-1">Import</button>
+                                <button type="button" class="btn btn-light mb-2">Export</button>
+                            </div>
+                        </div><!-- end col-->
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-centered table-striped dt-responsive nowrap w-100" id="products-datatable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20px;">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="customCheck1">
+                                            <label class="form-check-label" for="customCheck1">&nbsp;</label>
+                                        </div>
+                                    </th>
+                                    <th>Nom/Prenom</th>
+                                    <th>telephone</th>
+                                    <th>Adresse email</th>
+                                    <th>Company</th>
+                                    <th>Joind</th>
+                                    <th>Status</th>
+                                    <th style="width: 75px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for user in users %}  
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="customCheck13">
+                                            <label class="form-check-label" for="customCheck13">&nbsp;</label>
+                                        </div>
+                                    </td>
+                                    <td class="table-user">
+                                        <img src="{% if user.profile_photo %} pulls/assets/images/users/{{ user.profile_photo }} {% else %} {% static 'images/logo.png' %} {% endif %}" alt="table-user" class="me-2 rounded-circle">
+                                        <a href="javascript:void(0);" class="text-body fw-semibold">{{ user.users_name|default:"N/A" }} {{ user.users_fname|default:"N/A" }}</a>
+                                    </td>
+                                    <td>
+                                        {{ user.users_type|default:"N/A" }}
+                                    </td>
+                                    <td>
+                                        {{ user.users_mail|default:"N/A" }}
+                                    </td>
+                                    <td>
+                                        {{ user.users_company|default:"N/A" }}
+                                    </td>
+                                    <td>
+                                        {{ user.created_date|default:"N/A" }}
+                                    </td>
+                                    <td>
+                                        {% if user.users_is_active %}
+                                            <span class="badge badge-success-lighten">Active</span>
+                                        {% else %}
+                                            <span class="badge badge-danger-lighten">Inactive</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'edith_profil' user.id_user %}" class="action-icon"> <i class="mdi mdi-square-edit-outline text-primary"></i></a>
+                                        <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete text-danger"></i></a>
+                                    </td>
+                                </tr>
+                                
+                                {% endfor  %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div> <!-- end card-body-->
+            </div> <!-- end card-->
+        </div> <!-- end col -->
+    </div>
+    <!-- end row -->
+{% endblock %}
+
+{% block js %}
+<!-- <script src="{% static 'pulls/assets/js/vendor/jquery.dataTables.min.js' %}"></script>
+ -->
+<script src="{% static 'pulls/assets/js/vendor/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/dataTables.bootstrap5.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/responsive.bootstrap5.min.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/dataTables.checkboxes.min.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'pulls/assets/js/pages/demo.customers.js' %}"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        fetch('employes_all', {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            const tableBody = document.getElementById('table-body');
+            data.forEach(item => {
+                const row = document.createElement('tr');
+                const profilePhoto = item.profile_photo ? `pulls/assets/images/users/${item.profile_photo}` : "{% static 'images/logo.png' %}";
+
+                row.innerHTML = `
+                    <td class="table-user">
+                        <img src="${profilePhoto}" alt="table-user" class="me-2 rounded-circle" width="40">
+                        <a href="javascript:void(0);" class="text-body fw-semibold">${item.users_name} ${item.users_fname}</a>
+                    </td>
+                    <td>${item.users_phone || 'N/A'}</td>
+                    <td>${item.users_mail}</td>
+                    <td>${item.users_region || 'N/A'}</td>
+                    <td>${new Date(item.created_date).toLocaleDateString()}</td>
+                    <td>
+                        <span class="badge badge-${item.users_is_active ? 'success' : 'danger'}-lighten">${item.users_is_active ? 'Active' : 'Inactive'}</span>
+                    </td>
+                    <td>
+                        <a href="javascript:void(0);" class="action-icon" id="customer-edit-${item.id_user}"> <i class="mdi mdi-square-edit-outline"></i></a>
+                        <a href="javascript:void(0);" class="action-icon" id="customer-delete-${item.id_user}"> <i class="mdi mdi-delete"></i></a>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        })
+        .catch(error => console.error('Erreur lors de la requête:', error));
+    });
+</script>
+{% endblock %}

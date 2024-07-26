@@ -1,73 +1,71 @@
 from django.db import models
 import uuid
-import pyotp
-import qrcode
-import qrcode.image.svg
+import pyotp # type: ignore
+import qrcode # type: ignore
+import qrcode.image.svg # type: ignore
 from typing import Optional
 
-class User(models.Model):
-    id_user        = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
-    users_name     = models.CharField(max_length=255)
-    users_fname    = models.CharField(max_length=255)
-    created_date   = models.DateTimeField(auto_now_add=True)
-    delete_date    = models.DateTimeField(null=True)
-    update_date    = models.DateTimeField(null=True)
-    users_phone    = models.CharField(max_length=255,null=True)
-    users_company  = models.CharField(max_length=255)
-    # users_tjm      = models.CharField(max_length=255,null=True)
-    users_mail     = models.CharField(max_length=50,unique=True)
-    users_type     = models.CharField(max_length=255)
+class Clients(models.Model):
+    id_client = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    client_name = models.CharField(max_length=255)
+    client_location=models.CharField(max_length=255,null=True)
+    client_created = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.client_name
+
+class Users(models.Model):
+    id_user = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    users_name = models.CharField(max_length=255)
+    users_fname = models.CharField(max_length=255)
+    created_date = models.DateTimeField(auto_now_add=True)
+    delete_date = models.DateTimeField(null=True)
+    update_date = models.DateTimeField(null=True)
+    users_phone = models.CharField(max_length=255, null=True, blank=True)
+    users_company = models.CharField(max_length=255)
+    users_mail = models.CharField(max_length=50, unique=True)
+    users_type = models.CharField(max_length=255)
+    users_bio = models.CharField(max_length=255 , null=True, blank=True)
     users_password = models.CharField(max_length=128)
-    users_region   = models.CharField(max_length=255)
-    users_address  = models.CharField(max_length=255)
-    users_postal   =models.CharField(max_length=10,null=True)
-    users_is_active= models.BooleanField(default=True)
-    users_preavis  = models.BooleanField(default=True)
-    verifopt       = models.BooleanField(default=False)
+    users_region = models.CharField(max_length=255)
+    users_address = models.CharField(max_length=255)
+    users_postal = models.CharField(max_length=10, null=True)
+    users_is_active = models.BooleanField(default=True)
+    users_preavis = models.BooleanField(default=True)
+    profile_photo = models.ImageField(upload_to='photos_profil/', null=True, blank=True)
+    mission = models.ForeignKey('Mission', on_delete=models.CASCADE, related_name='all_mission', null=True, blank=True)
+    client = models.ForeignKey('Clients', on_delete=models.SET_NULL, related_name='users', null=True, blank=True)
 
     class Meta:
-        db_table = 'users'
+        db_table = 'Employés'
 
-class Group(models.Model):
-    id_goupe = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
-    type_users = models.CharField(max_length=50)
+class Groups(models.Model):
+    id_group = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    group_name = models.CharField(max_length=255)
+    created_date = models.DateTimeField(auto_now_add=True)
+    members = models.ManyToManyField(Users, related_name='groups')
+
     class Meta:
-        db_table = 'Type_collaborateur'
+        db_table = 'Type_Colaborateur'
 
 class Mission(models.Model):
-    id_mission = models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
-    start_mission= models.DateTimeField()
-    end_mission= models.DateTimeField()
-    client_mission=models.CharField(max_length=255)
+    id_mission = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    mission_name = models.CharField(max_length=255,blank=True)
+    mission_description = models.TextField(null=True,blank=True)
+    mission_manager = models.CharField(max_length=100,null=True,blank=True)
+    mission_start = models.DateTimeField(null=True)
+    mission_end = models.DateTimeField(null=True)
+    mission_created = models.DateTimeField(auto_now_add=True,null=True)
+    mission_deleted = models.DateTimeField(null=True, blank=True)
 
-class CRA(models.Model):
+    def __str__(self):
+        return self.mission_name
 
-    categorie_choices={
-        '1':'Mission',
-        '2':'congé',
-    }
-
-    id_cra=models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
-    created_cra=models.DateField(auto_now_add=True)
-    start_date = models.DateField(default=None)
-    end_date = models.DateField(default=None)
-    categorie=models.CharField(max_length=255,choices=categorie_choices,default='1')
-    class Meta:
-        db_table = 'Compte_rendu_activite'
-
-
-class Conge(models.Model):
-    id_conge=models.UUIDField(primary_key = True, default = uuid.uuid4, editable = False)
-    created_date=models.DateField(auto_now_add=True)
-    delete_date=models.DateTimeField(null=True)
-    update_date = models.DateTimeField(null=True)
-    class Meta:
-        db_table = 'Conge'
 
 
 class UserTwoFactorAuthData(models.Model):
     user = models.OneToOneField(
-        User,
+        Users,
         related_name='two_factor_auth_data',
         on_delete=models.CASCADE
     )
