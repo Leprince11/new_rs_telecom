@@ -69,7 +69,7 @@ urlpatterns = [
     path('pin_feedback/<int:id>/', views.pin_feedback, name='pin_feedback'),
     path('unpin_feedback/<int:id>/', views.unpin_feedback, name='unpin_feedback'),
     path('commentaires/<int:cv_id>/', views.historique_commentaires, name='commentaires'),
-    path('update_cv/',views.update_cv_fields,name='update_cv_fields')
+    path('update_cv/', views.update_cv, name='update_cv'),
 
     ]
 

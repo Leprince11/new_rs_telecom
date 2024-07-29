@@ -1,3 +1,4 @@
+{%load static%}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -9,7 +10,7 @@
     <style>
         body {
             padding-top: 50px;
-            background: linear-gradient(to bottom right, #0f2027, #203a43, #2c5364);
+            background: url('{% static "test/images/lead_generator.png" %}');
             font-family: 'Roboto', sans-serif;
             animation: fadeInBackground 1s ease-in-out;
         }
@@ -46,13 +47,13 @@
         }
 
         h2 {
-            color: #1B4F72;
+            color: #03396c;
             margin-bottom: 30px;
             font-weight: 700;
         }
 
         .form-control {
-            border: 2px solid #1B4F72;
+            border: 2px solid #03396c;
             border-radius: 25px;
             padding: 10px 20px;
             font-size: 16px;
@@ -61,7 +62,7 @@
         }
 
         .form-control:focus {
-            border-color: #1B4F72;
+            border-color: #03396c;
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
 
@@ -70,8 +71,8 @@
         }
 
         .btn-primary {
-            background-color: #1B4F72;
-            border-color: #1B4F72;
+            background-color: #03396c;
+            border-color: #03396c;
             border-radius: 25px;
             padding: 10px 20px;
             font-size: 18px;
@@ -81,7 +82,7 @@
         }
 
         .btn-primary:hover {
-            background-color: #00332e;
+            background-color: #03396c;
             transform: scale(1.05);
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }

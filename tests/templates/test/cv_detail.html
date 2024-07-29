@@ -90,6 +90,10 @@
     .swap-buttons button {
         margin: 0 10px;
     }
+    .editable {
+        border: 1px solid #007bff;
+        background-color: #e9ecef;
+    }
 </style>
 {% endblock css %}
 
@@ -101,12 +105,12 @@
             <div class="page-title-box">
                 <div class="page-title-right">
                     <ol class="breadcrumb m-0">
-                        <li class="breadcrumb-item"><a href="javascript: void(0);">Hyper</a></li>
-                        <li class="breadcrumb-item"><a href="javascript: void(0);">eCommerce</a></li>
-                        <li class="breadcrumb-item active">Détails sur le CV {{cv.id}}</li>
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Accueil</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'choix_leads' %}">Leads & CVs</a></li>
+                        <li class="breadcrumb-item active">Détails du CV</li>
                     </ol>
                 </div>
-                <h4 class="page-title">Détails sur le CV {{cv.id}}</h4>
+                <h4 class="page-title mt-1">Détails sur le CV {{cv.id}}</h4>
             </div>
         </div>
     </div>
@@ -150,30 +154,36 @@
                                     <p class="card-text"><strong>Chemin vers le fichier :</strong> {{ cv.2 }}</p>
                                     <p class="card-text"><strong>Taille du fichier:</strong> <span id="fileSize" data-size="{{ cv.9 }}"></span></p>
                                 </div>
-                                <button id="toggleButton" class="btn btn-primary mt-3" onclick="toggleDetails()">Voir plus</button>
+                                <button id="toggleButton" class="btn btn-primary mt-3">Voir plus</button>
                                 
                                 
                                 <!-- TJM and Maquettage button in two columns -->
                                 <div class="row mt-4">
-                                    <div class="col-md-4 mt-3">
-                                        <button type="button " onclick="location.href='https://rs-telecom-5fe33.web.app/';" class="btn btn-danger ms-2"><i class="mdi mdi-cart me-1"></i>Maquettage</button>
+                                    <div class="col-md-4 mt-4">
+                                        <button type="button" class="btn btn-danger ms-2" id="maquettageButton"><i class="mdi mdi-cart me-1"></i>Maquettage</button>
                                     </div>
-                                    <div class="col-md-4 mt-1">
+                                    <div class="col-md-4">
                                         <h6 class="font-14 text-align text-center">TJM</h6>
-                                        <h4 class="text-align text-center">$139.58</h4>
+                                        <input type="text" id="tjm" class="form-control" value="{{ cv.10 }}" readonly>
+                                        <button id="edit-tjm" class="btn btn-warning mt-2" type="button" style="color: #fff;">Modifier TJM</button>
+                                        <button id="save-tjm" class="btn btn-success mt-2" type="button" style="display: none;">Sauvegarder</button>
+                                        <button id="cancel-tjm" class="btn btn-danger mt-2" type="button" style="display: none;">Annuler</button>
+                                        <div><h4><span class="tjm-feedback" id="tjm-feedback"></span></h4></div>
                                     </div>
-                                    <div class="col-md-4 mt-3">
-                                    <h4><span class="badge badge-success-lighten">Issu de Odoo archives</span></h4> <!-- à modifier pour les nouveaux CVs-->
+                                    <div class="col-md-4 mt-4">
+                                        <h4><span class="badge badge-success-lighten">Issu de Odoo archives</span></h4> <!-- à modifier pour les nouveaux CVs-->
                                     </div>
-                                    
                                 </div>
                                 <!-- Product description -->
                                 <div class="mt-4">
                                     <h6 class="font-14">Description:</h6>
-                                    <p>It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout. The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English.</p>
+                                    
+                                    <textarea id="description" class="form-control" rows="3" readonly>{{ cv.11 }}</textarea>
+                                    <button id="edit-description" class="btn btn-warning mt-2" type="button" style="color: #fff;">Modifier Description</button>
+                                    <button id="save-description" class="btn btn-success mt-2" type="button" style="display: none;">Sauvegarder</button>
+                                    <button id="cancel-description" class="btn btn-danger mt-2" type="button" style="display: none;">Annuler</button>
+                                    <div><h4><span class="description-feedback" id="description-feedback"></span></h4></div>
                                 </div>
-                                <!-- Product information -->
-                                
                             </form>
                         </div> <!-- end col -->
                     </div> <!-- end row-->
@@ -205,7 +215,7 @@
                     <div id="comments-container">
                         {% for comment in comments %}
                         <div class="d-flex align-items-start mt-2 comment-item">
-                            <img class="me-3 avatar-sm rounded-circle" src="{% static 'test/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                            <img class="me-3 avatar-sm rounded-circle" src="{% static 'pulls/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
                             <div class="w-100 overflow-hidden">
                                 <h5 class="mt-0">{{ comment.user_name }} {{comment.users_fname}}</h5>
                                 {{ comment.comment }}
@@ -266,19 +276,109 @@
 
 {% block js %}
 <!-- third party js -->
-<script src="{% static 'test/assets/js/vendor/Chart.bundle.min.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/Chart.bundle.min.js' %}"></script>
 <!-- third party js ends -->
 <!-- demo app -->
-<script src="{% static 'test/assets/js/pages/demo.project-detail.js' %}"></script>
+<script src="{% static 'pulls/assets/js/pages/demo.project-detail.js' %}"></script>
 <!-- end demo js-->
-
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        var csrfToken = getCookie('csrftoken');
+document.addEventListener("DOMContentLoaded", function() {
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 
-    function LeaveCommentaire(id,name){
+    var csrfToken = getCookie('csrftoken');
+
+    function enableEditing(field) {
+        var element = document.getElementById(field);
+        var editButton = document.getElementById('edit-' + field);
+        var saveButton = document.getElementById('save-' + field);
+        var cancelButton = document.getElementById('cancel-' + field);
+
+        element.removeAttribute('readonly');
+        element.classList.add('editable');
+        editButton.style.display = 'none';
+        saveButton.style.display = 'inline';
+        cancelButton.style.display = 'inline';
+    }
+
+    function disableEditing(field) {
+        var element = document.getElementById(field);
+        var editButton = document.getElementById('edit-' + field);
+        var saveButton = document.getElementById('save-' + field);
+        var cancelButton = document.getElementById('cancel-' + field);
+
+        element.setAttribute('readonly', true);
+        element.classList.remove('editable');
+        editButton.style.display = 'inline';
+        saveButton.style.display = 'none';
+        cancelButton.style.display = 'none';
+    }
+
+    function CreateFeedback(id, data) {
+        const divMessage = document.getElementById(id);
+        divMessage.classList.remove('badge', 'bg-danger-lighten', 'bg-success-lighten'); // Remove previous classes
+
+        if (data.success) {
+            divMessage.innerText = 'Votre modification a bien été prise en compte';
+            divMessage.classList.add('badge', 'bg-success-lighten','text-success');
+        } else {
+            divMessage.innerText = 'Votre modification n\'a pas été prise en compte';
+            divMessage.classList.add('badge', 'bg-danger-lighten','text-danger');
+        }
+        
+        setTimeout(() => divMessage.innerText = '', 3000);
+    }
+
+    function saveChanges(field) {
+        var element = document.getElementById(field);
+        var value = element.value;
+        var cv_id = '{{ cv.0 }}';
+
+        var formData = new FormData();
+        formData.append('cv_id', cv_id);
+        formData.append('field', field);
+        formData.append('value', value);
+
+        fetch('{% url "update_cv" %}', {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                let chemin = field + '-feedback';
+                disableEditing(field);
+                CreateFeedback(chemin, data);
+            } else {
+                alert('Erreur lors de la mise à jour. Veuillez réessayer.');
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+
+    function LeaveCommentaire(id, name) {
         document.getElementById(id).addEventListener('click', function() {
-            var cv_id = document.getElementById('cv_id').getAttribute('data_id'); // Correction ici
+            var cv_id = document.getElementById('cv_id').getAttribute('data_id');
             var comment = document.getElementsByName(name)[0].value;
 
             var formData = new FormData();
@@ -300,12 +400,11 @@
                     feedback.classList.add('text-success');
                     setTimeout(() => feedback.innerText = '', 3000);
                     document.getElementById('comment-form').reset();
-                    // Ajouter le nouveau commentaire à la liste des commentaires
                     var commentsContainer = document.getElementById('comments-container');
                     var newComment = document.createElement('div');
                     newComment.className = 'd-flex align-items-start mt-2 comment-item';
                     newComment.innerHTML = `
-                        <img class="me-3 avatar-sm rounded-circle" src="{% static 'test/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                        <img class="me-3 avatar-sm rounded-circle" src="{% static 'pulls/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
                         <div class="w-100 overflow-hidden">
                             <h5 class="mt-0">${data.user_name}</h5>
                             ${data.comment}
@@ -313,12 +412,12 @@
                         </div>`;
                     commentsContainer.prepend(newComment);
                     var feedbacke = document.getElementById('feedback_' + cvId);
-                        feedbacke.innerText = 'Commentaire ajouté : ' + data.message;
-                        feedbacke.classList.add('text-success');
-                        setTimeout(() => feedbacke.innerText = '', 3000); // Enlever le feedback après 3 secondes
-                        document.getElementById('modal-comment-' + cvId).value = '';
-                        var modal = new bootstrap.Modal(document.getElementById('success-alert-modal-' + cvId));
-                        modal.show();
+                    feedbacke.innerText = 'Commentaire ajouté : ' + data.message;
+                    feedbacke.classList.add('text-success');
+                    setTimeout(() => feedbacke.innerText = '', 3000);
+                    document.getElementById('modal-comment-' + cvId).value = '';
+                    var modal = new bootstrap.Modal(document.getElementById('success-alert-modal-' + cvId));
+                    modal.show();
                 } else {
                     feedback.innerText = 'Erreur : ' + data.error;
                     feedback.classList.add('text-danger');
@@ -327,87 +426,84 @@
             })
             .catch(error => console.error('Fetch error:', error));
         });
-    }    
-
-    LeaveCommentaire("submit-comment","comment");
-    LeaveCommentaire("envoyer_commentaire","comment1");
-
-        // Fonction pour récupérer le token CSRF
-        function getCookie(name) {
-            let cookieValue = null;
-            if (document.cookie && document.cookie !== '') {
-                const cookies = document.cookie.split(';');
-                for (let i = 0; i < cookies.length; i++) {
-                    const cookie = cookies[i].trim();
-                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                        break;
-                    }
-                }
-            }
-            return cookieValue;
-        }
-
-        var filename = "{{ cv.2 }}";
-        var mimeType = "{{ cv.3 }}";
-        var fileUrlBase = "/media/CV/filestore/" + filename;
-        var fileUrl = fileUrlBase; // Default to the base URL
-
-        // Mapping MIME types to file extensions
-        var mimeToExtension = {
-            'application/pdf': '.pdf',
-            'application/msword': '.doc',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
-            'image/png': '.png',
-            'image/jpeg': '.jpeg',
-            'text/vnd.graphviz': '.gv',
-            'application/vnd.oasis.opendocument.text': '.odt',
-            'application/zip': '.zip',
-            'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
-            'Null': '.pdf'
-        };
-
-        // Add the appropriate extension based on the MIME type
-        if (mimeToExtension[mimeType]) {
-            fileUrl += mimeToExtension[mimeType];
-        }
-
-        // Update the src attribute of the iframe
-        document.getElementById('fileViewer').src = fileUrl;
-
-        var fileSizeElement = document.getElementById('fileSize');
-        var sizeInBytes = parseInt(fileSizeElement.getAttribute('data-size'), 10);
-        var sizeInMB = (sizeInBytes / (1024)).toFixed(2);
-        fileSizeElement.textContent = sizeInMB + ' Ko';
-    });
-
-    function toggleDetails() {
-        var details = document.getElementById('cvDetails');
-        var button = document.getElementById('toggleButton');
-        if (details.style.display === 'none' || details.style.display === '') {
-            details.style.display = 'block';
-            button.textContent = 'Voir moins';
-        } else {
-            details.style.display = 'none';
-            button.textContent = 'Voir plus';
-        }
     }
 
-    // Fonction pour inverser les sections
-    document.getElementById('swap-up').addEventListener('click', function() {
-        var contentSections = document.getElementById('content-sections');
-        var firstSection = contentSections.firstElementChild;
-        if (firstSection && firstSection.nextElementSibling) {
-            contentSections.insertBefore(firstSection.nextElementSibling, firstSection);
-        }
+    LeaveCommentaire("submit-comment", "comment");
+    LeaveCommentaire("envoyer_commentaire", "comment1");
+
+    document.getElementById('edit-tjm').addEventListener('click', function() {
+        enableEditing('tjm');
     });
 
-    document.getElementById('swap-down').addEventListener('click', function() {
-        var contentSections = document.getElementById('content-sections');
-        var lastSection = contentSections.lastElementChild;
-        if (lastSection && lastSection.previousElementSibling) {
-            contentSections.insertBefore(lastSection, lastSection.previousElementSibling);
-        }
+    document.getElementById('save-tjm').addEventListener('click', function() {
+        saveChanges('tjm');
     });
+
+    document.getElementById('cancel-tjm').addEventListener('click', function() {
+        disableEditing('tjm');
+    });
+
+    document.getElementById('edit-description').addEventListener('click', function() {
+        enableEditing('description');
+    });
+
+    document.getElementById('save-description').addEventListener('click', function() {
+        saveChanges('description');
+    });
+
+    document.getElementById('cancel-description').addEventListener('click', function() {
+        disableEditing('description');
+    });
+
+    document.getElementById('maquettageButton').addEventListener('click', function() {
+        location.href = 'https://rs-telecom-5fe33.web.app/';
+    });
+
+    document.getElementById('toggleButton').addEventListener('click', function(event) {
+        event.preventDefault();
+        toggleDetails();
+    });
+
+    var filename = "{{ cv.2 }}";
+    var mimeType = "{{ cv.3 }}";
+    var fileUrlBase = "/media/CV/filestore/" + filename;
+    var fileUrl = fileUrlBase; // Default to the base URL
+
+    var mimeToExtension = {
+        'application/pdf': '.pdf',
+        'application/msword': '.doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+        'image/png': '.png',
+        'image/jpeg': '.jpeg',
+        'text/vnd.graphviz': '.gv',
+        'application/vnd.oasis.opendocument.text': '.odt',
+        'application/zip': '.zip',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
+        'Null': '.pdf'
+    };
+
+    if (mimeToExtension[mimeType]) {
+        fileUrl += mimeToExtension[mimeType];
+    }
+
+    document.getElementById('fileViewer').src = fileUrl;
+
+    var fileSizeElement = document.getElementById('fileSize');
+    var sizeInBytes = parseInt(fileSizeElement.getAttribute('data-size'), 10);
+    var sizeInMB = (sizeInBytes / (1024)).toFixed(2);
+    fileSizeElement.textContent = sizeInMB + ' Ko';
+});
+
+function toggleDetails() {
+    var details = document.getElementById('cvDetails');
+    var button = document.getElementById('toggleButton');
+    if (details.style.display === 'none' || details.style.display === '') {
+        details.style.display = 'block';
+        button.textContent = 'Voir moins';
+    } else {
+        details.style.display = 'none';
+        button.textContent = 'Voir plus';
+    }
+}
 </script>
 {% endblock %}

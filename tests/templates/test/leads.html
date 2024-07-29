@@ -106,7 +106,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>Recherche de Leads</h2>
+        <h2 style="color:#03396c;"><strong>Recherche de Leads à modifier</strong></h2>
         <div class="search-container mb-3">
             <form id="searchForm" class="d-flex" method="post" action="" onsubmit="return false;">
                 <select id="searchType" class="form-select me-2" style="max-width: 200px;">
@@ -122,7 +122,6 @@
                     <tr>
                         <th>Nom de l'offre</th>
                         <th>Nom de l'entreprise</th>
-                        <th>Nombre d'offres</th>
                         <th>Localisation</th>
                         <th>Action</th>
                     </tr>
@@ -132,10 +131,9 @@
                     <tr class="{% if lead.id|stringformat:'s' == updated_id|stringformat:'s' %}highlight{% endif %}">
                         <td>{{ lead.nom_offre }}</td>
                         <td>{{ lead.nom }}</td>
-                        <td>{{ lead.nombre_offres }}</td>
                         <td>{{ lead.localisation_du_lead }}</td>
                         <td>
-                            <button class="btn btn-primary btn-update btn-sm" onclick="window.location.href='{{ lead.id }}'">Mettre à jour</button>
+                        <button class="btn btn-primary btn-update btn-sm" onclick="window.location.href='{{ lead.id }}'">Mettre à jour</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -166,7 +164,6 @@
                         newRow.innerHTML = `
                             <td>${row.nom_offre}</td>
                             <td>${row.nom}</td>
-                            <td>${row.nombre_offres}</td>
                             <td>${row.localisation_du_lead}</td>
                             <td>
                                 <button class="btn btn-primary btn-update btn-sm" onclick="window.location.href='${row.id}'">Mettre à jour</button>

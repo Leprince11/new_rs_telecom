@@ -102,6 +102,7 @@
                                             <div class="btn-group dropdown">
                                                 <a href="#" class="table-action-btn dropdown-toggle arrow-none btn btn-light btn-xs" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-horizontal"></i></a>
                                                 <div class="dropdown-menu dropdown-menu-end">
+                                                    <a class="dropdown-item delete-file" href="{% url 'cv_detail' cv.id %}" data-id="{{ cv.id }}"><i class="dripicons-search"></i>  Détails du CV</a>
                                                     <a class="dropdown-item rename-file" href="#" data-name="{{ cv.name }}" data-id="{{ cv.id }}"><i class="mdi mdi-pencil me-2 text-muted vertical-middle"></i>Renommer</a>
                                                     <a class="dropdown-item delete-file" href="#" data-id="{{ cv.id }}"><i class="mdi mdi-delete me-2 text-muted vertical-middle"></i>Retirer</a>
                                                 </div>

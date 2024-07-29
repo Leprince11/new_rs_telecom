@@ -45,7 +45,7 @@ from django.core.cache import cache
 from decouple import config
 import os
 from pathlib import Path
-
+from django.db import transaction
 import asyncio
 import aiohttp
 from concurrent.futures import ThreadPoolExecutor
@@ -930,7 +930,6 @@ afficher les CVs post-migration de la CV-tech afin de respecter par la suite ce 
 import MySQLdb
 
 def get_cvs():
-    # Configuration de la connexion à la base de données Odoo
     db = MySQLdb.connect(
         host=config('DB_HOST'),
         user=config('DB_USER'),
@@ -938,24 +937,84 @@ def get_cvs():
         db=config('DB_NAME'),
         port=3306
     )
-
-    # Créer un curseur pour exécuter les requêtes SQL
     cursor = db.cursor()
-
-    # Exécuter la requête SQL pour récupérer les données de la table cv
-    cursor.execute("SELECT c.id, c.name, c.store_fname , c.mimetype , c.create_uid as cv_proprio, u.id as user_id, u.login as email_utilisateur , c.create_date , c.write_date , c.file_size , c.tjm , c.description c from cv as c left join odoo_users as u on c.create_uid = u.id ;")
-
-    # Récupérer les résultats de la requête
+    cursor.execute("SELECT c.id, c.name, c.store_fname, c.mimetype, c.create_uid, u.id as user_id, u.login as email_utilisateur, c.create_date, c.write_date, c.file_size, c.tjm, c.description FROM cv as c LEFT JOIN odoo_users as u ON c.create_uid = u.id;")
     cvs = cursor.fetchall()
-    print('la récupération des Cvs s\'est correctement effectuée ')
-    # Fermer la connexion à la base de données
     db.close()
-
-    # Retourner les résultats
     return cvs
 
-from datetime import datetime
-from django.db import transaction
+@login_required_connect
+def cv_detail(request, cv_id):
+    actual_path = f"{os.getcwd()}/tests"
+    CV_ROOT = "/media/CV/filestore/"
+
+    cvs = get_cvs()
+    cv = next((cv for cv in cvs if int(cv[0]) == cv_id), None)
+    if cv is None:
+        print(f'Le CV avec l\'ID {cv_id} n\'a pas été trouvé.')
+        return render(request, 'test/choix_leads.html')  # Page 404 si le CV n'est pas trouvé
+
+    cv_file_path = os.path.join(CV_ROOT, cv[2])
+    proprietaire_cv = cv[6].split('@')[0]
+    if '.' in proprietaire_cv:
+        nom = proprietaire_cv.split('.')[1]
+        prenom = proprietaire_cv.split('.')[0]
+    else:
+        nom = proprietaire_cv
+        prenom = proprietaire_cv
+
+    nom_du_cv = cv[1]
+    nom_cv = get_noms_cvs(nom_du_cv)
+
+    liste_info = [nom, prenom, nom_cv]
+    cv_file_path = Path(cv_file_path)
+    cv_file_url = f'file:///{cv_file_path.as_posix()}'
+
+    db = MySQLdb.connect(
+        host=config('DB_HOST'),
+        user=config('DB_USER'),
+        passwd=config('DB_PASSWORD'),
+        db=config('DB_NAME'),
+        port=3306
+    )
+    cursor = db.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT * FROM comments WHERE cv_id = %s ORDER BY created_at DESC", [cv_id])
+    comments = cursor.fetchall()
+    db.close()
+
+    return render(request, 'test/cv_detail.html', {'cv': cv, 'cv_file_url': cv_file_url, 'proprietaire': liste_info, 'comments': comments})
+
+
+def update_cv(request):
+    if request.method == 'POST':
+        try:
+            cv_id = request.POST.get('cv_id')
+            field = request.POST.get('field')
+            value = request.POST.get('value')
+
+            db = MySQLdb.connect(
+                host=config('DB_HOST'),
+                user=config('DB_USER'),
+                passwd=config('DB_PASSWORD'),
+                db=config('DB_NAME'),
+                port=3306
+            )
+            cursor = db.cursor()
+
+            if field in ['tjm', 'description']:
+                query = f"UPDATE cv SET {field} = %s WHERE id = %s"
+                cursor.execute(query, [value, cv_id])
+                db.commit()
+                db.close()
+                return JsonResponse({'success': True})
+
+            db.close()
+            return JsonResponse({'success': False, 'error': 'Invalid field'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
+    
 
 
 def recuperer_cvs():
@@ -1086,54 +1145,8 @@ def get_noms_cvs(nom_cv):
     # Retourner les résultats
     return cvs[0]
 
-@login_required_connect
-def cv_detail(request, cv_id):
-    # Définir le chemin des fichiers CV
-    actual_path= f"{os.getcwd()}/tests"
-    CV_ROOT = "/media/CV/filestore/"
 
-    cvs = get_cvs()  
-
-    cv = next((cv for cv in cvs if int(cv[0]) == cv_id), None)
-    if cv is None:
-        print(f'Le CV avec l\'ID {cv_id} n\'a pas été trouvé.')
-        return render(request, 'test/choix_leads.html')  # Page 404 si le CV n'est pas trouvé
-
-    # Générer l'URL du fichier CV
-    cv_file_path = os.path.join(CV_ROOT, cv[2])
-    proprietaire_cv = cv[6].split('@')[0]
-    if '.' in proprietaire_cv:
-        nom = proprietaire_cv.split('.')[1]
-        prenom = proprietaire_cv.split('.')[0]
-    else:
-        nom = proprietaire_cv
-        prenom = proprietaire_cv
-    
-    nom_du_cv = cv[1]
-    nom_cv = get_noms_cvs(nom_du_cv)  
-    
-    liste_info = [nom, prenom, nom_cv]
-    # cv_file_url = f'file:///{cv_file_path.replace("\\\\", "/")}'
-
-    # Convertir le chemin en objet Path pour utiliser as_posix()
-    cv_file_path = Path(cv_file_path)
-    cv_file_url = f'file:///{cv_file_path.as_posix()}'
-
-    # Connexion à la base de données pour récupérer les commentaires
-    db = MySQLdb.connect(
-        host=config('DB_HOST'),
-        user=config('DB_USER'),
-        passwd=config('DB_PASSWORD'),
-        db=config('DB_NAME'),
-        port=3306
-    )
-    cursor = db.cursor(MySQLdb.cursors.DictCursor)
-    cursor.execute("SELECT * FROM comments WHERE cv_id = %s ORDER BY created_at DESC", [cv_id])
-    comments = cursor.fetchall()
-    db.close()
-
-    return render(request, 'test/cv_detail.html', {'cv': cv, 'cv_file_url': cv_file_url, 'proprietaire': liste_info, 'comments': comments})
-    
+ 
 def update_cv_fields(request, cv_id):
     if request.method == 'POST':
         tjm = request.POST.get('tjm')
