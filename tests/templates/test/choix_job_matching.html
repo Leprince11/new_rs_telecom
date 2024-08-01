@@ -7,8 +7,8 @@
         <div class="page-title-box">
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="javascript: void(0);">R&S TELECOM</a></li>
-                    <li class="breadcrumb-item"><a href="javascript: void(0);">Applications</a></li>
+                    <li class="breadcrumb-item"><a href="{%url 'dashboard' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{%url 'choix_leads' %}">Leads & Cvs</a></li>
                     <li class="breadcrumb-item active">Sélection d'un lead pour le processus de matching CV/Lead</li>
                 </ol>
             </div>
@@ -32,7 +32,7 @@
                         <a href="?filter=my_files" class="list-group-item border-0 filter-files" data-filter="my_files"><i class="mdi mdi-folder-outline font-18 align-middle me-2"></i>Aperçu sur tous les leads</a>
                         <a href="?filter=shared" class="list-group-item border-0 filter-files" data-filter="shared"><i class="mdi mdi-share-variant font-18 align-middle me-2"></i>Partager avec les membres de l'équipe</a>
                         <a href="{% url 'view_leads' %}" class="list-group-item border-0 filter-files" data-filter="favorites" target="_blank"><i class="mdi mdi-update font-18 align-middle me-2"></i>Mise à jour d'un lead</a>
-                        <a href="{% url 'display_leads' %}" class="list-group-item border-0 filter-files" data-filter="deleted" target="_blank"><i class="mdi mdi-delete font-18 align-middle me-2"></i>Suppression d'un lead</a>
+                        <a href="{% url 'display_leads_to_delete' %}" class="list-group-item border-0 filter-files" data-filter="deleted" target="_blank"><i class="mdi mdi-delete font-18 align-middle me-2"></i>Suppression d'un lead</a>
                     </div>
                 </div>
                 <!-- End Left sidebar -->
@@ -41,20 +41,7 @@
                 <div class="page-aside-right">
                     <!-- Search bar -->
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="app-search">
-                            <form id="filterForm" method="get" action="{% url 'choix_lead_job_matching' %}">
-                                <div class="mb-2 position-relative">
-                                    <select name="entreprise" class="form-control">
-                                        <option value="">Tout sélectionner</option>
-                                        {% for entreprise in entreprises %}
-                                            <option value="{{ entreprise }}" {% if entreprise == entreprise_selectionnee %}selected{% endif %}>{{ entreprise }}</option>
-                                        {% endfor %}
-                                    </select>
-                                    <input type="text" class="form-control mt-2" placeholder="Rechercher par offre, nom, localisation..." name="search" id="searchInput" value="{{ search_query }}">
-                                    <button type="submit" class="btn btn-primary mt-2">Filtrer</button>
-                                </div>
-                            </form>
-                        </div>
+                        
                         <div>
                             <button type="button" class="btn btn-sm btn-light"><i class="mdi mdi-format-list-bulleted"></i></button>
                             <button type="button" class="btn btn-sm"><i class="mdi mdi-view-grid"></i></button>
@@ -65,23 +52,17 @@
                     <!-- Leads table -->
                     <div class="mt-3">
                         <h5 class="mb-3">Sélectionner le lead</h5>
-                        <div class="table-responsive">
-                            <table id="basic-datatable" class="table dt-responsive nowrap w-100">
+                        <div class="table-responsive mt-3">
+                            <table id="basic-datatable" class="table dt-responsive nowrap w-100 ">
                                 <thead class="table-light">
                                     <tr>
                                         <th>Nom</th>
                                         <th>Nom Offre</th>
-                                        <th>Matching CV</th>
                                         <th>Localisation</th>
+                                        <th>Matching CV</th>
                                         <th>Porteur Lead</th>
-                                        <th>Email</th>
-                                        <th>Téléphone</th>
-                                        <th>Statut</th>
                                         <th>Date de capturation du Lead</th>
-                                        <th>Priorité</th>
-                                        <th>Description Job</th>
-                                        <th>Lien</th>
-                                        <th>Nombre Offres</th>
+
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -89,22 +70,12 @@
                                         <tr>
                                             <td>{{ lead.nom }}</td>
                                             <td>{{ lead.nom_offre }}</td>
-                                            <td>
-                                                <button class="btn btn-sm btn-primary select-lead" data-lead-id="{{ lead.id }}" onclick="selectLead(this)">Sélectionner</button>
-                                            </td>
                                             <td>{{ lead.localisation_du_lead }}</td>
-                                            <td>{{ lead.porteur_lead }}</td>
-                                            <td>{{ lead.adresse_mail_de_contact }}</td>
-                                            <td>{{ lead.telephone }}</td>
-                                            <td>{{ lead.statut_du_lead }}</td>
-                                            <td>{{ lead.date_maj_lead }}</td>
-                                            <td>{{ lead.priorite }}</td>
                                             <td>
-                                                <button class="btn btn-sm btn-primary show-more" onclick="toggleDescription(this)">Show More</button>
-                                                <div class="description" style="display: none;">{{ lead.description_job }}</div>
-                                            </td>
-                                            <td><a href="{{ lead.lien_vers_lead }}" target="_blank" class="btn btn-sm btn-primary">Lien</a></td>
-                                            <td>{{ lead.nombre_offres }}</td>
+                                            <a href="{% url 'lead_matched' lead.id %}" class="action-icon" data-lead-id="{{ lead.id }}" onclick="selectLead(this)"><i class="mdi mdi-eye text-warning text-center text-align"></i></a>
+                                           </td>
+                                            <td>{{ lead.porteur_lead }}</td>
+                                            <td>{{ lead.date_maj_lead }}</td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
