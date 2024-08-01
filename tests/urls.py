@@ -58,6 +58,7 @@ urlpatterns = [
     path('GenerateLead/lead_details/', views.lead_details, name='lead_details'),
     path('cv-tech/<int:cv_id>/', views.cv_detail, name='cv_detail'),
     path('interface-cv/',views.cv_interface,name='cv_interface'),
+    path('interface-cv/get_All',views.getAll_cvs,name='getAll_cvs'),
     path('facturation/<int:fac_id>/', views.fac_detail, name='fac_detail'),
     path('process_matching_v3/', views.process_matching_v3, name='process_matching_v3'),
     path('add_comment/',views.add_comment,name='add_comment'),
@@ -69,6 +70,8 @@ urlpatterns = [
     path('pin_feedback/<int:id>/', views.pin_feedback, name='pin_feedback'),
     path('unpin_feedback/<int:id>/', views.unpin_feedback, name='unpin_feedback'),
     path('commentaires/<int:cv_id>/', views.historique_commentaires, name='commentaires'),
+    path('update_cv/', views.update_cv, name='update_cv'),
+
     ]
 
 

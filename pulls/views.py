@@ -1,4 +1,5 @@
 from django.conf import settings
+import uuid
 from django.contrib import messages
 from django.shortcuts import render,redirect,get_object_or_404
 from datetime import datetime,timedelta
@@ -81,7 +82,6 @@ def register(request):
        
         
         if(accept_terms=='on'):
-            print(email)
             if(utils.is_valid_email(email)['success']):
                 try:
                     users = Users.objects.create(users_mail=email)
@@ -241,50 +241,79 @@ def home(request):
         return render(request,'pages/admin/home.html',context)
     return redirect('login')
 
+
 @utils.login_required_connect
 def profil(request, user_id=None):
-    context = {}
     
+    # Ajoute l'utilisateur et ses informations au contexte
+    user = request.user
+    context= utils.recup_infos_users(user)
+
     if user_id:
-        user = get_object_or_404(Users, id_user=user_id)
+        # Utilisateur connecté
+        # Récupérer l'utilisateur spécifié par user_id
+        user_info = get_object_or_404(Users, id_user=user_id)
+
+        context['user_info'] = user_info
         
         # Vérifie le type d'utilisateur et ajuste le contexte en conséquence
-        if user.users_type in ['con', 'stt']:
+        if user_info.users_type in ['con', 'stt']:
             context['is_consultant_or_freelance'] = True
-
-        if request.user.users_type in ['paie', 'admin', 'sup']:
+        
+        # Pour les administrateurs et RH, afficher tous les clients
+        if user.users_type in ['paie', 'admin', 'sup']:
             context['is_admin_or_rh'] = True
-            
-            context['clients'] = Clients.objects.all() 
+            context['clients'] = Clients.objects.all()
+        # Pour les consultants ou freelances, récupérer la mission actuelle
+        if context.get('is_consultant_or_freelance'):
+            current_mission = get_current_mission(user_info)  # Assurez-vous que cette fonction est définie
+            context['current_mission'] = current_mission
         
+        # Récupérer le client associé si disponible
+        if user_info.client:
+            context['current_client'] = get_object_or_404(Clients, id_client=user_info.client.id_client)
+        
+        # Obtenez la liste des clients
+        clients = Clients.objects.all()
+
+        # Grouper les clients par leur nom
+        grouped_companies = {}
+        for client in clients:
+            if client.client_name not in grouped_companies:
+                grouped_companies[client.client_name] = []
+            grouped_companies[client.client_name].append(client)
+            
+        context['grouped_companies']=grouped_companies
+            
     else:
-        user = request.user
-        context['clients'] = Clients.objects.all() 
+        
+        context['clients'] = Clients.objects.all()
         
         if user.users_type in ['con', 'stt']:
             context['is_consultant_or_freelance'] = True
+        # Pour les consultants ou freelances, récupérer la mission actuelle
+        if context.get('is_consultant_or_freelance'):
+            current_mission = get_current_mission(user)  # Assurez-vous que cette fonction est définie
+            context['current_mission'] = current_mission
         
+        # Récupérer le client associé si disponible
+        print(user.client)
+        if user.client:
+            context['current_client'] = get_object_or_404(Clients, id_client=user.client.id_client)
 
     try:
-        if context.get('is_consultant_or_freelance'):
-            current_mission = get_current_mission(user)  # Vous devez définir la fonction get_current_mission
-            context['current_mission'] = current_mission
-
         
-        if user.client:
-                context['current_client'] = get_object_or_404(Clients, id_client=user.client.id_client)
-        UserTwoFactor = UserTwoFactorAuthData.objects.get(id=user.id_user)
-        context['activate'] = UserTwoFactor.is_active
-    except UserTwoFactorAuthData.DoesNotExist:
-        context['activate'] = False
+        # Vérifier l'état de l'authentification à deux facteurs
+        try:
+            user_two_factor = UserTwoFactorAuthData.objects.get(id=user.id_user)
+            context['activate'] = user_two_factor.is_active
+        except UserTwoFactorAuthData.DoesNotExist:
+            context['activate'] = False
+        
+    except Exception as e:
+        print('Message erreur:', e)
+    print('Context en fonction de l\'utilisateur ',context)
 
-    except Exception as c:
-        print('message erreur',c)
-
-    context.update({
-        'user': user,
-    })
-    print(context)
     return render(request, 'pages/clients/profil.html', context)
 
 def parse_date(date_str, date_format='%m/%d/%Y'):
@@ -299,138 +328,124 @@ def parse_date(date_str, date_format='%m/%d/%Y'):
 
 def get_current_mission(user):
     # Exemple de code, adaptez-le à votre modèle
-    return Mission.objects.filter(id_mission=user.id_mission_id).last()
+    return Mission.objects.filter(id_mission=user.mission).last()
 
 @utils.login_required_connect  # decorateur pour verifier si l'utilisateur est connecter ou pas
 def update_profile_ajax(request):
-    if request.method == 'POST':
+    print(request.method)
+
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Méthode de requête invalide'}, status=405)
+    
+    try:
+        user = request.user
+        user_id = request.POST.get('user_info_id') or request.POST.get('user_id')
+
         try:
-            # Récupération de l'utilisateur actuel
-            user = request.user
-            user_id = request.POST.get('user_id')
+            user_uuid = uuid.UUID(user_id)
+        except ValueError:
+            return JsonResponse({'success': False, 'message': 'ID utilisateur invalide'}, status=400)
 
-            if not user_id:
-                return JsonResponse({'success': False, 'message': 'User ID is required'}, status=400)
 
-            
-            user_to_update = get_object_or_404(Users, id_user=user_id)
 
-            # Vérification des types d'utilisateur pour les permissions
-            if user.users_type in ['paie', 'admin', 'sup']:
-                try:
-                    # Gestion des clients
-                    client_option = request.POST.get('client_id')
-                    print('ici',client_option)
-                    if client_option == 'other':
-                        try:
-                            client_name = request.POST.get('client_name')
-                            client_location = request.POST.get('client_website')
-                            client, new_client = Clients.objects.get_or_create(client_name=client_name,client_location=client_location) # type: ignore
+        if not user_id:
+            return JsonResponse({'success': False, 'message': 'ID utilisateur requis'}, status=400)
 
-                            # si le client existe dans la base de donnees
-                            if client:
-                                return JsonResponse({'success': False, 'message': f'Ce client est répertorié dans nos archives. Merci de procéder au changement de sa localisation.'})
-                            user_to_update.client = new_client
-                        except Exception as e:
-                            print(f'erreur:{str(e)}')
-                            return JsonResponse({'success': False, 'message': f"Erreur lors de la ceartion d'un nouveau client"})
-                    else:
-                        try:
-                            if client_option:
-                                client_location = request.POST.get('client_website')
-                                user_to_update.client = get_object_or_404(Clients, id_client=client_option,client_location=client_location)
-                        except Exception as e:
-                            return JsonResponse({'success': False, 'message': f'Error updating client: {str(e)}'})
+        user_to_update = get_object_or_404(Users, id_user=user_id)
+        print("user est ici 2",user.id_user,' et ', user_uuid,user.id_user != user_uuid)
 
-                except Exception as e:
-                    return JsonResponse({'success': False, 'message': f'Error updating user details: {str(e)}'})
-            
-                if user_to_update.users_type in ['con', 'stt']:
-                    try:
-                        mission_id = request.POST.get('mission_id')
-                        mission_start_str = request.POST.get('mission_start_')
-                        mission_end_str = request.POST.get('mission_end_')
+        # Vérification de l'identité de l'utilisateur
+        if user.id_user != user_uuid:
+        # Vérifier le type d'utilisateur
+            is_consultant_or_freelance = user_to_update.users_type in ['con', 'stt']
+           
+            # Mise à jour des informations client
+            client_option = request.POST.get('client_id')
+            client_location = request.POST.get('cwebsite')
+            if client_option == 'other':
+                client_name = request.POST.get('client_name')
 
-                        
-
-                        if mission_end_str:
-                            mission_end = parse_date(mission_end_str)
-                            if mission_end is None:
-                                return JsonResponse({'success': False, 'message': 'Format de la date de fin de mission invalide.'}, status=400)
-                        else:
-                            return JsonResponse({'success': False, 'message': 'La date de fin de mission est requise.'}, status=400)
-                        
-                        if mission_start_str:
-                            mission_start = parse_date(mission_start_str)
-                            if mission_start is None:
-                                return JsonResponse({'success': False, 'message': 'Format de la date de début de mission invalide.'}, status=400)
-                        else:
-                            return JsonResponse({'success': False, 'message': 'La date de début de mission est requise.'}, status=400)
-
-                        
-                        if mission_id:
-                            
-                            mission_to_update = get_object_or_404(Mission, id_mission=mission_id)
-                            mission_to_update.mission_name = request.POST.get('mission_name', mission_to_update.mission_name)
-                            mission_to_update.mission_manager = request.POST.get('mission_manager', mission_to_update.mission_manager)
-                            mission_to_update.mission_start = parse_datetime(mission_start_str)
-                            mission_to_update.mission_end = parse_datetime(mission_end_str)
-                            mission_to_update.mission_description = request.POST.get('mission_desc', mission_to_update.mission_description)
-                            mission_to_update.save()
-                            user_to_update.id_mission = mission_to_update
-                        else:
-                            
-                            mission_name = request.POST.get('mission_name_')
-                            mission_manager = request.POST.get('mission_manager_')
-                            mission_start_str = request.POST.get('mission_start_')
-                            mission_end_str = request.POST.get('mission_end_')
-                            mission_description = request.POST.get('mission_desc')
-
-                            # Validation des données de la mission
-                            if not all([mission_name, mission_manager, mission_start_str, mission_end_str,mission_description]):
-                                return JsonResponse({'success': False, 'message': 'Tous les champs de la mission sont requis pour la création d\'une nouvelle mission.'}, status=400)
-
-                            try:
-                                new_mission = Mission(
-                                    mission_name=mission_name,
-                                    mission_manager=mission_manager,
-                                    mission_start=mission_start,
-                                    mission_end=mission_end,
-                                    mission_description=mission_description
-                                )
-                                new_mission.save()
-                                user_to_update.id_mission = new_mission
-                            except Exception as e:
-                                print(f'Erruer creation mission:{str(e)}')
-                                return JsonResponse({'success': False, 'message': f'Erreur lors de la création de la mission'})
-
-                    except Exception as e:
-                        print(f'Erreur mise a ajour mission: {str(e)}')
-                        return JsonResponse({'success': False, 'message': f'Erreur lors de la mise à jour de la mission'})
-
-            try:
-                # Sauvegarde des informations de l'utilisateur
+                if not client_name or not client_location:
+                    return JsonResponse({'success': False, 'message': 'Nom et localisation du client requis'}, status=400)
                 
-                # Mise à jour des informations personnelles
-                user_to_update.users_name = request.POST.get('users_name', user_to_update.users_name)
-                user_to_update.users_fname = request.POST.get('users_fname', user_to_update.users_fname)
-                user_to_update.users_mail = request.POST.get('users_mail', user_to_update.users_mail)
-                user_to_update.users_address = request.POST.get('location', user_to_update.users_address)
-                user_to_update.users_phone = request.POST.get('phone_number', user_to_update.users_phone)
-                user_to_update.users_region = request.POST.get('city', user_to_update.users_region)
-                user_to_update.users_postal = request.POST.get('postal_code', user_to_update.users_postal)
+                client, created = Clients.objects.get_or_create(client_name=client_name, client_location=client_location)
+                if not created:
+                    return JsonResponse({'success': False, 'message': 'Ce client est déjà listé. Merci de mettre à jour sa localisation.'}, status=400)
                 
-                user_to_update.save()
-                return JsonResponse({'success': True, 'message': 'Profile updated successfully'})
-            except Exception as e:
-                print(f'Error saving user: {str(e)}')
-                return JsonResponse({'success': False, 'message': f'erreur lors de creation de l\'utilisateur'})
+                user_to_update.client = client
+            elif client_option:
+                client = get_object_or_404(Clients, id_client	= client_option)
+                
+                print("Normalement ici",client.client_location,client.client_name)
+                if client_location:
+                    client.client_location = client_location
+                    client.save()
+                user_to_update.client = client
 
-        except Exception as e:
-            print(f'Unexpected error: {str(e)}')
-            return JsonResponse({'success': False, 'message': f'Le serveur est hors service. Veuillez vérifier votre connexion s\'il vous plaît.'}, status=500)
 
-    return JsonResponse({'success': False, 'message': 'Invalid request method'}, status=405)
+            if is_consultant_or_freelance:
+                # Mise à jour des informations de mission
+                mission_id = request.POST.get('mission_id')
+                mission_name = request.POST.get('mission_name_')
+                mission_manager = request.POST.get('mission_manager_')
+                mission_start_str = request.POST.get('mission_start_')
+                mission_end_str = request.POST.get('mission_end_')
+                mission_description = request.POST.get('mission_desc')
+
+                if mission_start_str and mission_end_str:
+                    mission_start = parse_date(mission_start_str)
+                    mission_end = parse_date(mission_end_str)
+                    if not mission_start or not mission_end:
+                        return JsonResponse({'success': False, 'message': 'Format de date invalide'}, status=400)
+                else:
+                    return JsonResponse({'success': False, 'message': 'Les dates de début et de fin de mission sont requises'}, status=400)
+
+                if mission_id:
+                    mission_to_update = get_object_or_404(Mission, id_mission=mission_id)
+                    mission_to_update.mission_name = mission_name or mission_to_update.mission_name
+                    mission_to_update.mission_manager = mission_manager or mission_to_update.mission_manager
+                    mission_to_update.mission_start = mission_start
+                    mission_to_update.mission_end = mission_end
+                    mission_to_update.mission_description = mission_description or mission_to_update.mission_description
+                    mission_to_update.save()
+                    user_to_update.mission = mission_to_update
+                else:
+                    if not all([mission_name, mission_manager, mission_description]):
+                        return JsonResponse({'success': False, 'message': 'Tous les champs de la mission sont requis pour créer une nouvelle mission'}, status=400)
+                    
+                    new_mission = Mission(
+                        mission_name=mission_name,
+                        mission_manager=mission_manager,
+                        mission_start=mission_start,
+                        mission_end=mission_end,
+                        mission_description=mission_description
+                    )
+                    new_mission.save()
+                    user_to_update.mission = new_mission
+        
+        
+        # Mise à jour des informations personnelles
+        user_to_update.users_name = request.POST.get('users_name', user_to_update.users_name)
+        user_to_update.users_fname = request.POST.get('users_fname', user_to_update.users_fname)
+        # user_to_update.users_mail = request.POST.get('users_mail', user_to_update.users_mail)
+        user_to_update.users_address = request.POST.get('location', user_to_update.users_address)
+        user_to_update.users_phone = request.POST.get('phone_number', user_to_update.users_phone)
+        user_to_update.users_region = request.POST.get('city', user_to_update.users_region)
+        user_to_update.users_postal = request.POST.get('postal_code', user_to_update.users_postal)
+        user_to_update.save()
+
+        return JsonResponse({'success': True, 'message': 'Profil mis à jour avec succès'})
+    except Exception as e:
+        print(f'Unexpected error: {str(e)}')
+        return JsonResponse({'success': False, 'message': 'Une erreur est survenue lors de la mise à jour du profil'}, status=500)
+    
+
+def get_clients_data(request):
+    if request.method == 'GET':
+        clients = Clients.objects.all().values('id_client', 'client_location')
+        client_data = {str(client['id_client']): client['client_location'] for client in clients}
+        return JsonResponse(client_data)
+    return JsonResponse({'error': 'Invalid request'}, status=400)
 
 def verification(request):
     pin=request.session.get('user_id')

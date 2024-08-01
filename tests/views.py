@@ -15,7 +15,7 @@ from .models import Leads
 from .forms import LeadsForm, CompanyForm
 from .scripts.extract_companies import read_csv_data, main_extraction
 from .scripts.traitement_text import *
-from pulls.utils import login_required_connect
+from pulls.utils import login_required_connect,recup_infos_users
 from elasticsearch import Elasticsearch, NotFoundError, RequestError, ConnectionError
 from datetime import datetime, timedelta
 from django.db.models.functions import TruncDate
@@ -928,36 +928,50 @@ def lead_details(request):
 afficher les CVs post-migration de la CV-tech afin de respecter par la suite ce pattern '''
 import MySQLdb
 
-def get_cvs():
-    # Configuration de la connexion à la base de données Odoo
-    db = MySQLdb.connect(
-        host=config('DB_HOST'),
-        user=config('DB_USER'),
-        passwd=config('DB_PASSWORD'),
-        db=config('DB_NAME'),
-        port=3306
-    )
-
-    # Créer un curseur pour exécuter les requêtes SQL
-    cursor = db.cursor()
-
-    # Exécuter la requête SQL pour récupérer les données de la table cv
-    cursor.execute("SELECT c.id, c.name, c.store_fname , c.mimetype , c.create_uid as cv_proprio, u.id as user_id, u.login as email_utilisateur , c.create_date , c.write_date , c.file_size c from cv as c left join odoo_users as u on c.create_uid = u.id ;")
-
-    # Récupérer les résultats de la requête
-    cvs = cursor.fetchall()
-    print('la récupération des Cvs s\'est correctement effectuée ')
-    # Fermer la connexion à la base de données
-    db.close()
-
-    # Retourner les résultats
-    return cvs
-
 from datetime import datetime
 from django.db import transaction
 
 
-def recuperer_cvs():
+# def recuperer_cvs():
+#     # Configuration de la connexion à la base de données Odoo
+#     db = MySQLdb.connect(
+#         host=config('DB_HOST'),
+#         user=config('DB_USER'),
+#         passwd=config('DB_PASSWORD'),
+#         db=config('DB_NAME'),
+#         port=3306
+#     )
+
+#     # Vérifier si les données sont en cache
+#     cached_data = cache.get('all_cvs_data')
+#     if cached_data:
+#         return cached_data['cvs'], cached_data['columns']
+
+#     # Créer un curseur pour exécuter les requêtes SQL
+#     cursor = db.cursor()
+#     cursor.execute("""
+#         SELECT c.id, c.name, c.store_fname, c.mimetype, c.create_uid, c.file_size, c.create_date, c.write_date, u.login as email_utilisateur 
+#         FROM cv AS c 
+#         LEFT JOIN odoo_users AS u ON c.create_uid = u.id limit 100
+#     """)
+
+#     # Récupérer les résultats de la requête
+#     cvs = cursor.fetchall()
+#     columns = [desc[0] for desc in cursor.description]
+#     print('La récupération des Cvs s\'est correctement effectuée')
+
+#     # Fermer la connexion à la base de données
+#     db.close()
+
+#     # Mettre en cache les données pour une durée déterminée
+#     cache.set('all_cvs_data', {'cvs': cvs, 'columns': columns}, timeout=3600)  # Cache pour 3600 secondes
+
+   
+
+#     # Retourner les résultats
+#     return cvs, columns
+
+def recuperer_cvs(offset=0, limit=100):
     # Configuration de la connexion à la base de données Odoo
     db = MySQLdb.connect(
         host=config('DB_HOST'),
@@ -966,54 +980,52 @@ def recuperer_cvs():
         db=config('DB_NAME'),
         port=3306
     )
-
-    # Vérifier si les données sont en cache
-    cached_data = cache.get('all_cvs_data')
-    if cached_data:
-        return cached_data['cvs'], cached_data['columns']
 
     # Créer un curseur pour exécuter les requêtes SQL
     cursor = db.cursor()
     cursor.execute("""
         SELECT c.id, c.name, c.store_fname, c.mimetype, c.create_uid, c.file_size, c.create_date, c.write_date, u.login as email_utilisateur 
         FROM cv AS c 
-        LEFT JOIN odoo_users AS u ON c.create_uid = u.id limit 100
-    """)
+        LEFT JOIN odoo_users AS u ON c.create_uid = u.id
+        LIMIT %s OFFSET %s
+    """, (limit, offset))
 
     # Récupérer les résultats de la requête
     cvs = cursor.fetchall()
     columns = [desc[0] for desc in cursor.description]
-    print('La récupération des Cvs s\'est correctement effectuée')
 
     # Fermer la connexion à la base de données
     db.close()
 
-    # Mettre en cache les données pour une durée déterminée
-    cache.set('all_cvs_data', {'cvs': cvs, 'columns': columns}, timeout=3600)  # Cache pour 3600 secondes
-
-   
-
-    # Retourner les résultats
     return cvs, columns
 
 
-def recup_infos_users(user):
-    users_types =  get_user_type(user.users_type)
+# def recup_infos_users(user):
+#     users_types =  get_user_type(user.users_type)
     
-    context = {'user' : user 
-               }
-    context['type']= users_types
-    return context
+#     context = {'user' : user 
+#                }
+#     context['type']= users_types
+#     return context
 
 
 @login_required_connect
 def cv_interface(request):
     user = request.user
     context = recup_infos_users(user)
+    return render(request, 'pages/settings/files_manager.html', context)
 
+
+def getAll_cvs(request):
     try:
+        # Paramètres de pagination depuis DataTables
+        page_size = int(request.GET.get('length', 10))  # Nombre d'éléments par page
+        start = int(request.GET.get('start', 0))  # Début de la page
+        draw = int(request.GET.get('draw', 1))
         # Récupération des CVs depuis la base de données
-        cvs, columns = recuperer_cvs()
+        cvs, columns = recuperer_cvs(offset=start, limit=page_size)
+        
+        # Préparer la liste des CVs pour DataTables
         cv_list = []
         for cv in cvs:
             cv_data = dict(zip(columns, cv))
@@ -1031,6 +1043,9 @@ def cv_interface(request):
             create_date = cv_data['create_date'].strftime('%Y-%m-%d %H:%M:%S') if cv_data['create_date'] else None
             write_date = cv_data['write_date'].strftime('%Y-%m-%d %H:%M:%S') if cv_data['write_date'] else None
 
+
+            
+
             cv_list.append({
                 'id': cv_data['id'],
                 'name': cv_data['name'],
@@ -1039,18 +1054,67 @@ def cv_interface(request):
                 'cv_proprio': cv_data['create_uid'],
                 'email_utilisateur': cv_data['email_utilisateur'],
                 'file_size': cv_data['file_size'],
-                'nom': nom,
+                'nom': nom ,
                 'prenom': prenom,
                 'create_date': create_date,
-                'write_date': write_date
+                'write_date': write_date,
+                'action': f"""
+                    <div class="btn-group dropdown">
+                        <a href="#" class="table-action-btn dropdown-toggle arrow-none btn btn-light btn-xs" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-horizontal"></i></a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item rename-file" href="#" data-name="{cv_data['name']}" data-id="{cv_data['id']}"><i class="mdi mdi-pencil me-2 text-muted vertical-middle"></i>Renommer</a>
+                            <a class="dropdown-item delete-file" href="#" data-id="{cv_data['id']}"><i class="mdi mdi-delete me-2 text-muted vertical-middle"></i>Retirer</a>
+                        </div>
+                    </div>
+                """,
+                'commentaires': f"""
+                    <button class="btn btn-primary add-comment" type="button" data-id-commentaire={cv_data['id']}>Ajouter un commentaire</button>
+                    <a href="/leads_cvs/commentaires/{cv_data['id']}" class="btn btn-secondary">Voir les commentaires</a>
+                    
+                """
             })
 
-        context['cvs'] = cv_list
+        # Compter le nombre total de CVs
+        total_count = recuperer_total_cvs_count()
+
+        # Préparer les données pour DataTables
+        response_data = {
+            'draw': int(request.GET.get('draw', 1)),
+            'recordsTotal': total_count,
+            'recordsFiltered': total_count,
+            'data': cv_list
+        }
+
+        return JsonResponse(response_data)
 
     except Exception as e:
-        print(f"An error occurred: {e}")
+        print("le message erreur indique :",e)
+        return JsonResponse({'error du server': str(e)}, status=500)
 
-    return render(request, 'pages/settings/files_manager.html', context)
+def recuperer_total_cvs_count():
+    # Connexion à la base de données
+    db = MySQLdb.connect(
+        host=config('DB_HOST'),
+        user=config('DB_USER'),
+        passwd=config('DB_PASSWORD'),
+        db=config('DB_NAME'),
+        port=3306
+    )
+
+    cursor = db.cursor()
+    cursor.execute("SELECT COUNT(*) FROM cv")
+    total_count = cursor.fetchone()[0]
+    db.close()
+
+    return total_count
+
+
+
+
+
+
+
+
 
 
 def get_noms_cvs(nom_cv):
@@ -1085,20 +1149,31 @@ def get_noms_cvs(nom_cv):
     # Retourner les résultats
     return cvs[0]
 
+def get_cvs():
+    db = MySQLdb.connect(
+        host=config('DB_HOST'),
+        user=config('DB_USER'),
+        passwd=config('DB_PASSWORD'),
+        db=config('DB_NAME'),
+        port=3306
+    )
+    cursor = db.cursor()
+    cursor.execute("SELECT c.id, c.name, c.store_fname, c.mimetype, c.create_uid, u.id as user_id, u.login as email_utilisateur, c.create_date, c.write_date, c.file_size, c.tjm, c.description FROM cv as c LEFT JOIN odoo_users as u ON c.create_uid = u.id;")
+    cvs = cursor.fetchall()
+    db.close()
+    return cvs
+
 @login_required_connect
 def cv_detail(request, cv_id):
-    # Définir le chemin des fichiers CV
-    actual_path= f"{os.getcwd()}/tests"
+    actual_path = f"{os.getcwd()}/tests"
     CV_ROOT = "/media/CV/filestore/"
 
-    cvs = get_cvs()  
-
+    cvs = get_cvs()
     cv = next((cv for cv in cvs if int(cv[0]) == cv_id), None)
     if cv is None:
         print(f'Le CV avec l\'ID {cv_id} n\'a pas été trouvé.')
         return render(request, 'test/choix_leads.html')  # Page 404 si le CV n'est pas trouvé
 
-    # Générer l'URL du fichier CV
     cv_file_path = os.path.join(CV_ROOT, cv[2])
     proprietaire_cv = cv[6].split('@')[0]
     if '.' in proprietaire_cv:
@@ -1107,18 +1182,14 @@ def cv_detail(request, cv_id):
     else:
         nom = proprietaire_cv
         prenom = proprietaire_cv
-    
-    nom_du_cv = cv[1]
-    nom_cv = get_noms_cvs(nom_du_cv)  
-    
-    liste_info = [nom, prenom, nom_cv]
-    # cv_file_url = f'file:///{cv_file_path.replace("\\\\", "/")}'
 
-    # Convertir le chemin en objet Path pour utiliser as_posix()
+    nom_du_cv = cv[1]
+    nom_cv = get_noms_cvs(nom_du_cv)
+
+    liste_info = [nom, prenom, nom_cv]
     cv_file_path = Path(cv_file_path)
     cv_file_url = f'file:///{cv_file_path.as_posix()}'
 
-    # Connexion à la base de données pour récupérer les commentaires
     db = MySQLdb.connect(
         host=config('DB_HOST'),
         user=config('DB_USER'),
@@ -1132,6 +1203,7 @@ def cv_detail(request, cv_id):
     db.close()
 
     return render(request, 'test/cv_detail.html', {'cv': cv, 'cv_file_url': cv_file_url, 'proprietaire': liste_info, 'comments': comments})
+
     
 
 
@@ -1650,3 +1722,32 @@ def unpin_feedback(request, id):
     return JsonResponse({'message': 'Requête invalide'}, status=400)
 
 
+def update_cv(request):
+    if request.method == 'POST':
+        try:
+            cv_id = request.POST.get('cv_id')
+            field = request.POST.get('field')
+            value = request.POST.get('value')
+
+            db = MySQLdb.connect(
+                host=config('DB_HOST'),
+                user=config('DB_USER'),
+                passwd=config('DB_PASSWORD'),
+                db=config('DB_NAME'),
+                port=3306
+            )
+            cursor = db.cursor()
+
+            if field in ['tjm', 'description']:
+                query = f"UPDATE cv SET {field} = %s WHERE id = %s"
+                cursor.execute(query, [value, cv_id])
+                db.commit()
+                db.close()
+                return JsonResponse({'success': True})
+
+            db.close()
+            return JsonResponse({'success': False, 'error': 'Invalid field'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    else:
+        return JsonResponse({'success': False, 'error': 'Invalid request method'})
