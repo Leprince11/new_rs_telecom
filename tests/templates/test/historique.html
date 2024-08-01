@@ -95,12 +95,12 @@
         </div>
         <div id="results" class="table-responsive">
             {% for date, leads in grouped_leads.items %}
-                <h3 class="lead-date-heading" data-date="{{ date }}" style="color:#03396c;">{{ date }}</h3>
+                <h3 class="lead-date-heading" data-date="{{ date }}" style="color:#03396c;">{{ date}}</h3>
                 <table class="table table-striped table-hover lead-table" data-date="{{ date }}">
                     <thead>
                         <tr>
-                            <th>Nom</th>
-                            <th>Nom Offre</th>
+                            <th>Nom de l'entreprise </th>
+                            <th>Nom de l'offre</th>
                             <th>Localisation du lead</th>
                             <th>Porteur Lead</th>
                             <th>Date de MAJ</th>

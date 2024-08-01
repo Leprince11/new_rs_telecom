@@ -339,11 +339,11 @@ def main_extraction(keywords, location, time_frame):
                     'lien_profil_linkedin': recruiter_profile_link,
                     'date_publication_offre': date_publication
                 }
-                insert_lead_to_db(row_data)
                 new_data.append(row_data)
             print(new_data)
 
             if new_data:
+                write_to_db(new_data)
                 return search_url, new_data
             else:
                 attempts += 1

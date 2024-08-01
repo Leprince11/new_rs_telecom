@@ -70,7 +70,7 @@ urlpatterns = [
     path('unpin_feedback/<int:id>/', views.unpin_feedback, name='unpin_feedback'),
     path('commentaires/<int:cv_id>/', views.historique_commentaires, name='commentaires'),
     path('update_cv/', views.update_cv, name='update_cv'),
-
+    path('extract_text_from_docx/', views.extract_text_from_docx, name='extract_text_from_docx'),
     ]
 
 

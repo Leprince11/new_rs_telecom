@@ -9,6 +9,7 @@ from django.db.models import Sum, Count, Q, DateField
 from django.utils.timezone import now
 from django.conf import settings
 from django.utils.dateparse import parse_date
+import logging
 from django.db import transaction
 from threading import Thread
 from .models import Leads
@@ -48,7 +49,21 @@ from pathlib import Path
 from django.db import transaction
 import asyncio
 import aiohttp
+import subprocess
+import os
 from concurrent.futures import ThreadPoolExecutor
+from docx2pdf import convert
+import os
+from django.conf import settings
+from docx import Document
+from django.http import JsonResponse
+from threading import Thread
+from .scripts.extract_companies import read_csv_data,main_extraction
+from.scripts.linkedIn import scraping_apec
+import json
+from elasticsearch import Elasticsearch, NotFoundError, RequestError
+import time
+from .scripts.traitement_text import *
 
 
 
@@ -319,11 +334,6 @@ def delete_lead(request):
 '''cette partie de code est dédiée à la génération de lead , notamment utilisation du multi-threading  , et le script présent dans le dossier script , que fait du scraping de plusieurs sources 
 '''
 
-from django.http import JsonResponse
-from threading import Thread
-from .scripts.extract_companies import read_csv_data,main_extraction
-from.scripts.linkedIn import scraping_apec
-import json
 
 async def run_in_executor(func, *args):
     loop = asyncio.get_running_loop()
@@ -411,7 +421,7 @@ elastic search , qui parcout dans ces index de cvs , pour trouver le cv le plus 
 avec la formule TF*IDF*lengthString '''
 
 
-from .scripts.traitement_text import *
+
 es = Elasticsearch(["http://localhost:9200"], timeout=60)
 
 def print_index_content(index_name):
@@ -429,8 +439,7 @@ def print_index_content(index_name):
         print(f"Error: {e}")
 
 
-from elasticsearch import Elasticsearch, NotFoundError, RequestError
-import time
+
 
 
 def determine_remark(percentage):
@@ -1188,7 +1197,7 @@ def get_facs():
     cursor = db.cursor()
 
     # Exécuter la requête SQL pour récupérer les données de la table cv
-    cursor.execute("SELECT c.id, c.name, c.store_fname , c.mimetype , c.create_uid as cv_proprio, u.id as user_id, u.login as email_utilisateur from facture as c left join odoo_users as u on c.create_uid = u.id ;")
+    cursor.execute("SELECT f.id, f.name, f.store_fname, f.mimetype, f.create_uid, u.id as user_id, u.login as email_utilisateur, f.create_date, f.write_date, f.file_size FROM facture as f LEFT JOIN odoo_users as u ON f.create_uid = u.id;")
 
     # Récupérer les résultats de la requête
     cvs = cursor.fetchall()
@@ -1199,6 +1208,8 @@ def get_facs():
     # Retourner les résultats
     return cvs
 
+
+@login_required_connect
 def fac_detail(request, fac_id):
     actual_path= f"{os.getcwd()}/tests"
     CV_ROOT = "/media/CV/filestore/"
@@ -1219,13 +1230,22 @@ def fac_detail(request, fac_id):
         prenom = proprietaire_fac
     
     nom_fac =  fac[1]
-    
-    
     liste_info = [nom ,prenom,nom_fac]
     # fac_file_url = f'file:///{fac_file_path.replace("\\", "/")}'
     fac_file_path = Path(fac_file_path)
     fac_file_url = 'file:///{0}'.format(fac_file_path.as_posix())
-    return render(request, 'test/fac_detail.html', {'fac': fac, 'cv_file_url': fac_file_url ,'proprietaire' : liste_info})
+    db = MySQLdb.connect(
+        host=config('DB_HOST'),
+        user=config('DB_USER'),
+        passwd=config('DB_PASSWORD'),
+        db=config('DB_NAME'),
+        port=3306
+    )
+    cursor = db.cursor(MySQLdb.cursors.DictCursor)
+    cursor.execute("SELECT * FROM comments WHERE cv_id = %s ORDER BY created_at DESC", [fac_id])
+    comments = cursor.fetchall()
+    db.close()
+    return render(request, 'test/fac_detail.html', {'fac': fac, 'cv_file_url': fac_file_url ,'proprietaire' : liste_info,'comments':comments})
     
 
 ##################################################################################################################"""""
@@ -1486,9 +1506,6 @@ def recuperer_commentaires(cv_id):
 
 
 
-import logging
-
-# Configurez le logger
 logger = logging.getLogger(__name__)
 @login_required_connect
 def add_comment(request):
@@ -1690,5 +1707,25 @@ def unpin_feedback(request, id):
 
 
 
-def cv_det(request):
-    return render(request,'test/cv_detail.html')
+def extract_text_from_docx(request):
+    if request.method == 'POST':
+        cv_id = request.POST.get('cv_id')
+        filename = request.POST.get('filename')
+        filename2 = filename + '.docx'
+        try:
+            input_path = os.path.join(settings.MEDIA_ROOT, 'CV/filestore/', filename2)
+
+            # Vérifiez si le fichier existe
+            if not os.path.exists(input_path):
+                return JsonResponse({'success': False, 'error': f"File {input_path} does not exist"})
+
+            # Lire le contenu du fichier DOCX
+            document = Document(input_path)
+            text_content = ""
+            for paragraph in document.paragraphs:
+                text_content += paragraph.text + "\n"
+
+            return JsonResponse({'success': True, 'text': text_content})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

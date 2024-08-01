@@ -33,7 +33,24 @@
         border: 2px solid #dee2e6;
         border-radius: 8px;
         overflow: hidden;
+        background-color: #f8f9fa;
+        padding: 10px;
+        text-align: center;
         animation: fadeInUp 1s;
+    }
+    #fileViewer {
+        background-color: #fff;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+    .btn-download {
+        display: block;
+        margin: 20px auto;
+        background-color: #007bff;
+        color: white;
+        border-radius: 8px;
+        padding: 10px 20px;
+        text-decoration: none;
     }
     @keyframes fadeIn {
         from { opacity: 0; }
@@ -122,10 +139,11 @@
                 <div class="card-body">
                     <div class="row">
                         <!-- endroit ou mettre le cv -->
-                        <div class="col-lg-6">
+                        <div class="col-lg-6" id="fileContainerDiv">
                             <!-- Product image -->
                             <div id="fileContainer" class="embed-responsive embed-responsive-16by9 mt-4">
                                 <iframe id="fileViewer" class="embed-responsive-item" width="100%" height="800px"></iframe>
+                                <a id="fileDownload" class="btn-download" style="display:none;" href="#" download>Télécharger le fichier</a>
                             </div>
                         </div> <!-- end col -->
                         <div class="col-lg-6">
@@ -138,10 +156,8 @@
                                 <p class="card-text"><strong>Nom :</strong> {{ proprietaire.0 }}</p>
                                 <p class="card-text"><strong>Prénom :</strong> {{ proprietaire.1 }}</p>
                                 {% endif %}
-                                <p class="card-text"><strong>Chemin vers le fichier :</strong> {{ cv.2 }}</p>
-                                <p class="card-text"><strong>Mail du propriétaire :</strong> {{ cv.6 }}</p>
                                 <p class="card-text"><strong>Date de dernière mise à jour du CV:</strong> {{ cv.8 }}</p>
-                                <p> <strong>Date de récupération du CV </strong> : {{ cv.8 }}</p>
+                                <p> <strong>Date de récupération du CV </strong> : {{ cv.7}}</p>
                                 <p class="font-16">
                                     <span class="text-warning mdi mdi-star"></span>
                                     <span class="text-warning mdi mdi-star"></span>
@@ -193,94 +209,87 @@
         </div> <!-- end col-->
     </div>
 </div>
-</div>
 
-    <div id="content-sections">
-        <!-- Section des commentaires -->
-        <div id="comments-section" class="container mt-5">
-            <div class="card">
-                <div class="card-body">
-                    <h4 class="mt-0 mb-3" data_id="{{ cv.0 }}" id="cv_id">Commentaires du CV ID: {{ cv.0 }}</h4>
-                    
-                    <!-- Formulaire de soumission de commentaire -->
-                    <form id="comment-form" enctype="multipart/form-data">
-                        <textarea class="form-control form-control-light mb-2" placeholder="Écrire un commentaire" id="example-textarea" rows="3" name="comment"></textarea>
-                        <div class="text-end">
-                            <button type="button" class="btn btn-primary btn-sm" id="submit-comment">Soumettre</button>
-                        </div>
-                        <div class="comment-feedback" id="comment-feedback"></div>
-                    </form>
+<div id="content-sections">
+    <!-- Section des commentaires -->
+    <div id="comments-section" class="container mt-5">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="mt-0 mb-3" data_id="{{ cv.0 }}" id="cv_id">Commentaires du CV ID: {{ cv.0 }}</h4>
+                
+                <!-- Formulaire de soumission de commentaire -->
+                <form id="comment-form" enctype="multipart/form-data">
+                    <textarea class="form-control form-control-light mb-2" placeholder="Écrire un commentaire" id="example-textarea" rows="3" name="comment"></textarea>
+                    <div class="text-end">
+                        <button type="button" class="btn btn-primary btn-sm" id="submit-comment">Soumettre</button>
+                    </div>
+                    <div class="comment-feedback" id="comment-feedback"></div>
+                </form>
 
-                    <!-- Affichage des commentaires -->
-                    <div id="comments-container">
-                        {% for comment in comments %}
-                        <div class="d-flex align-items-start mt-2 comment-item">
-                            <img class="me-3 avatar-sm rounded-circle" src="{% static 'pulls/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
-                            <div class="w-100 overflow-hidden">
-                                <h5 class="mt-0">{{ comment.user_name }} {{comment.users_fname}}</h5>
-                                {{ comment.comment }}
-                                <span class="created-at">{{ comment.created_at }}</span>
-                            </div>
+                <!-- Affichage des commentaires -->
+                <div id="comments-container">
+                    {% for comment in comments %}
+                    <div class="d-flex align-items-start mt-2 comment-item">
+                        <img class="me-3 avatar-sm rounded-circle" src="{% static 'pulls/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                        <div class="w-100 overflow-hidden">
+                            <h5 class="mt-0">{{ comment.user_name }} {{comment.users_fname}} <span class="created-at" style="top: -1px">{{ comment.created_at }}</span></h5>
+                            {{ comment.comment }}
+                            
                         </div>
-                        {% endfor %}
                     </div>
-                    <div class="text-center mt-2">
-                        <a href="javascript:void(0);" class="text-danger">Charger plus </a>
-                    </div>
+                    {% endfor %}
                 </div>
+
             </div>
         </div>
+    </div>
 
-<div class="comment-feedback" id="feedback_{{ cv.id }}"></div>
-<!-- Bouton flottant pour ajouter un commentaire -->
-<div class="floating-button" data-bs-toggle="modal" data-bs-target="#comment-modal-{{ cv.id }}">
-    <i class="mdi mdi-comment-plus-outline"></i>
-</div>
+    <div class="comment-feedback" id="feedback_{{ cv.id }}"></div>
+    <!-- Bouton flottant pour ajouter un commentaire -->
+    <div class="floating-button" data-bs-toggle="modal" data-bs-target="#comment-modal-{{ cv.id }}">
+        <i class="mdi mdi-comment-plus-outline"></i>
+    </div>
 
-<!-- Comment Modal -->
-<div id="comment-modal-{{ cv.id }}" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="comment-modalLabel-{{ cv.id }}" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="comment-modalLabel-{{ cv.id }}">Ajouter un commentaire</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
-            </div>
-            <div class="modal-body">
-                <textarea id="modal-comment-{{ cv.id }}" class="form-control" rows="4" name="comment1" placeholder="Ajouter un commentaire"></textarea>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
-                <button type="button" class="btn btn-primary" id="envoyer_commentaire" data-id="{{ cv.id }}">Envoyer</button>
-            </div>
-        </div><!-- /.modal-content -->
-    </div><!-- /.modal-dialog -->
-</div><!-- /.modal -->
-
-<!-- Success Alert Modal -->
-<div id="success-alert-modal-{{ cv.id }}" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content modal-filled bg-success">
-            <div class="modal-body p-4">
-                <div class="text-center">
-                    <i class="dripicons-checkmark h1"></i>
-                    <h4 class="mt-2">Commentaire envoyé!</h4>
-                    <p class="mt-3">Votre commentaire a été ajouté avec succès.</p>
-                    <button type="button" class="btn btn-light my-2" data-bs-dismiss="modal">Continuer</button>
+    <!-- Comment Modal -->
+    <div id="comment-modal-{{ cv.id }}" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="comment-modalLabel-{{ cv.id }}" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="comment-modalLabel-{{ cv.id }}">Ajouter un commentaire</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+                </div>
+                <div class="modal-body">
+                    <textarea id="modal-comment-{{ cv.id }}" class="form-control" rows="4" name="comment1" placeholder="Ajouter un commentaire"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fermer</button>
+                    <button type="button" class="btn btn-primary" id="envoyer_commentaire" data-id="{{ cv.id }}">Envoyer</button>
                 </div>
             </div><!-- /.modal-content -->
         </div><!-- /.modal-dialog -->
     </div><!-- /.modal -->
+
+    <!-- Success Alert Modal -->
+    <div id="success-alert-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content modal-filled bg-success">
+                <div class="modal-body p-4">
+                    <div class="text-center">
+                        <i class="dripicons-checkmark h1"></i>
+                        <h4 class="mt-2">Commentaire envoyé!</h4>
+                        <p class="mt-3">Votre commentaire a été ajouté avec succès.</p>
+                        <button type="button" class="btn btn-light my-2 " data-bs-dismiss="modal">Continuer</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+    </div>
+
 </div>
 
 {% endblock content %}
 
 {% block js %}
-<!-- third party js -->
-<script src="{% static 'pulls/assets/js/vendor/Chart.bundle.min.js' %}"></script>
-<!-- third party js ends -->
-<!-- demo app -->
-<script src="{% static 'pulls/assets/js/pages/demo.project-detail.js' %}"></script>
-<!-- end demo js-->
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     function getCookie(name) {
@@ -332,10 +341,10 @@ document.addEventListener("DOMContentLoaded", function() {
 
         if (data.success) {
             divMessage.innerText = 'Votre modification a bien été prise en compte';
-            divMessage.classList.add('badge', 'bg-success-lighten','text-success');
+            divMessage.classList.add('badge', 'bg-success-lighten', 'text-success');
         } else {
             divMessage.innerText = 'Votre modification n\'a pas été prise en compte';
-            divMessage.classList.add('badge', 'bg-danger-lighten','text-danger');
+            divMessage.classList.add('badge', 'bg-danger-lighten', 'text-danger');
         }
         
         setTimeout(() => divMessage.innerText = '', 3000);
@@ -408,16 +417,17 @@ document.addEventListener("DOMContentLoaded", function() {
                         <div class="w-100 overflow-hidden">
                             <h5 class="mt-0">${data.user_name}</h5>
                             ${data.comment}
-                            <span class="created-at">${data.created_at}</span>
+                            <span class="created-at" style="top: -1px">${data.created_at}</span>
                         </div>`;
                     commentsContainer.prepend(newComment);
+                     var modal = new bootstrap.Modal(document.getElementById('success-alert-modal'));
+                     modal.show();
                     var feedbacke = document.getElementById('feedback_' + cvId);
                     feedbacke.innerText = 'Commentaire ajouté : ' + data.message;
                     feedbacke.classList.add('text-success');
                     setTimeout(() => feedbacke.innerText = '', 3000);
                     document.getElementById('modal-comment-' + cvId).value = '';
-                    var modal = new bootstrap.Modal(document.getElementById('success-alert-modal-' + cvId));
-                    modal.show();
+                   
                 } else {
                     feedback.innerText = 'Erreur : ' + data.error;
                     feedback.classList.add('text-danger');
@@ -482,11 +492,14 @@ document.addEventListener("DOMContentLoaded", function() {
         'Null': '.pdf'
     };
 
-    if (mimeToExtension[mimeType]) {
-        fileUrl += mimeToExtension[mimeType];
+    if (mimeType === 'application/msword' || mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
+        document.getElementById('fileViewer').src = fileUrl + mimeToExtension[mimeType];
+        document.getElementById('fileDownload').style.display = 'block';
+        document.getElementById('fileDownload').href = fileUrl + mimeToExtension[mimeType];
+    } else {
+        document.getElementById('fileViewer').src = fileUrl + mimeToExtension[mimeType];
+        document.getElementById('fileDownload').style.display = 'none';
     }
-
-    document.getElementById('fileViewer').src = fileUrl;
 
     var fileSizeElement = document.getElementById('fileSize');
     var sizeInBytes = parseInt(fileSizeElement.getAttribute('data-size'), 10);
