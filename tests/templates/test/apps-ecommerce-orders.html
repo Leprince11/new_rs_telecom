@@ -16,7 +16,8 @@
         <div class="page-title-box">
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="javascript: void(0);">RS Telecom</a></li>
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">R&S Telecom</a></li>
+                    <li class="breadcrumb-item active"><a href="javascript: void(0);">Applications</a></li>
                     <li class="breadcrumb-item active">Leads Visualisation Stats</li>
                 </ol>
             </div>
@@ -56,7 +57,6 @@
                                 <th>Email</th>
                                 <th>Téléphone</th>
                                 <th>Date de capturation du Lead</th>
-                                <th>Statistiques</th>
                                 <th style="width: 125px;">Action</th>
                             </tr>
                         </thead>
@@ -72,18 +72,16 @@
                                 <td>{{ lead.telephone }}</td>
 
                                 <td>{{ lead.date_maj_lead }}</td>
-                                <td class="text-center">
-                                    <a href="{% url 'statistiques_leads' %}?entreprise={{ lead.nom }}"
-                                        class="btn btn-sm "> <i class="mdi mdi-chart-bar text-primary"></i></a>
-                                </td>
-
                                 <td>
                                     <a href="{% url 'lead_detail' lead.id %}" class="action-icon"> <i
                                             class="mdi mdi-eye text-success"></i></a>
+                                    <a href="{% url 'statistiques_leads' %}?entreprise={{ lead.nom }}"
+                                    ><i class="mdi mdi-chart-bar text-primary"></i></a>
                                     <a href="{% url 'update_lead' lead.id %}" class="action-icon"> <i
                                             class="mdi mdi-square-edit-outline text-warning"></i></a>
                                     <a href="#" id="leads_delete" data-id="{{lead.id}}" onclick="deleteLead(`{{lead.id}}`)" class="action-icon"> <i
                                             class="mdi mdi-delete text-danger"></i></a>
+                                    
                                 </td>
                             </tr>
                             {% endfor %}

@@ -8,7 +8,7 @@ class Leads(models.Model):
     localisation_du_lead = models.CharField(max_length=255, null=False)  # location
     porteur_lead = models.CharField(max_length=255, null=True,default='non mentionné')
     url_profil_porteur_lead = models.URLField(null=True,default='non mentionné')
-    adresse_mail_de_contact = models.EmailField(null=True,default='non mentionné')
+    adresse_mail_de_contact = models.EmailField(null=True,default='nonmentionné@rs.com')
     telephone = models.CharField(max_length=20, null=True,default='non mentionné')
     secteur_activite = models.CharField(max_length=255, null=True,default='non mentionné')
     taille_entreprise = models.CharField(max_length=255, null=True,default='non mentionné')
