@@ -1,286 +1,223 @@
 ﻿{% extends 'layouts/bases.html' %}
 {% load static %}
+
+{% block css %}
+<!-- App css -->
+<link href="{% static 'pulls/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css">
+<link href="{% static 'pulls/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style">
+<link href="{% static 'pulls/assets/css/vendor/dataTables.bootstrap5.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'pulls/assets/css/vendor/responsive.bootstrap5.css' %}" rel="stylesheet" type="text/css" />
+{%endblock css%}
 {% block content %}
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8">
-        <title>Leads Management </title>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description">
-        <meta content="Coderthemes" name="author">
-        <!-- App favicon -->
-        <link rel="shortcut icon" href="{% static 'pulls/assets/images/favicon.ico' %}">
 
-        <!-- App css -->
-        <link href="{% static 'pulls/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css">
-        <link href="{% static 'pulls/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style">
 
-    </head>
+<div class="row">
+    <div class="col-12">
+        <div class="page-title-box">
+            <div class="page-title-right">
+                <ol class="breadcrumb m-0">
+                    <li class="breadcrumb-item"><a href="javascript: void(0);">RS Telecom</a></li>
+                    <li class="breadcrumb-item active">Leads Visualisation Stats</li>
+                </ol>
+            </div>
+            <h4 class="page-title">Leads Management</h4>
+        </div>
+    </div>
+</div>
+<!-- end page title -->
 
-    <body class="loading" data-layout-config='{"leftSideBarTheme":"dark","layoutBoxed":false, "leftSidebarCondensed":false, "leftSidebarScrollable":false,"darkMode":false, "showRightSidebarOnStart": true}'>
-        <!-- Begin page -->
-        <div class="wrapper">
-
-            <!-- ============================================================== -->
-            <!-- Start Page Content here -->
-            <!-- ============================================================== -->
-
-            <div class="content-page">
-                <div class="content">
-
-                    <!-- Start Content-->
-                    <div class="container-fluid">
-                        
-                        <!-- start page title -->
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="page-title-box">
-                                    <div class="page-title-right">
-                                        <ol class="breadcrumb m-0">
-                                            <li class="breadcrumb-item"><a href="javascript: void(0);">RS Telecom</a></li>
-                                            <li class="breadcrumb-item active">Leads Visualisation Stats</li>
-                                        </ol>
-                                    </div>
-                                    <h4 class="page-title">Leads Management</h4>
-                                </div>
-                            </div>
-                        </div>     
-                        <!-- end page title --> 
-
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="card">
-                                    <div class="card-body">
-                                        <div class="row mb-2">
-                                            <div class="col-xl-8">
-                                                <form class="row gy-2 gx-2 align-items-center justify-content-xl-start justify-content-between">
-                                                </form>                            
-                                            </div>
-                                            <div class="col-xl-4">
-                                                <div class="text-xl-end mt-xl-0 mt-2">
-                                                    <a href="{% url 'add_company'%}"><button type="button" class="btn btn-danger mb-2 me-2"><i class="mdi mdi-basket me-1"></i> Ajouter un lead</button></a> 
-                                                    <a href="{% url 'scraping_lead'%}"><button type="button" class="btn btn-light mb-2">Generate Leads</button></a>
-                                                </div>
-                                            </div><!-- end col-->
-                                        </div>
-                
-                                        <div class="table-responsive">
-                                            <table id="leads-datatable" class="table table-centered mb-0">
-                                                <thead class="table-light">
-                                                    <tr>
-                                                        <th>Nom</th>
-                                                        <th>Nom Offre</th>
-                                                        <th>Localisation</th>
-                                                        <th>Porteur Lead</th>
-                                                        <th>Email</th>
-                                                        <th>Téléphone</th>
-                                                        <th>Date de capturation du Lead</th>
-                                                        <th>Statistiques</th>
-                                                        <th style="width: 125px;">Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    {% for lead in leads %}
-                                                        <tr>
-                                                            <td>{{ lead.nom }}</td>
-                                                            <td>{{ lead.nom_offre }}</td>
-                                                            <td>{{ lead.localisation_du_lead }}</td>
-                                                            <td>{{ lead.porteur_lead }}</td>
-                                                            <td>{{ lead.adresse_mail_de_contact }}</td>
-                                                            <td>{{ lead.telephone }}</td>
-                                                            
-                                                            <td>{{ lead.date_maj_lead }}</td>
-                                                            <td class="text-center">
-                                                                <a href="{% url 'statistiques_leads' %}?entreprise={{ lead.nom }}" class="btn btn-sm "> <i class="mdi mdi-chart-bar text-primary"></i></a>
-                                                            </td>
-
-                                                            <td>
-                                                                <a href="{% url 'lead_detail' lead.id %}" class="action-icon"> <i class="mdi mdi-eye text-success"></i></a>
-                                                                <a href="{% url 'update_lead' lead.id %}" class="action-icon"> <i class="mdi mdi-square-edit-outline text-warning"></i></a>
-                                                                <a href="{% url 'display_leads' %}" class="action-icon"> <i class="mdi mdi-delete text-danger"></i></a>
-                                                            </td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div> <!-- end card-body-->
-                                </div> <!-- end card-->
-                            </div> <!-- end col -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="row mb-2">
+                    <div class="col-xl-8">
+                        <form class="row gy-2 gx-2 align-items-center justify-content-xl-start justify-content-between">
+                        </form>
+                    </div>
+                    <div class="col-xl-4">
+                        <div class="text-xl-end mt-xl-0 mt-2">
+                            <a href="{% url 'add_company'%}"><button type="button" class="btn btn-danger mb-2 me-2"><i
+                                        class="mdi mdi-plus me-1"></i> Ajouter un lead</button></a>
+                            <a href="{% url 'scraping_lead'%}"><button type="button" class="btn btn-light mb-2">Generate
+                                    Leads</button></a>
                         </div>
-                        <!-- end row --> 
-                        
-                    </div> <!-- container -->
+                    </div><!-- end col-->
+                </div>
 
-                </div> <!-- content -->
+                <div class="table-responsive">
+                    <table id="leads-datatable" class="table table-centered mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Nom</th>
+                                <th>Nom Offre</th>
+                                <th>Localisation</th>
+                                <th>Porteur Lead</th>
+                                <th>Email</th>
+                                <th>Téléphone</th>
+                                <th>Date de capturation du Lead</th>
+                                <th>Statistiques</th>
+                                <th style="width: 125px;">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lead in leads %}
+                            <tr>
 
-                <!-- Footer Start -->
-                <footer class="footer">
-                    <div class="container-fluid">
+                                <td>{{ lead.nom }}</td>
+                                <td>{{ lead.nom_offre }}</td>
+                                <td>{{ lead.localisation_du_lead }}</td>
+                                <td>{{ lead.porteur_lead }}</td>
+                                <td>{{ lead.adresse_mail_de_contact }}</td>
+                                <td>{{ lead.telephone }}</td>
+
+                                <td>{{ lead.date_maj_lead }}</td>
+                                <td class="text-center">
+                                    <a href="{% url 'statistiques_leads' %}?entreprise={{ lead.nom }}"
+                                        class="btn btn-sm "> <i class="mdi mdi-chart-bar text-primary"></i></a>
+                                </td>
+
+                                <td>
+                                    <a href="{% url 'lead_detail' lead.id %}" class="action-icon"> <i
+                                            class="mdi mdi-eye text-success"></i></a>
+                                    <a href="{% url 'update_lead' lead.id %}" class="action-icon"> <i
+                                            class="mdi mdi-square-edit-outline text-warning"></i></a>
+                                    <a href="#" id="leads_delete" data-id="{{lead.id}}" onclick="deleteLead(`{{lead.id}}`)" class="action-icon"> <i
+                                            class="mdi mdi-delete text-danger"></i></a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div> <!-- end card-body-->
+        </div> <!-- end card-->
+    </div> <!-- end col -->
+</div>
+<div id="modalDelete" class="modal fade" tabindex="-1" role="dialog" aria-hidden="false">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content modal-filled bg-light">
+            <div class="modal-body p-4">
+                <div class="text-center text-dark">
+                    <i class="mdi mdi-delete-forever display-3 text-danger"></i>
+                    <h4 id="content" class="mt-2"></h4>
+                    <p id="confirmation" class="mt-3"></p>
+                    <div class="container">
                         <div class="row">
-                            <div class="col-md-6">
-                                <script>document.write(new Date().getFullYear())</script>
+                            <div class="col-6">
+                                <button type="button" class="btn btn-light my-2 " data-bs-dismiss="modal"
+                                    ta>Non</button>
                             </div>
-                            <div class="col-md-6">
-                                <div class="text-md-end footer-links d-none d-md-block">
-                                    <a href="javascript: void(0);">About</a>
-                                    <a href="javascript: void(0);">Support</a>
-                                    <a href="javascript: void(0);">Contact Us</a>
-                                </div>
+                            <div class="col-6">
+                                <button id="envoyer" type="button" class="btn btn-light my-2 bg-danger text-with">Oui</button>
                             </div>
                         </div>
                     </div>
-                </footer>
-                <!-- end Footer -->
-
-            </div>
-
-            <!-- ============================================================== -->
-            <!-- End Page content -->
-            <!-- ============================================================== -->
-
-        </div>
-        <!-- END wrapper -->
-
-        <!-- Right Sidebar -->
-        <div class="end-bar">
-
-            <div class="rightbar-title">
-                <a href="javascript:void(0);" class="end-bar-toggle float-end">
-                    <i class="dripicons-cross noti-icon"></i>
-                </a>
-                <h5 class="m-0">Settings</h5>
-            </div>
-
-            <div class="rightbar-content h-100" data-simplebar="">
-
-                <div class="p-3">
-                    <div class="alert alert-warning" role="alert">
-                        <strong>Customize </strong> the overall color scheme, sidebar menu, etc.
-                    </div>
-
-                    <!-- Settings -->
-                    <h5 class="mt-3">Color Scheme</h5>
-                    <hr class="mt-1">
-
-                    <div class="form-check form-switch mb-1">
-                        <input class="form-check-input" type="checkbox" name="color-scheme-mode" value="light" id="light-mode-check" checked="">
-                        <label class="form-check-label" for="light-mode-check">Light Mode</label>
-                    </div>
-
-                    <div class="form-check form-switch mb-1">
-                        <input class="form-check-input" type="checkbox" name="color-scheme-mode" value="dark" id="dark-mode-check">
-                        <label class="form-check-label" for="dark-mode-check">Dark Mode</label>
-                    </div>
-       
-                    <!-- Width -->
-                    <h5 class="mt-4">Width</h5>
-                    <hr class="mt-1">
-                    <div class="form-check form-switch mb-1">
-                        <input class="form-check-input" type="checkbox" name="width" value="fluid" id="fluid-check" checked="">
-                        <label class="form-check-label" for="fluid-check">Fluid</label>
-                    </div>
-
-                    <div class="form-check form-switch mb-1">
-                        <input class="form-check-input" type="checkbox" name="width" value="boxed" id="boxed-check">
-                        <label class="form-check-label" for="boxed-check">Boxed</label>
-                    </div>
-
-                    <!-- Left Sidebar-->
-                    <h5 class="mt-4">Left Sidebar</h5>
-                    <hr class="mt-1">
-                    <div class="form-check form-switch mb-1">
-                        <input class="form-check-input" type="checkbox" name="theme" value="default" id="default-check">
-                        <label class="form-check-label" for="default-check">Default</label>
-                    </div>
-
-                    <div class="form-check form-switch mb-1">
-                        <input class="form-check-input" type="checkbox" name="theme" value="light" id="light-check" checked="">
-                        <label class="form-check-label" for="light-check">Light</label>
-                    </div>
-
-                    <div class="form-check form-switch mb-3">
-                        <input class="form-check-input" type="checkbox" name="theme" value="dark" id="dark-check">
-                        <label class="form-check-label" for="dark-check">Dark</label>
-                    </div>
-
-                    <div class="form-check form-switch mb-1">
-                        <input class="form-check-input" type="checkbox" name="compact" value="fixed" id="fixed-check" checked="">
-                        <label class="form-check-label" for="fixed-check">Fixed</label>
-                    </div>
-
-                    <div class="form-check form-switch mb-1">
-                        <input class="form-check-input" type="checkbox" name="compact" value="condensed" id="condensed-check">
-                        <label class="form-check-label" for="condensed-check">Condensed</label>
-                    </div>
-
-                    <div class="form-check form-switch mb-1">
-                        <input class="form-check-input" type="checkbox" name="compact" value="scrollable" id="scrollable-check">
-                        <label class="form-check-label" for="scrollable-check">Scrollable</label>
-                    </div>
-
-                    <div class="d-grid mt-4">
-                        <button class="btn btn-primary" id="resetBtn">Reset to Default</button>
-            
-                        <a href="../../product/hyper-responsive-admin-dashboard-template/index.htm" class="btn btn-danger mt-3" target="_blank"><i class="mdi mdi-basket me-1"></i> Purchase Now</a>
-                    </div>
-                </div> <!-- end padding-->
-
-            </div>
-        </div>
-
-        <div class="rightbar-overlay"></div>
-        <!-- Datatable Init js -->
-        <script>
-            $(document).ready(function() {
-                // Initialize Datatables
-                $('#leads-datatable').DataTable();
-            });
-
-            function toggleDescription(button) {
-                const description = button.nextElementSibling;
-                if (description.style.display === 'none' || description.style.display === '') {
-                    description.style.display = 'block';
-                    button.textContent = 'Show Less';
-                } else {
-                    description.style.display = 'none';
-                    button.textContent = 'Show More';
-                }
-            }
-        </script>
-        
-    </body>
-</html>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+</div>
 
 {% endblock %}
 {% block js%}
 
-        <!-- Datatables js -->
-        <script src="{% static 'pulls/assets/js/vendor/dataTables.buttons.min.js' %}"></script>
-        <script src="{% static 'pulls/assets/js/vendor/jquery.dataTables.min.js' %}"></script>
-        <script src="{% static 'pulls/assets/js/vendor/dataTables.bootstrap5.js' %}"></script>
-        <script src="{% static 'pulls/assets/js/vendor/dataTables.responsive.min.js' %}"></script>
-        <script src="{% static 'pulls/assets/js/vendor/responsive.bootstrap5.min.js' %}"></script>
-        <script src="{% static 'pulls/assets/js/pages/demo.datatable-init.js' %}"></script>
+<!-- Datatables js -->
+<script src="{% static 'pulls/assets/js/vendor/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/dataTables.bootstrap5.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'pulls/assets/js/vendor/responsive.bootstrap5.min.js' %}"></script>
+<script src="{% static 'pulls/assets/js/pages/demo.datatable-init.js' %}"></script>
 
-        <!-- Datatable Init js -->
-        <script>
-            $(document).ready(function() {
-                // Initialize Datatables
-                $('#leads-datatable').DataTable();
-            });
+<!-- Datatable Init js -->
+<script>
+    $(document).ready(function () {
+        // Initialize Datatables
+        $('#leads-datatable').DataTable({
+        "language": {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
+        },
+        
+        });
+    });
 
-            function toggleDescription(button) {
-                const description = button.nextElementSibling;
-                if (description.style.display === 'none' || description.style.display === '') {
-                    description.style.display = 'block';
-                    button.textContent = 'Show Less';
-                } else {
-                    description.style.display = 'none';
-                    button.textContent = 'Show More';
+    function toggleDescription(button) {
+        const description = button.nextElementSibling;
+        if (description.style.display === 'none' || description.style.display === '') {
+            description.style.display = 'block';
+            button.textContent = 'Show Less';
+        } else {
+            description.style.display = 'none';
+            button.textContent = 'Show More';
+        }
+    }
+
+
+    function deleteLead(id) {
+        contenu = 'Suppression du lead';
+        confirmation = 'Voulez vous vraiment supprimer ce lead ?';
+        show_modal(contenu, confirmation)
+        boutton = document.getElementById("envoyer");
+        boutton.addEventListener('click', function (event) {
+            fetch('{% url "delete_lead" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: 'id=' + id
+            })
+                .then(response => response.json())
+                .then(data => {
+                    
+                    var modalElement = document.getElementById('modalDelete');
+                    console.log(modalElement);
+                    // alert('Lead supprimé avec succès!');
+                    // document.getElementById('lead-' + id).remove();  
+                    var modalInstance = bootstrap.Modal.getInstance(modalElement);
+                    if (data.success) {
+                        // Si l'instance du modal existe, cachez le modal
+                        if (modalInstance) {
+                            modalInstance.hide();
+                        } else {
+                            console.error('No existing instance of the modal found');
+                        }
+                        window.location.reload()
+                    } else {
+                        $.Notification()
+                    }
+                });
+
+        });
+
+    }
+
+    function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    // Does this cookie string begin with the name we want?
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
-        </script>
+            return cookieValue;
+        }
+    function show_modal(content, confirmation) {
+        var modal = new bootstrap.Modal(document.getElementById('modalDelete'));
+        modal.show();
+        contenu = document.getElementById("content");
+        confirmations = document.getElementById("confirmation");
+        contenu.textContent = content;
+        confirmations.textContent = confirmation;
+
+    }
+</script>
+</body>
 
 {% endblock %}

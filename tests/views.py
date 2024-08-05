@@ -22,6 +22,12 @@ from django.db.models.functions import TruncDate
 from .models import Feedback
 import csv
 import re
+from django.shortcuts import render
+from django.utils.timezone import now
+from .models import Leads
+from django.db.models.functions import Trunc
+from django.db.models import DateField
+
 import schedule
 import time
 import json
@@ -298,7 +304,7 @@ def update_lead(request):
 @login_required_connect
 def display_leads(request):
     leads = Leads.objects.all()
-    return render(request, 'test/display_leads.html', {'leads': leads})
+    return render(request, 'test/display_leads_to_delete.html', {'leads': leads})
 ###############################################"
 @login_required_connect
 def delete_lead(request):
@@ -592,7 +598,7 @@ def search_results(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    leads_data = list(page_obj.object_list.values('id', 'nom_offre', 'nom', 'nombre_offres', 'localisation_du_lead'))
+    leads_data = list(page_obj.object_list.values('id', 'nom_offre', 'nom', 'nombre_offres', 'localisation_du_lead','porteur_lead'))
     return JsonResponse({
         'leads': leads_data,
         'num_pages': paginator.num_pages,
@@ -750,34 +756,7 @@ from django.utils import timezone
 #     notification_triggered = False
 #     return render(request, 'test/historique.html', context)
 
-from django.shortcuts import render
-from django.utils.timezone import now
-from .models import Leads
-from django.db.models.functions import Trunc
-from django.db.models import DateField
 
-@login_required_connect
-def manage_leads_view(request, template_name):
-    global notification_triggered
-
-    Leads.objects.filter(date_maj_lead__isnull=True).update(date_maj_lead=now())
-    leads = Leads.objects.annotate(date=Trunc('date_maj_lead', 'day', output_field=DateField())).order_by('-date_maj_lead')
-    grouped_leads = {}
-    for lead in leads:
-        date = lead.date.strftime('%Y-%m-%d')
-        if date not in grouped_leads:
-            grouped_leads[date] = []
-        grouped_leads[date].append(lead)
-
-    context = {
-        'grouped_leads': grouped_leads,
-        'show_notification': notification_triggered  # Ajouter l'état de la notification au contexte
-    }
-
-    # Reset notification state
-    notification_triggered = False
-
-    return render(request, template_name, context)
 
 @login_required_connect
 def history(request):
@@ -814,7 +793,7 @@ def choix_leads(request):
     if context:
         return render(request , 'test/choix_leads.html',context)
     else : 
-        return manage_leads_view(request, 'test/choix_leads.html' )
+        return manage_leads_view(request, 'test/choix_leads.html')
         
 
 #####################################################"
@@ -1016,16 +995,28 @@ def cv_interface(request):
     return render(request, 'pages/settings/files_manager.html', context)
 
 
-def getAll_cvs(request):
-    try:
+def getAll(request):
         # Paramètres de pagination depuis DataTables
+        is_type=request.GET.get('is_type')
+        print('le type de recuperation ',is_type)
         page_size = int(request.GET.get('length', 10))  # Nombre d'éléments par page
         start = int(request.GET.get('start', 0))  # Début de la page
         draw = int(request.GET.get('draw', 1))
         # Récupération des CVs depuis la base de données
+        if str(is_type) == 'cv':
+           return  JsonResponse(getAll_cvs(start,page_size,draw)) 
+        elif str(is_type) == 'fac':
+            return JsonResponse(getAll_facs(start,page_size,draw))
+        else:
+            print('le type de recuperation 2',is_type)
+            return HttpResponse('Auc ty pe de dopnne')
+
+
+def getAll_cvs(start,page_size,draw):
+    try:
         cvs, columns = recuperer_cvs(offset=start, limit=page_size)
-        
-        # Préparer la liste des CVs pour DataTables
+            
+            # Préparer la liste des CVs pour DataTables
         cv_list = []
         for cv in cvs:
             cv_data = dict(zip(columns, cv))
@@ -1044,52 +1035,53 @@ def getAll_cvs(request):
             write_date = cv_data['write_date'].strftime('%Y-%m-%d %H:%M:%S') if cv_data['write_date'] else None
 
 
-            
+                
 
             cv_list.append({
-                'id': cv_data['id'],
-                'name': cv_data['name'],
-                'store_fname': cv_data['store_fname'],
-                'mimetype': cv_data['mimetype'],
-                'cv_proprio': cv_data['create_uid'],
-                'email_utilisateur': cv_data['email_utilisateur'],
-                'file_size': cv_data['file_size'],
-                'nom': nom ,
-                'prenom': prenom,
-                'create_date': create_date,
-                'write_date': write_date,
-                'action': f"""
-                    <div class="btn-group dropdown">
-                        <a href="#" class="table-action-btn dropdown-toggle arrow-none btn btn-light btn-xs" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-horizontal"></i></a>
-                        <div class="dropdown-menu dropdown-menu-end">
-                            <a class="dropdown-item rename-file" href="#" data-name="{cv_data['name']}" data-id="{cv_data['id']}"><i class="mdi mdi-pencil me-2 text-muted vertical-middle"></i>Renommer</a>
-                            <a class="dropdown-item delete-file" href="#" data-id="{cv_data['id']}"><i class="mdi mdi-delete me-2 text-muted vertical-middle"></i>Retirer</a>
+                    'id': cv_data['id'],
+                    'name': cv_data['name'],
+                    'store_fname': cv_data['store_fname'],
+                    'mimetype': cv_data['mimetype'],
+                    'cv_proprio': cv_data['create_uid'],
+                    'email_utilisateur': cv_data['email_utilisateur'],
+                    'file_size': cv_data['file_size'],
+                    'nom': nom ,
+                    'prenom': prenom,
+                    'create_date': create_date,
+                    'write_date': write_date,
+                    'action': f"""
+                        <div class="btn-group dropdown">
+                            <a href="#" class="table-action-btn dropdown-toggle arrow-none btn btn-light btn-xs" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-horizontal"></i></a>
+                            <div class="dropdown-menu dropdown-menu-end">
+                                <a class="dropdown-item rename-file" href="#" data-name="{cv_data['name']}" data-id="{cv_data['id']}"><i class="mdi mdi-pencil me-2 text-muted vertical-middle"></i>Renommer</a>
+                                <a class="dropdown-item delete-file" href="#" data-id="{cv_data['id']}"><i class="mdi mdi-delete me-2 text-muted vertical-middle"></i>Retirer</a>
+                            </div>
                         </div>
-                    </div>
-                """,
-                'commentaires': f"""
-                    <button class="btn btn-primary add-comment" type="button" data-id-commentaire={cv_data['id']}>Ajouter un commentaire</button>
-                    <a href="/leads_cvs/commentaires/{cv_data['id']}" class="btn btn-secondary">Voir les commentaires</a>
-                    
-                """
-            })
+                    """,
+                    'commentaires': f"""
+                        <button class="btn btn-primary add-comment" type="button" data-id-commentaire={cv_data['id']}>Ajouter un commentaire</button>
+                        <a href="/leads_cvs/commentaires/{cv_data['id']}" class="btn btn-secondary">Voir les commentaires</a>
+                        
+                    """
+                })
 
-        # Compter le nombre total de CVs
-        total_count = recuperer_total_cvs_count()
+            # Compter le nombre total de CVs
+            total_count = recuperer_total_cvs_count()
 
-        # Préparer les données pour DataTables
-        response_data = {
-            'draw': int(request.GET.get('draw', 1)),
-            'recordsTotal': total_count,
-            'recordsFiltered': total_count,
-            'data': cv_list
-        }
+            # Préparer les données pour DataTables
+            response_data = {
+                'draw': draw,
+                'recordsTotal': total_count,
+                'recordsFiltered': total_count,
+                'data': cv_list
+            }
 
-        return JsonResponse(response_data)
+        return response_data
 
     except Exception as e:
         print("le message erreur indique :",e)
-        return JsonResponse({'error du server': str(e)}, status=500)
+    return {'error du server': str(e)}
+
 
 def recuperer_total_cvs_count():
     # Connexion à la base de données
@@ -1108,7 +1100,122 @@ def recuperer_total_cvs_count():
 
     return total_count
 
+##################################################################################################################################
 
+def recuperer_facs(offset=0, limit=100):
+    db = MySQLdb.connect(
+        host=config('DB_HOST'),
+        user=config('DB_USER'),
+        passwd=config('DB_PASSWORD'),
+        db=config('DB_NAME'),
+        port=3306
+    )
+
+    # Créer un curseur pour exécuter les requêtes SQL
+    cursor = db.cursor()
+    cursor.execute("""
+        SELECT f.id, f.name, f.store_fname, f.mimetype, f.create_uid, f.file_size, f.create_date, f.write_date, u.login as email_utilisateur 
+        FROM facture AS f 
+        LEFT JOIN odoo_users AS u ON f.create_uid = u.id
+        LIMIT %s OFFSET %s
+    """, (limit, offset))
+
+    # Récupérer les résultats de la requête
+    facs = cursor.fetchall()
+    columns = [desc[0] for desc in cursor.description]
+
+    # Fermer la connexion à la base de données
+    db.close()
+
+    return facs, columns
+
+
+def getAll_facs(start,page_size,draw):
+    try:
+        facs, columns = recuperer_facs(offset=start, limit=page_size)
+        
+        # Préparer la liste des CVs pour DataTables
+        fac_list = []
+        for fac in facs:
+            fac_data = dict(zip(columns, fac))
+            if fac_data['id'] is None:
+                continue
+
+            proprietaire_fac = fac_data.get('email_utilisateur', 'inconnu')
+            if proprietaire_fac and '@' in proprietaire_fac:
+                proprietaire_fac = proprietaire_fac.split('@')[0]
+                nom, prenom = proprietaire_fac.split('.') if '.' in proprietaire_fac else (proprietaire_fac, proprietaire_fac)
+            else:
+                nom = 'inconnu'
+                prenom = 'inconnu'
+
+            create_date = fac_data['create_date'].strftime('%Y-%m-%d %H:%M:%S') if fac_data['create_date'] else None
+            write_date = fac_data['write_date'].strftime('%Y-%m-%d %H:%M:%S') if fac_data['write_date'] else None
+
+
+            
+
+            fac_list.append({
+                'id': fac_data['id'],
+                'name': fac_data['name'],
+                'store_fname': fac_data['store_fname'],
+                'mimetype': fac_data['mimetype'],
+                'cv_proprio': fac_data['create_uid'],
+                'email_utilisateur': fac_data['email_utilisateur'],
+                'file_size': fac_data['file_size'],
+                'nom': nom ,
+                'prenom': prenom,
+                'create_date': create_date,
+                'write_date': write_date,
+                'action': f"""
+                    <div class="btn-group dropdown">
+                        <a href="#" class="table-action-btn dropdown-toggle arrow-none btn btn-light btn-xs" data-bs-toggle="dropdown" aria-expanded="false"><i class="mdi mdi-dots-horizontal"></i></a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a class="dropdown-item rename-file" href="#" data-name="{fac_data['name']}" data-id="{fac_data['id']}"><i class="mdi mdi-pencil me-2 text-muted vertical-middle"></i>Renommer</a>
+                            <a class="dropdown-item delete-file" href="#" data-id="{fac_data['id']}"><i class="mdi mdi-delete me-2 text-muted vertical-middle"></i>Retirer</a>
+                        </div>
+                    </div>
+                """,
+                'commentaires': f"""
+                    <button class="btn btn-primary add-comment" type="button" data-id-commentaire={fac_data['id']}>Ajouter un commentaire</button>
+                    <a href="/leads_cvs/commentaires/{fac_data['id']}" class="btn btn-secondary">Voir les commentaires</a>
+                    
+                """
+            })
+
+            # Compter le nombre total de CVs
+            total_count = recuperer_total_facs_count()
+
+            # Préparer les données pour DataTables
+            response_data = {
+                'draw': int(draw),
+                'recordsTotal': total_count,
+                'recordsFiltered': total_count,
+                'data': fac_list
+            }
+
+        return response_data
+
+    except Exception as e:
+        print("le message erreur indique :",e)
+        return JsonResponse({'error du server': str(e)}, status=500)
+
+def recuperer_total_facs_count():
+    # Connexion à la base de données
+    db = MySQLdb.connect(
+        host=config('DB_HOST'),
+        user=config('DB_USER'),
+        passwd=config('DB_PASSWORD'),
+        db=config('DB_NAME'),
+        port=3306
+    )
+
+    cursor = db.cursor()
+    cursor.execute("SELECT COUNT(*) FROM facture")
+    total_count = cursor.fetchone()[0]
+    db.close()
+
+    return total_count
 
 
 
@@ -1221,18 +1328,21 @@ def get_facs():
     cursor = db.cursor()
 
     # Exécuter la requête SQL pour récupérer les données de la table cv
-    cursor.execute("SELECT c.id, c.name, c.store_fname , c.mimetype , c.create_uid as cv_proprio, u.id as user_id, u.login as email_utilisateur from facture as c left join odoo_users as u on c.create_uid = u.id ;")
+    cursor.execute("SELECT f.id, f.name, f.store_fname , f.mimetype , f.create_uid as cv_proprio, u.id as user_id, u.login as email_utilisateur , f.create_date, f.write_date, f.file_size  from facture as f left join odoo_users as u on f.create_uid = u.id ;")
 
     # Récupérer les résultats de la requête
-    cvs = cursor.fetchall()
+    facs = cursor.fetchall()
     print('la récupération des factures s\'est correctement effectuée ')
     # Fermer la connexion à la base de données
     db.close()
 
     # Retourner les résultats
-    return cvs
+    return facs
 
+
+@login_required_connect
 def fac_detail(request, fac_id):
+    user=request.user
     actual_path= f"{os.getcwd()}/tests"
     CV_ROOT = "/media/CV/filestore/"
     facs = get_facs()

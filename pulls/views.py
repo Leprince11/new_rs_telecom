@@ -1,5 +1,5 @@
-from django.conf import settings
 import uuid
+from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render,redirect,get_object_or_404
 from datetime import datetime,timedelta
@@ -82,6 +82,7 @@ def register(request):
        
         
         if(accept_terms=='on'):
+            print(email)
             if(utils.is_valid_email(email)['success']):
                 try:
                     users = Users.objects.create(users_mail=email)
@@ -241,23 +242,20 @@ def home(request):
         return render(request,'pages/admin/home.html',context)
     return redirect('login')
 
-
 @utils.login_required_connect
 def profil(request, user_id=None):
-    
-    # Ajoute l'utilisateur et ses informations au contexte
-    user = request.user
-    context= utils.recup_infos_users(user)
+    context = {}
 
     if user_id:
         # Utilisateur connecté
+        user = request.user
         # Récupérer l'utilisateur spécifié par user_id
         user_info = get_object_or_404(Users, id_user=user_id)
 
         context['user_info'] = user_info
         
         # Vérifie le type d'utilisateur et ajuste le contexte en conséquence
-        if user_info.users_type in ['con', 'stt']:
+        if user.users_type in ['con', 'stt']:
             context['is_consultant_or_freelance'] = True
         
         # Pour les administrateurs et RH, afficher tous les clients
@@ -269,7 +267,7 @@ def profil(request, user_id=None):
             current_mission = get_current_mission(user_info)  # Assurez-vous que cette fonction est définie
             context['current_mission'] = current_mission
         
-        # Récupérer le client associé si disponible
+        
         if user_info.client:
             context['current_client'] = get_object_or_404(Clients, id_client=user_info.client.id_client)
         
@@ -284,10 +282,15 @@ def profil(request, user_id=None):
             grouped_companies[client.client_name].append(client)
             
         context['grouped_companies']=grouped_companies
+        # Ajoute l'utilisateur et ses informations au contexte
+        context['user'] = user
             
     else:
-        
+        # Utilisateur connecté
+        user = request.user
+        context['user'] = user
         context['clients'] = Clients.objects.all()
+        
         
         if user.users_type in ['con', 'stt']:
             context['is_consultant_or_freelance'] = True
@@ -297,7 +300,6 @@ def profil(request, user_id=None):
             context['current_mission'] = current_mission
         
         # Récupérer le client associé si disponible
-        print(user.client)
         if user.client:
             context['current_client'] = get_object_or_404(Clients, id_client=user.client.id_client)
 
@@ -312,7 +314,7 @@ def profil(request, user_id=None):
         
     except Exception as e:
         print('Message erreur:', e)
-    print('Context en fonction de l\'utilisateur ',context)
+
 
     return render(request, 'pages/clients/profil.html', context)
 
@@ -332,14 +334,12 @@ def get_current_mission(user):
 
 @utils.login_required_connect  # decorateur pour verifier si l'utilisateur est connecter ou pas
 def update_profile_ajax(request):
-    print(request.method)
-
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Méthode de requête invalide'}, status=405)
     
     try:
         user = request.user
-        user_id = request.POST.get('user_info_id') or request.POST.get('user_id')
+        user_id = request.POST.get('user_id') or request.POST.get('user_info_id')
 
         try:
             user_uuid = uuid.UUID(user_id)
@@ -347,16 +347,14 @@ def update_profile_ajax(request):
             return JsonResponse({'success': False, 'message': 'ID utilisateur invalide'}, status=400)
 
 
-
         if not user_id:
             return JsonResponse({'success': False, 'message': 'ID utilisateur requis'}, status=400)
 
         user_to_update = get_object_or_404(Users, id_user=user_id)
-        print("user est ici 2",user.id_user,' et ', user_uuid,user.id_user != user_uuid)
 
         # Vérification de l'identité de l'utilisateur
         if user.id_user != user_uuid:
-        # Vérifier le type d'utilisateur
+            # Vérifier le type d'utilisateur
             is_consultant_or_freelance = user_to_update.users_type in ['con', 'stt']
            
             # Mise à jour des informations client
@@ -375,12 +373,11 @@ def update_profile_ajax(request):
                 user_to_update.client = client
             elif client_option:
                 client = get_object_or_404(Clients, id_client	= client_option)
-                
                 print("Normalement ici",client.client_location,client.client_name)
                 if client_location:
                     client.client_location = client_location
                     client.save()
-                user_to_update.client = client
+                user_to_update.client = client.id_client
 
 
             if is_consultant_or_freelance:
@@ -422,6 +419,8 @@ def update_profile_ajax(request):
                     )
                     new_mission.save()
                     user_to_update.mission = new_mission
+       
+
         
         
         # Mise à jour des informations personnelles
