@@ -18,7 +18,7 @@
                             {% if user.users_type in 'com admin superadmin' %}
                             <a href="https://rs-telecom-5fe33.web.app" target="_blank" class="dropdown-item">Maquettage de cv</a>
                             <a href="{% url 'choix_leads'%}" class="dropdown-item">Leads et Matching de CVs</a>
-                            <a href="{% url 'cv_interface' %}" class="dropdown-item">CV Tech</a>
+                            <a href="{% url 'cv_interface' %}" class="dropdown-item">Documents</a>
                             {% endif %}
                             {% if user.users_type in 'con stt admin superadmin'%}
                             <a href="{% url 'cra'%}" class="dropdown-item">Gestion de CRA</a>  

@@ -259,7 +259,7 @@
                   <div class="list-group">
                     <a href="{% url 'add_company' %}" class="list-group-item list-group-item-action">Ajouter un Lead</a>
                     <a href="{% url 'view_leads' %}" class="list-group-item list-group-item-action">Mettre à jour un Lead</a>
-                    <a href="{% url 'display_leads' %}" class="list-group-item list-group-item-action">Supprimer un Lead</a>
+                    <a href="{% url 'display_leads_to_delete' %}" class="list-group-item list-group-item-action">Supprimer un Lead</a>
                   </div>
                 </div>
               </div>
@@ -295,29 +295,9 @@
               </div>
             </div>
           </div>
-            <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="700">
-              <div class="card card-zoom">
-                <img src="{% static 'test/images/cv-tech.png' %}" class="card-img-top img-fluid" alt="">
-                <div class="card-body">
-                  <h3 class="card-title"><a href="{% url 'cv_interface' %}" class="stretched-link">CV Tech</a></h3>
-                  <p class="card-text">Cette section vous permet de gérer et d'explorer les CVs des candidats potentiels. Vous pouvez visualiser les profils, évaluer les compétences et les expériences, et garder une trace des candidats intéressants pour des futures opportunités. Cet outil est conçu pour faciliter la gestion des candidatures et optimiser le processus de recrutement.</p>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-4 col-md-6 col-sm-12" data-aos="fade-up" data-aos-delay="700">
-              <div class="card card-zoom">
-                <img src="{% static 'test/images/feedback-img.png' %}" class="card-img-top img-fluid" alt="">
-                <div class="card-body">
-                  <h3 class="card-title"><a href="{% url 'feedback' %}" class="stretched-link">Feedback & Conseils</a></h3>
-                  <p class="card-text">Cette section permet aux utilisateurs de donner leur avis et de recevoir des conseils d'utilisation pour nos services numériques. Améliorez votre expérience avec RS grâce aux retours des utilisateurs et des astuces pratiques pour une utilisation optimale de notre plateforme.</p>
-                </div>
-              </div>
-            </div>
-
         </div>
       </div>
   </section>
-
   <!-- Boîte Modale pour Génération de Leads -->
   <div class="modal fade" id="leadGenerationModal" tabindex="-1" aria-labelledby="leadGenerationModalLabel" aria-hidden="true">
     <div class="modal-dialog">

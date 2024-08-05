@@ -333,18 +333,17 @@ def main_extraction(keywords, location, time_frame):
                     'localisation': location,
                     'taille': linkedin_info.get('taille', 'non mentionné'),
                     'secteur': linkedin_info.get('secteur', 'non mentionné'),
-                    'chiffre_d_affaires': linkedin_info.get('fondee_en', 'non mentionné'),  # Placeholder pour chiffre d'affaires
                     'job_description': job_description,
                     'porteur_lead': recruiter_name if recruiter_name is not None else 'non mentionné',
                     'joblien': job_link,
                     'lien_profil_linkedin': recruiter_profile_link,
                     'date_publication_offre': date_publication
                 }
-                insert_lead_to_db(row_data)
                 new_data.append(row_data)
             print(new_data)
 
             if new_data:
+                write_to_db(new_data)
                 return search_url, new_data
             else:
                 attempts += 1

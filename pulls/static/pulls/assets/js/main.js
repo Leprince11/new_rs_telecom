@@ -211,8 +211,6 @@ function updatePassword(){
 
 
 $(document).ready(function() {
-
-    console.log('Commencons deja par ici');
     
     $('#signupForm').submit(function(event) {
         event.preventDefault(); 
@@ -223,7 +221,7 @@ $(document).ready(function() {
         var passwordValue = $("#id_password").val();
         var acceptTermsValue = $("#checkbox-signup").prop("checked");
         var decimal =
-          /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,15}$/;
+          /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?=.*[^a-zA-Z0-9])(?!.*\s).{8,25}$/;
 
         if (
             (firstNameValue==="") |
@@ -340,4 +338,12 @@ $(document).ready(function() {
     ActivationOpt()
     enableopt()
     updatePassword()
+
+    console.log($('.add-comment'));
+    $('.add-comment').on('click', function() {
+        
+        var cvId = $(this).data('id');
+        console.log(cvId)
+        $('#comment-modal-cv').modal('show');
+    });
 });

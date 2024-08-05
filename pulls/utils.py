@@ -182,3 +182,26 @@ def utilisateur_autorise(types_autorises):
             return vue_fonction(request, *args, **kwargs)
         return vue_modifiee
     return decorateur
+
+def recup_infos_users(user):
+    users_types =  ''
+    match user.users_type:
+            case 'paie':
+                users_types = "Ressources humaines"
+            case 'admin':
+                users_types = "Direction"
+            case 'stt':
+                users_types = "Freelance"
+            case 'con':
+                users_types = "Consultant"
+            case 'com':
+                users_types = "Commercial"
+            case 'sup':
+                users_types = "Super admin"
+            case _:
+                users_types = "Invité"
+    
+    context = {'user' : user,
+               'user_types':users_types
+               }
+    return context

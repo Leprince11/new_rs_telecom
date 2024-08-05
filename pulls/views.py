@@ -267,7 +267,7 @@ def profil(request, user_id=None):
             current_mission = get_current_mission(user_info)  # Assurez-vous que cette fonction est définie
             context['current_mission'] = current_mission
         
-        # Récupérer le client associé si disponible
+        
         if user_info.client:
             context['current_client'] = get_object_or_404(Clients, id_client=user_info.client.id_client)
         
@@ -330,12 +330,10 @@ def parse_date(date_str, date_format='%m/%d/%Y'):
 
 def get_current_mission(user):
     # Exemple de code, adaptez-le à votre modèle
-    return Mission.objects.filter(id_mission=user.id_mission_id).last()
+    return Mission.objects.filter(id_mission=user.mission).last()
 
 @utils.login_required_connect  # decorateur pour verifier si l'utilisateur est connecter ou pas
 def update_profile_ajax(request):
-    print(request.method)
-
     if request.method != 'POST':
         return JsonResponse({'success': False, 'message': 'Méthode de requête invalide'}, status=405)
     
@@ -349,6 +347,22 @@ def update_profile_ajax(request):
             return JsonResponse({'success': False, 'message': 'ID utilisateur invalide'}, status=400)
 
 
+
+        if not user_id:
+            return JsonResponse({'success': False, 'message': 'ID utilisateur requis'}, status=400)
+
+        user_to_update = get_object_or_404(Users, id_user=user_id)
+
+        # Vérification de l'identité de l'utilisateur
+        if user.id_user != user_uuid:
+            # Vérifier le type d'utilisateur
+            is_consultant_or_freelance = user_to_update.users_type in ['con', 'stt']
+           
+            # Mise à jour des informations client
+            client_option = request.POST.get('client_id')
+            client_location = request.POST.get('cwebsite')
+            if client_option == 'other':
+                client_name = request.POST.get('client_name')
 
         if not user_id:
             return JsonResponse({'success': False, 'message': 'ID utilisateur requis'}, status=400)

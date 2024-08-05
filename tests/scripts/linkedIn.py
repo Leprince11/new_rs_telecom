@@ -341,7 +341,6 @@ def scraping_apec(base_url, location, keywords, salary_min, salary_max):
 
             company_name = offer.find_element(By.CLASS_NAME, 'card-offer__company').text
             job_title = offer.find_element(By.CLASS_NAME, 'card-title').text
-            job_description = offer.find_element(By.CLASS_NAME, 'card-offer__description').text
             salary = offer.find_element(By.XPATH, './/ul[@class="details-offer"]/li[1]').text if offer.find_elements(By.XPATH, './/ul[@class="details-offer"]/li[1]') else 'Non spécifié'
             contract_type = offer.find_element(By.XPATH, './/ul[@class="details-offer important-list"]/li[1]').text
             location = offer.find_element(By.XPATH, './/ul[@class="details-offer important-list"]/li[2]').text
@@ -354,7 +353,7 @@ def scraping_apec(base_url, location, keywords, salary_min, salary_max):
 
             # Scrape job details page
             job_details = scrape_apec_job_details(detail_url)
-            full_description = f"{job_details['descriptif_de_mission']}\n\nProfil recherché:\n{job_details['profil_recherche']}"
+            full_description = f"{job_details['descriptif_de_mission']}\n\nProfil recherché:\n{job_details['profil_recherche']}\ntype du contrat: {contract_type}\nFourchette de salaire: {salary}"
 
             # Check if the lead already exists
             lead, created = Leads.objects.update_or_create(

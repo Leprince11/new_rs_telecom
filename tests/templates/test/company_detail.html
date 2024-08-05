@@ -1,3 +1,4 @@
+{%load static%}
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -8,7 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <style>
         body {
-            background-color: #e0f7fa;
+            background:url('{% static "test/images/lead_generator.png" %}');
             font-family: 'Arial', sans-serif;
         }
         .container {
@@ -24,7 +25,7 @@
             font-size: 2.5rem;
             font-weight: bold;
             margin-bottom: 20px;
-            color: #00796b;
+            color:#03396c;
         }
         table {
             background-color: #ffffff;
@@ -63,8 +64,8 @@
             text-decoration: underline;
         }
         .btn-custom {
-            background-color: #00796b;
-            border-color: #00796b;
+            background-color: #03396c;;
+            border-color: #03396c;;
             color: #ffffff;
             border-radius: 25px;
             padding: 10px 20px;
@@ -73,15 +74,15 @@
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
         .btn-custom:hover {
-            background-color: #005f56;
+            background-color: #03396c;;
             transform: scale(1.05);
             box-shadow: 0 8px 16px rgba(0,0,0,0.2);
         }
         .btn-link {
-            color: #00796b;
+            color: #03396c;;
         }
         .btn-link:hover {
-            color: #005f56;
+            color:#03396c;;
         }
         .fade-in {
             animation: fadeIn 1s ease-in-out;
@@ -141,7 +142,7 @@
                     <td data-label="Nom">{{ lead.nom }}</td>
                 </tr>
                 <tr>
-                    <th data-label="Nombre d'offres">Nombre d'offres similaire de l'entreprise</th>
+                    <th data-label="Nombre d'offres">Nombre d'offres similaire de l'entreprise le jour de la capturation du lead</th>
                     <td data-label="Nombre d'offres">{{ lead.nombre_offres }}</td>
                 </tr>
                 <tr>
@@ -161,7 +162,7 @@
                     <td data-label="Secteur">{{ lead.secteur_activite }}</td>
                 </tr>
                 <tr>
-                    <th data-label="Chiffre d'affaires">Chiffre d'affaires</th>
+                    <th data-label="Chiffre d'affaires">Année de création de l'entreprise</th>
                     <td data-label="Chiffre d'affaires">{{ lead.chiffre_d_affaires }}</td>
                 </tr>
                 <tr>

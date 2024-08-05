@@ -12,10 +12,14 @@
         <link rel="shortcut icon" href="{% static 'images/logo.png' %}" type="image/x-icon">
 
         <!-- App CSS -->
+
+        <link href="{% static 'pulls/assets/css/vendor/jstree.min.css' %}" rel="stylesheet" type="text/css">
+        {% block css %}
+        <!-- third party css -->
+        <link href="{% static 'pulls/assets/css/vendor/fullcalendar.min.css' %}" rel="stylesheet" type="text/css" />
         <link href="{% static 'pulls/assets/css/icons.min.css' %}" rel="stylesheet" type="text/css" />
         <link href="{% static 'pulls/assets/css/app.min.css' %}" rel="stylesheet" type="text/css" id="light-style" />
-        <link href="{% static 'pulls/assets/css/app-dark.min.css' %}" rel="stylesheet" type="text/css" id="dark-style" />
-        {% block css %}
+        <link href="{% static 'pulls/assets/css/app-dark.min.css' %}" rel="stylesheet" type="text/css" id="dark-style" />{% block css %}
         {% endblock css %}
     </head>
 
