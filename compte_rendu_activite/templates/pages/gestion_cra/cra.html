@@ -1,6 +1,30 @@
 {% extends 'layouts/bases.html' %}
 {% load static %}
 
+{% block css %}
+<!-- third party css -->
+<link href="{% static 'pulls/assets/css/vendor/fullcalendar.min.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'pulls/assets/css/vendor/dataTables.bootstrap5.css' %}" rel="stylesheet" type="text/css" />
+<link href="{% static 'pulls/assets/css/vendor/responsive.bootstrap5.css' %}" rel="stylesheet" type="text/css" />
+
+<style>
+    #calendar-hour-sup {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .event-counter {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        font-size: 20px;
+        font-weight: bold;
+        color: orange;
+    }
+</style>
+{% endblock css %}
+
 {% block content %}
 <div class="container-fluid">
     <div class="row">
@@ -69,7 +93,9 @@
                                 </div>
                             </div>
                             <div class="tab-pane " id="profile-b2">
-                                <p>...</p>
+                                <div class="mt-4 mt-lg-0">
+                                    <div id="calendar-hour-sup"></div>
+                                </div>
                             </div>
                             <div class="tab-pane" id="settings-b2">
                                 <div class="card-body">
@@ -393,6 +419,67 @@
 
 <script src="{% static 'pulls/assets/js/vendor/fullcalendar.min.js'%}"></script>
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+            var calendarEl = document.getElementById('calendar-hour-sup');
+            var events = [
+                {
+                    title: 'Event 1',
+                    start: '2024-08-01'
+                },
+                {
+                    title: 'Event 2',
+                    start: '2024-08-01'
+                },
+                {
+                    title: 'Event 3',
+                    start: '2024-08-02'
+                },
+                {
+                    title: 'Event 4',
+                    start: '2024-08-03'
+                },
+                {
+                    title: 'Event 5',
+                    start: '2024-08-03'
+                },
+                {
+                    title: 'Event 6',
+                    start: '2024-08-03'
+                }
+            ];
+
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: events,
+                eventContent: function (arg) {
+                    var customHtml = {
+                        html: `<div class="event-counter">${arg.event.extendedProps.count || 0}</div>`
+                    };
+                    return customHtml;
+                },
+                dateClick: function (info) {
+                    var dateStr = info.dateStr;
+                    var eventCount = events.filter(event => event.start === dateStr).length;
+                    events.push({
+                        title: 'New Event',
+                        start: dateStr,
+                        extendedProps: {
+                            count: eventCount + 1
+                        }
+                    });
+                    calendar.addEvent({
+                        title: 'New Event',
+                        start: dateStr,
+                        extendedProps: {
+                            count: eventCount + 1
+                        }
+                    });
+                }
+            });
+            calendar.render();
+        });
+
+
     $(document).ready(function () {
         // Fonction pour créer le compte rendu
         $('#created-cra').on('click', function () {
@@ -403,19 +490,24 @@
             var formattedDateTime = year + '-' + month + '-' + day;
 
             $.ajax({
-                url: "CRA",
+                url: "CRA", 
                 type: 'POST',
                 data: {
                     'datetime': formattedDateTime,
                     'csrfmiddlewaretoken': '{{ csrf_token }}'
                 },
                 success: function (response) {
-                    $.NotificationApp.send("Success", "Compte rendu d'activité créé avec succès!", "top-right", "#28a745", "success");
-                    window.jQuery.CalendarApp.refreshCalendar(); // Rafraîchir le calendrier
-                    window.location.reload()
+                    if (response.success) {
+                        $.NotificationApp.send("Success", response.message, "top-right", "#28a745", "success");
+                        window.jQuery.CalendarApp.refreshCalendar(); 
+                        window.location.reload();
+                    } else {
+                        $.NotificationApp.send("Erreur", response.message, "top-right", "#c9261a", "mdi mdi-alert");
+                    }
                 },
                 error: function (xhr, status, error) {
-                    $.NotificationApp.send("Erreur", "Erreur lors de la création du CRA.", "bottom-right", "bg-danger", "mdi mdi-alert");
+                    console.error(xhr + status + error);
+                    $.NotificationApp.send("Erreur", "Une erreur est survenue lors de la creation du CRA, verifier votre connexion!!", "top-right", "#c9261a", "danger");
                 }
             });
         });
@@ -625,6 +717,10 @@
             l.CalendarApp = new e();
             l.CalendarApp.init();
         }(window.jQuery);
+    
+        
+    
+    
     });
 </script>
 {% endblock js %}

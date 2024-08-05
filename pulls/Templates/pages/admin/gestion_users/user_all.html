@@ -47,17 +47,17 @@
                                             <label class="form-check-label" for="customCheck1">&nbsp;</label>
                                         </div>
                                     </th>
-                                    <th>Nom/Prenom</th>
+                                    <th>Employé</th>
                                     <th>telephone</th>
                                     <th>Adresse email</th>
                                     <th>Company</th>
-                                    <th>Joind</th>
-                                    <th>Status</th>
+                                    <th>Job position</th>
+                                    <th>Manager</th>
                                     <th style="width: 75px;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for user in users %}  
+                                {% for user in users %} 
                                 <tr>
                                     <td>
                                         <div class="form-check">
@@ -70,7 +70,7 @@
                                         <a href="javascript:void(0);" class="text-body fw-semibold">{{ user.users_name|default:"N/A" }} {{ user.users_fname|default:"N/A" }}</a>
                                     </td>
                                     <td>
-                                        {{ user.users_type|default:"N/A" }}
+                                        {{ user.users_phone|default:"N/A" }}
                                     </td>
                                     <td>
                                         {{ user.users_mail|default:"N/A" }}
@@ -79,13 +79,13 @@
                                         {{ user.users_company|default:"N/A" }}
                                     </td>
                                     <td>
-                                        {{ user.created_date|default:"N/A" }}
+                                        {{ user.users_type|default:"N/A" }}
                                     </td>
                                     <td>
                                         {% if user.users_is_active %}
-                                            <span class="badge badge-success-lighten">Active</span>
+                                            <span class="badge badge-success-lighten">N/A</span>
                                         {% else %}
-                                            <span class="badge badge-danger-lighten">Inactive</span>
+                                            <span class="badge badge-danger-lighten">N/A</span>
                                         {% endif %}
                                     </td>
                                     <td>

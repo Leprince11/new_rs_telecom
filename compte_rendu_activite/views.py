@@ -100,11 +100,25 @@ def get_weekends(year, month):
         date += timedelta(days=1)
     return weekends
 
+def get_mission(user):
+    # Vérifiez si l'utilisateur a une mission en cours
+    try:
+        mission_en_cours = Mission.objects.filter(id_mission=user.mission,
+                mission_start__lte=timezone.now(),
+                mission_end__gte=timezone.now()
+            ).count()
+        print('nombre de mission disponibles',mission_en_cours)
+        return mission_en_cours
+    except Exception as e:
+        print('message d\' erreur',e)
+        return 'error'
+
+
 @utils.login_required_connect
 def created_cra_datetime(request):
     if request.method == 'POST':
         datetime_str = request.POST.get('datetime')
-        mess=""
+        mess = ""
         try:
             dt = datetime.strptime(datetime_str, '%Y-%m-%d')
             year, month = dt.year, dt.month
@@ -119,63 +133,74 @@ def created_cra_datetime(request):
             current_day = first_day
             jours_feries = JoursFeries.for_year(first_day.year)
             pin = request.session.get('user_id')
-            user= Users.objects.get(pk=pin)
-            while current_day <= last_day:
-                current_day_str = current_day.strftime('%Y-%m-%d')
-                local_tz = timezone.get_current_timezone()
-                start_time = timezone.make_aware(current_day.replace(hour=9, minute=0, second=0, microsecond=0), local_tz)
-                end_time = timezone.make_aware(current_day.replace(hour=18, minute=0, second=0, microsecond=0), local_tz)
+            user = Users.objects.get(pk=pin)
 
-                if current_day_str in weekends_str:
-                    pass
-                else:
-                    categorie = dict(CRA.choose_categorie)[1]
-                    for nom_jour_ferie, date_jour_ferie in jours_feries.items():
-                        if current_day.date() == date_jour_ferie:
-                            categorie = dict(CRA.choose_categorie)[3] 
-                            break
-                    try :
-                        existing_cra = CRA.objects.filter(
-                            user=user,
-                            start_date__date=start_time.date(),
-                        ).exists()
-                        cra = CRA.objects.filter(
-                            user=user,
-                            start_date__date=start_time.date(),
-                        ).first()
-                        if existing_cra:
-                            response_data = {
-                                'success':True,
-                                'message': 'Un CRA existe déjà pour ce mois',
-                            }
-                            return JsonResponse(response_data)
-                        
-                        cra = CRA(
-                            user=user,
-                            start_date=start_time,
-                            end_date=end_time,
-                            categorie=categorie 
-                        )
-                        cra.save()
-                    except Exception as e:
-                        print(e)  
-                current_day += timedelta(days=1)
 
-            response_data = {
-                    'success':True,
-                    'message': "Felecitation votres Compte rendu d'activite"
-            }
-            return JsonResponse(response_data)
+            mission_en_cours = get_mission(user)
+
+            if int(mission_en_cours) == 0 :
+                response_data = {
+                    'success': False,
+                    'message': "Vous n'êtes assigné à aucune mission en cours."
+                }
+                return JsonResponse(response_data, status=400)
+            else :
+
+                while current_day <= last_day:
+                    current_day_str = current_day.strftime('%Y-%m-%d')
+                    local_tz = timezone.get_current_timezone()
+                    start_time = timezone.make_aware(current_day.replace(hour=9, minute=0, second=0, microsecond=0), local_tz)
+                    end_time = timezone.make_aware(current_day.replace(hour=18, minute=0, second=0, microsecond=0), local_tz)
+
+                    if current_day_str in weekends_str:
+                        pass
+                    else:
+                        categorie = dict(CRA.choose_categorie)[1]
+                        for nom_jour_ferie, date_jour_ferie in jours_feries.items():
+                            if current_day.date() == date_jour_ferie:
+                                categorie = dict(CRA.choose_categorie)[3]
+                                break
+                        try:
+                            existing_cra = CRA.objects.filter(
+                                user=user,
+                                start_date__date=start_time.date(),
+                            ).exists()
+                            if existing_cra:
+                                response_data = {
+                                    'success': True,
+                                    'message': 'Un CRA existe déjà pour ce mois',
+                                }
+                                return JsonResponse(response_data)
+
+                            cra = CRA(
+                                user=user,
+                                start_date=start_time,
+                                end_date=end_time,
+                                categorie=categorie
+                            )
+                            cra.save()
+                        except Exception as e:
+                            print(e)
+                    current_day += timedelta(days=1)
+
+                response_data = {
+                    'success': True,
+                    'message': "Félicitations, votre Compte rendu d'activité a été créé."
+                }
+                return JsonResponse(response_data)
         except ValueError:
             response_data = {
-                    'success':False,
-                    'message': "Invalid datetime format. Use YYYY-MM-DD."
+                'success': False,
+                'message': "Invalid datetime format. Use YYYY-MM-DD."
             }
             return JsonResponse(response_data, status=400)
+        except Exception as m:
+            print('message :', m)
+
     else:
         response_data = {
-                'success':False,
-                'message': "Invalid request"
+            'success': False,
+            'message': "Invalid request"
         }
         return JsonResponse(response_data, status=400)
     
