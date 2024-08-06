@@ -181,9 +181,6 @@ def statistiques_leads(request):
         fig = px.pie(values=counts, names=locations, title='Offres par localisation')
         charts.append(fig.to_html(full_html=False))
 
-        # 2. Bar chart des offres par localisation
-        fig = px.bar(x=locations, y=counts, labels={'x': 'Localisation', 'y': 'Nombre d\'offres'}, title='Nombre d\'offres par localisation')
-        charts.append(fig.to_html(full_html=False))
 
     # 3. Bar chart des offres par entreprise (général)
     entreprises_offres = Leads.objects.values('nom').annotate(total_offres=Sum('nombre_offres')).order_by('-total_offres')
@@ -206,19 +203,19 @@ def statistiques_leads(request):
     fig = px.bar(x=priorites, y=counts, labels={'x': 'Priorité', 'y': 'Nombre de leads'}, title='Répartition des leads par priorité')
     charts.append(fig.to_html(full_html=False))
 
-    # 6. Bar chart des leads par secteur d'activité
-    secteurs_leads = Leads.objects.values('secteur_activite').annotate(total_leads=Count('id')).order_by('-total_leads')
-    secteurs = [secteur['secteur_activite'] for secteur in secteurs_leads]
-    counts = [secteur['total_leads'] for secteur in secteurs_leads]
-    fig = px.bar(x=secteurs, y=counts, labels={'x': 'Secteur d\'activité', 'y': 'Nombre de leads'}, title='Nombre de leads par secteur d\'activité')
-    charts.append(fig.to_html(full_html=False))
+    # # 6. Bar chart des leads par secteur d'activité
+    # secteurs_leads = Leads.objects.values('secteur_activite').annotate(total_leads=Count('id')).order_by('-total_leads')
+    # secteurs = [secteur['secteur_activite'] for secteur in secteurs_leads]
+    # counts = [secteur['total_leads'] for secteur in secteurs_leads]
+    # fig = px.bar(x=secteurs, y=counts, labels={'x': 'Secteur d\'activité', 'y': 'Nombre de leads'}, title='Nombre de leads par secteur d\'activité')
+    # charts.append(fig.to_html(full_html=False))
 
-    # 7. Bar chart des leads par taille d'entreprise
-    tailles_leads = Leads.objects.values('taille_entreprise').annotate(total_leads=Count('id')).order_by('-total_leads')
-    tailles = [taille['taille_entreprise'] for taille in tailles_leads]
-    counts = [taille['total_leads'] for taille in tailles_leads]
-    fig = px.bar(x=tailles, y=counts, labels={'x': 'Taille d\'entreprise', 'y': 'Nombre de leads'}, title='Nombre de leads par taille d\'entreprise')
-    charts.append(fig.to_html(full_html=False))
+    # # 7. Bar chart des leads par taille d'entreprise
+    # tailles_leads = Leads.objects.values('taille_entreprise').annotate(total_leads=Count('id')).order_by('-total_leads')
+    # tailles = [taille['taille_entreprise'] for taille in tailles_leads]
+    # counts = [taille['total_leads'] for taille in tailles_leads]
+    # fig = px.bar(x=tailles, y=counts, labels={'x': 'Taille d\'entreprise', 'y': 'Nombre de leads'}, title='Nombre de leads par taille d\'entreprise')
+    # charts.append(fig.to_html(full_html=False))
 
     # 8. Pie chart des leads par source
     sources_leads = Leads.objects.values('source_lead').annotate(total_leads=Count('id')).order_by('-total_leads')
@@ -619,18 +616,24 @@ def search_results(request):
 
 @login_required_connect
 def changer_mots_cle_lead(request, lead_id):
+    user=request.user
+    context=recup_infos_users(user)
     lead = get_object_or_404(Leads, pk=lead_id)
     processed_description = preprocess_text_mission(lead.description_job)
     full_description = f"{lead.nom_offre} {processed_description}"
     keywords = extract_keywords(full_description)
     print('La description est :', full_description)
     print(f'Les mots clés retournés sont : {keywords}')
-    return render(request, 'test/changer_mots_cle_lead.html', {'lead': lead, 'keywords': keywords})
+    context['lead']=lead
+    context['keywords']=keywords
+    return render(request, 'test/changer_mots_cle_lead.html',context)
 
 from django.db.models import Q
 
 @login_required_connect
 def template_choix_leads(request):
+    user=request.user
+    context=recup_infos_users(user)
     entreprises = Leads.objects.values_list('nom', flat=True).distinct()
     entreprise_selectionnee = request.GET.get('entreprise', '')
     search_query = request.GET.get('search', '')
@@ -649,12 +652,12 @@ def template_choix_leads(request):
             Q(localisation_du_lead__icontains=search_query)
         )
 
-    context = {
+    context.update({
         'entreprises': entreprises,
         'entreprise_selectionnee': entreprise_selectionnee,
         'leads': leads,
         'search_query': search_query,
-    }
+    })
     return render(request, 'test/choix_job_matching.html', context)
 
 ##################################################""
@@ -766,6 +769,27 @@ from django.utils import timezone
 #     return render(request, 'test/historique.html', context)
 
 
+def manage_leads_view(request, template_name):
+    global notification_triggered
+
+    Leads.objects.filter(date_maj_lead__isnull=True).update(date_maj_lead=now())
+    leads = Leads.objects.annotate(date=Trunc('date_maj_lead', 'day', output_field=DateField())).order_by('-date_maj_lead')
+    grouped_leads = {}
+    for lead in leads:
+        date = lead.date.strftime('%Y-%m-%d')
+        if date not in grouped_leads:
+            grouped_leads[date] = []
+        grouped_leads[date].append(lead)
+
+    context = {
+        'grouped_leads': grouped_leads,
+        'show_notification': notification_triggered  # Ajouter l'état de la notification au contexte
+    }
+
+    # Reset notification state
+    notification_triggered = False
+
+    return render(request, template_name, context)
 
 @login_required_connect
 def history(request):
@@ -793,12 +817,7 @@ def get_user_type(user_type):
 @login_required_connect
 def choix_leads(request):
     user = request.user
-    users_types =  get_user_type(user.users_type)
-    
-    context = {'user' : user 
-               }
-    context['type']= users_types
-   
+    context =  recup_infos_users(user)
     if context:
         return render(request , 'test/choix_leads.html',context)
     else : 
@@ -1281,6 +1300,8 @@ def get_cvs():
 
 @login_required_connect
 def cv_detail(request, cv_id):
+    user=request.user
+    context = recup_infos_users(user)
     actual_path = f"{os.getcwd()}/tests"
     CV_ROOT = "/media/CV/filestore/"
 
@@ -1317,12 +1338,15 @@ def cv_detail(request, cv_id):
     cursor.execute("SELECT * FROM comments WHERE cv_id = %s ORDER BY created_at DESC", [cv_id])
     comments = cursor.fetchall()
     db.close()
+    context['cv']=cv
+    context['cv_file_url']=cv_file_url
+    context['proprietaire']=liste_info
+    context['comments']=comments
 
-    return render(request, 'test/cv_detail.html', {'cv': cv, 'cv_file_url': cv_file_url, 'proprietaire': liste_info, 'comments': comments})
+    return render(request, 'test/cv_detail.html',context)
 
     
 
-    return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 def get_facs():
     # Configuration de la connexion à la base de données Odoo
@@ -1353,6 +1377,7 @@ def get_facs():
 @login_required_connect
 def fac_detail(request, fac_id):
     user=request.user
+    context=recup_infos_users(user)
     actual_path= f"{os.getcwd()}/tests"
     CV_ROOT = "/media/CV/filestore/"
     facs = get_facs()
@@ -1387,7 +1412,13 @@ def fac_detail(request, fac_id):
     cursor.execute("SELECT * FROM comments WHERE cv_id = %s ORDER BY created_at DESC", [fac_id])
     comments = cursor.fetchall()
     db.close()
-    return render(request, 'test/fac_detail.html', {'fac': fac, 'cv_file_url': fac_file_url ,'proprietaire' : liste_info,'comments':comments})
+    context['fac']=fac
+    context['cv_file_url']=fac_file_url
+    context['proprietaire']=liste_info
+    context['comments']=comments
+
+
+    return render(request, 'test/fac_detail.html',context)
     
 
 ##################################################################################################################"""""

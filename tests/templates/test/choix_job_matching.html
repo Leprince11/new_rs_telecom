@@ -7,12 +7,12 @@
         <div class="page-title-box">
             <div class="page-title-right">
                 <ol class="breadcrumb m-0">
-                    <li class="breadcrumb-item"><a href="{%url 'dashboard' %}">Home</a></li>
-                    <li class="breadcrumb-item"><a href="{%url 'choix_leads' %}">Leads & Cvs</a></li>
-                    <li class="breadcrumb-item active">Sélection d'un lead pour le processus de matching CV/Lead</li>
+                    <li class="breadcrumb-item"><a href="{%url 'dashboard' %}">R&S Telecom</a></li>
+                    <li class="breadcrumb-item"><a href="{%url 'choix_leads' %}">Application</a></li>
+                    <li class="breadcrumb-item active">matching CV/Lead</li>
                 </ol>
             </div>
-            <h4 class="page-title">Sélection d'un lead pour le processus de matching CV/Lead</h4>
+            <h4 class="page-title">Matching CV/Lead</h4>
         </div>
     </div>
 </div>
@@ -24,7 +24,7 @@
             <div class="card-body">
                 <!-- Left sidebar -->
                 <div class="page-aside-left">
-                    <div class="btn-group d-block mb-2">
+                    <div class="btn-group d-block mb-1">
                         <a href="{% url 'add_company' %}" class="btn btn-primary w-100" target="_blank"><i class="mdi mdi-plus"></i> Nouveau</a>
                     </div>
                     <div class="email-menu-list mt-3">
@@ -72,7 +72,8 @@
                                             <td>{{ lead.nom_offre }}</td>
                                             <td>{{ lead.localisation_du_lead }}</td>
                                             <td>
-                                            <a href="{% url 'lead_matched' lead.id %}" class="action-icon" data-lead-id="{{ lead.id }}" onclick="selectLead(this)"><i class="mdi mdi-eye text-warning text-center text-align"></i></a>
+                                            <a href="{% url 'lead_matched' lead.id %}" class="action-icon" data-lead-id="{{ lead.id }}" onclick="selectLead(this)"><button type="button" class="btn btn-primary"><i class="dripicons-search"></i> </button>
+                                            </a>
                                            </td>
                                             <td>{{ lead.porteur_lead }}</td>
                                             <td>{{ lead.date_maj_lead }}</td>

@@ -1,7 +1,7 @@
 from django import forms
 
 class CompanyForm(forms.Form):
-    nom = forms.CharField(label='Nom', max_length=100, widget=forms.TextInput(attrs={'id': 'nom', 'class': 'input-name' , 'name':'nom'}))
+    nom = forms.CharField(label='Nom de l\'entreprise', max_length=100, widget=forms.TextInput(attrs={'id': 'nom', 'class': 'input-name' , 'name':'nom'}))
     nombre_offres = forms.IntegerField()
     taille = forms.CharField(max_length=100)
     secteur = forms.CharField(max_length=100)
@@ -11,7 +11,7 @@ class CompanyForm(forms.Form):
 from .models import Leads
 class LeadsForm(forms.ModelForm):
     class Meta:
-        model = Leads
+        model = Leads   
         fields = [
             'nom', 'nom_offre', 'localisation_du_lead', 'nombre_offres', 'adresse_mail_de_contact', 'telephone',
             'taille_entreprise', 'secteur_activite', 'chiffre_d_affaires', 'lien_vers_lead', 'porteur_lead', 
