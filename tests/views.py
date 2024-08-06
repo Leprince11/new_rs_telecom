@@ -55,7 +55,6 @@ from django.db import transaction
 import asyncio
 import aiohttp
 import subprocess
-import os
 from concurrent.futures import ThreadPoolExecutor
 from django.conf import settings
 from django.http import JsonResponse
