@@ -50,7 +50,6 @@ import time
 from datetime import datetime, timedelta
 from django.core.cache import cache
 from decouple import config
-import os
 from pathlib import Path
 from django.db import transaction
 import asyncio
@@ -58,10 +57,7 @@ import aiohttp
 import subprocess
 import os
 from concurrent.futures import ThreadPoolExecutor
-from docx2pdf import convert
-import os
 from django.conf import settings
-from docx import Document
 from django.http import JsonResponse
 from threading import Thread
 from .scripts.extract_companies import read_csv_data,main_extraction

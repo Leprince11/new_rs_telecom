@@ -29,10 +29,11 @@ class Users(models.Model):
     users_password = models.CharField(max_length=128)
     users_region = models.CharField(max_length=255)
     users_address = models.CharField(max_length=255)
-    users_postal = models.CharField(max_length=10, null=True)
+    users_postal = models.CharField(max_length=5, null=True)
     users_is_active = models.BooleanField(default=True)
     users_preavis = models.BooleanField(default=True)
     profile_photo = models.ImageField(upload_to='photos_profil/', null=True, blank=True)
+    url_photo_profile=models.CharField(max_length=50,null=True)
     mission = models.ForeignKey('Mission', on_delete=models.CASCADE, related_name='all_mission', null=True, blank=True)
     client = models.ForeignKey('Clients', on_delete=models.SET_NULL, related_name='users', null=True, blank=True)
 

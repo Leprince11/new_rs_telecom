@@ -118,7 +118,6 @@ def get_mission(user):
 def created_cra_datetime(request):
     if request.method == 'POST':
         datetime_str = request.POST.get('datetime')
-        mess = ""
         try:
             dt = datetime.strptime(datetime_str, '%Y-%m-%d')
             year, month = dt.year, dt.month
@@ -135,59 +134,48 @@ def created_cra_datetime(request):
             pin = request.session.get('user_id')
             user = Users.objects.get(pk=pin)
 
+            while current_day <= last_day:
+                current_day_str = current_day.strftime('%Y-%m-%d')
+                local_tz = timezone.get_current_timezone()
+                start_time = timezone.make_aware(current_day.replace(hour=9, minute=0, second=0, microsecond=0), local_tz)
+                end_time = timezone.make_aware(current_day.replace(hour=18, minute=0, second=0, microsecond=0), local_tz)
 
-            mission_en_cours = get_mission(user)
+                if current_day_str in weekends_str:
+                    pass
+                else:
+                    categorie = dict(CRA.choose_categorie)[1]
+                    for nom_jour_ferie, date_jour_ferie in jours_feries.items():
+                        if current_day.date() == date_jour_ferie:
+                            categorie = dict(CRA.choose_categorie)[2]
+                            break
+                    try:
+                        existing_cra = CRA.objects.filter(
+                            user=user,
+                            start_date__date=start_time.date(),
+                        ).exists()
+                        if existing_cra:
+                            response_data = {
+                                'success': True,
+                                'message': 'Un CRA existe déjà pour ce mois',
+                            }
+                            return JsonResponse(response_data)
 
-            if int(mission_en_cours) == 0 :
-                response_data = {
-                    'success': False,
-                    'message': "Vous n'êtes assigné à aucune mission en cours."
-                }
-                return JsonResponse(response_data, status=400)
-            else :
+                        cra = CRA(
+                            user=user,
+                            start_date=start_time,
+                            end_date=end_time,
+                            categorie=categorie
+                        )
+                        cra.save()
+                    except Exception as e:
+                        print(e)
+                current_day += timedelta(days=1)
 
-                while current_day <= last_day:
-                    current_day_str = current_day.strftime('%Y-%m-%d')
-                    local_tz = timezone.get_current_timezone()
-                    start_time = timezone.make_aware(current_day.replace(hour=9, minute=0, second=0, microsecond=0), local_tz)
-                    end_time = timezone.make_aware(current_day.replace(hour=18, minute=0, second=0, microsecond=0), local_tz)
-
-                    if current_day_str in weekends_str:
-                        pass
-                    else:
-                        categorie = dict(CRA.choose_categorie)[1]
-                        for nom_jour_ferie, date_jour_ferie in jours_feries.items():
-                            if current_day.date() == date_jour_ferie:
-                                categorie = dict(CRA.choose_categorie)[3]
-                                break
-                        try:
-                            existing_cra = CRA.objects.filter(
-                                user=user,
-                                start_date__date=start_time.date(),
-                            ).exists()
-                            if existing_cra:
-                                response_data = {
-                                    'success': True,
-                                    'message': 'Un CRA existe déjà pour ce mois',
-                                }
-                                return JsonResponse(response_data)
-
-                            cra = CRA(
-                                user=user,
-                                start_date=start_time,
-                                end_date=end_time,
-                                categorie=categorie
-                            )
-                            cra.save()
-                        except Exception as e:
-                            print(e)
-                    current_day += timedelta(days=1)
-
-                response_data = {
-                    'success': True,
-                    'message': "Félicitations, votre Compte rendu d'activité a été créé."
-                }
-                return JsonResponse(response_data)
+            response_data = {
+                'success': True,
+                'message': "Félicitations, votre Compte rendu d'activité a été créé."
+            }
+            return JsonResponse(response_data)
         except ValueError:
             response_data = {
                 'success': False,
@@ -203,6 +191,7 @@ def created_cra_datetime(request):
             'message': "Invalid request"
         }
         return JsonResponse(response_data, status=400)
+
     
 def parse_custom_datetime(date_str):
     try:
@@ -219,9 +208,7 @@ def manage_cra(request, id_cra=None):
         # start = request.POST.get('start')
         end = request.POST.get('end')
         categoryTemps = request.POST.get('category-temps')
-
         user=request.user
-
         print(title, end,categoryTemps)
         if not all([title, end, categoryTemps]):
             return JsonResponse({'status': 'failed', 'message': 'Missing required fields.'}, status=400)
@@ -229,7 +216,6 @@ def manage_cra(request, id_cra=None):
         # Parsing start and end dates
         try:
             dt = datetime.strptime(end, '%Y-%m-%d')
-            
             end_date = parse_custom_datetime(end)
         except Exception as e:
             print({'message:',e})
@@ -285,6 +271,7 @@ def fetch_cra_data(user):
     days_in_month = calendar.monthrange(now.year, now.month)[1]
     days = []
     total_hours = 0
+    
     days_map = {
         'Mon': 'L',
         'Tue': 'M',
@@ -295,23 +282,29 @@ def fetch_cra_data(user):
         'Sun': 'D'
     }
     
-    for day in range(1, days_in_month + 1): 
+    cra_entries_by_day = {day: [] for day in range(1, days_in_month + 1)}
+    for entry in cra_entries:
+        cra_entries_by_day[entry.start_date.day].append(entry)
+    
+    for day in range(1, days_in_month + 1):
         date = datetime(now.year, now.month, day)
         hours = 0
-        for entry in cra_entries:
-            if entry.start_date.day == day:
-                if int((entry.end_date - entry.start_date).seconds / 3600)==9:
+        
+        for entry in cra_entries_by_day[day]:
+            duration_hours = (entry.end_date - entry.start_date).seconds / 3600
+            if duration_hours == 9:
+                if entry.categorie == "Mission":
                     hours += 1
-                elif int((entry.end_date - entry.start_date).seconds / 3600)==4:
-                    hours += 0.5
-                
-            
+                elif entry.categorie == "Abscence":
+                    hours = 0
+            elif duration_hours == 4:
+                hours += 0.5
         
         short_weekday = days_map[date.strftime('%a')]
         days.append({
             'day': day,
             'short_weekday': short_weekday,
-            'hours': hours if hours > 0 else '  '
+            'hours': hours if short_weekday not in ['S', 'D'] else '  '
         })
         total_hours += hours
     
@@ -325,7 +318,7 @@ def fetch_cra_data(user):
 
 def generate_cra_pdf(request, user_id):
     user = get_object_or_404(Users, id_user=user_id)
-    mission= get_object_or_404(Mission,id_mission=user.id_mission)
+    mission= get_object_or_404(Mission,id_mission=user.mission_id)
     data = fetch_cra_data(user)
     data['logo_url'] = request.build_absolute_uri(static('images/logo.png'))
     data['mission']=mission

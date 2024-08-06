@@ -21,6 +21,7 @@ urlpatterns = [
     path('change_pass', views.change_password, name='change_passe'),
     path("verification", views.verification, name="verification"),
     path('get_clients_data/', views.get_clients_data, name='get_clients_data'),
+    path('change_profile_picture/', views.change_profile_picture, name='change_profile_picture'),
 
     #gestion de fiche de paie
     path('Employes', views.fiche_paie,name='employes'),

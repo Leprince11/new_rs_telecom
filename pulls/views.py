@@ -9,6 +9,8 @@ from django.contrib.auth.hashers import make_password,check_password
 from django.utils.encoding import force_bytes,force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from django.utils.dateparse import parse_datetime
+import os
+from django.core.files.storage import FileSystemStorage
 
 from pulls.tokens import AccountActivationTokenGenerator
 from .models import Clients, Mission, Users,UserTwoFactorAuthData
@@ -245,7 +247,7 @@ def home(request):
 @utils.login_required_connect
 def profil(request, user_id=None):
     context = {}
-
+    print(user_id)
     if user_id:
         # Utilisateur connecté
         user = request.user
@@ -255,7 +257,7 @@ def profil(request, user_id=None):
         context['user_info'] = user_info
         
         # Vérifie le type d'utilisateur et ajuste le contexte en conséquence
-        if user.users_type in ['con', 'stt']:
+        if user_info.users_type in ['con', 'stt']:
             context['is_consultant_or_freelance'] = True
         
         # Pour les administrateurs et RH, afficher tous les clients
@@ -264,13 +266,15 @@ def profil(request, user_id=None):
             context['clients'] = Clients.objects.all()
         # Pour les consultants ou freelances, récupérer la mission actuelle
         if context.get('is_consultant_or_freelance'):
-            current_mission = get_current_mission(user_info)  # Assurez-vous que cette fonction est définie
+            print(user_info)
+            current_mission = get_current_mission(user_info) 
             context['current_mission'] = current_mission
         
-        
+        print('message',user_info.client.id_client)
         if user_info.client:
-            context['current_client'] = get_object_or_404(Clients, id_client=user_info.client.id_client)
-        
+            current_client  = get_object_or_404(Clients, id_client=user_info.client.id_client)
+            print(current_client)
+            context['current_client'] = current_client
         # Obtenez la liste des clients
         clients = Clients.objects.all()
 
@@ -280,7 +284,8 @@ def profil(request, user_id=None):
             if client.client_name not in grouped_companies:
                 grouped_companies[client.client_name] = []
             grouped_companies[client.client_name].append(client)
-            
+        
+       
         context['grouped_companies']=grouped_companies
         # Ajoute l'utilisateur et ses informations au contexte
         context['user'] = user
@@ -330,7 +335,7 @@ def parse_date(date_str, date_format='%m/%d/%Y'):
 
 def get_current_mission(user):
     # Exemple de code, adaptez-le à votre modèle
-    return Mission.objects.filter(id_mission=user.mission).last()
+    return Mission.objects.filter(id_mission=user.mission_id).last()
 
 @utils.login_required_connect  # decorateur pour verifier si l'utilisateur est connecter ou pas
 def update_profile_ajax(request):
@@ -339,20 +344,18 @@ def update_profile_ajax(request):
     
     try:
         user = request.user
-        user_id = request.POST.get('user_id') or request.POST.get('user_info_id')
+        user_id = request.POST.get('user_info_id') or request.POST.get('user_id')
+
+        if not user_id:
+            return JsonResponse({'success': False, 'message': 'ID utilisateur requis'}, status=400)
 
         try:
             user_uuid = uuid.UUID(user_id)
         except ValueError:
             return JsonResponse({'success': False, 'message': 'ID utilisateur invalide'}, status=400)
 
-
-
-        if not user_id:
-            return JsonResponse({'success': False, 'message': 'ID utilisateur requis'}, status=400)
-
-        user_to_update = get_object_or_404(Users, id_user=user_id)
-
+        user_to_update = get_object_or_404(Users, id_user=user_uuid)
+        
         # Vérification de l'identité de l'utilisateur
         if user.id_user != user_uuid:
             # Vérifier le type d'utilisateur
@@ -361,22 +364,7 @@ def update_profile_ajax(request):
             # Mise à jour des informations client
             client_option = request.POST.get('client_id')
             client_location = request.POST.get('cwebsite')
-            if client_option == 'other':
-                client_name = request.POST.get('client_name')
-
-        if not user_id:
-            return JsonResponse({'success': False, 'message': 'ID utilisateur requis'}, status=400)
-
-        user_to_update = get_object_or_404(Users, id_user=user_id)
-
-        # Vérification de l'identité de l'utilisateur
-        if user.id_user != user_uuid:
-            # Vérifier le type d'utilisateur
-            is_consultant_or_freelance = user_to_update.users_type in ['con', 'stt']
-           
-            # Mise à jour des informations client
-            client_option = request.POST.get('client_id')
-            client_location = request.POST.get('cwebsite')
+            
             if client_option == 'other':
                 client_name = request.POST.get('client_name')
 
@@ -389,13 +377,11 @@ def update_profile_ajax(request):
                 
                 user_to_update.client = client
             elif client_option:
-                client = get_object_or_404(Clients, id_client	= client_option)
-                print("Normalement ici",client.client_location,client.client_name)
+                client = get_object_or_404(Clients, id_client=client_option)
                 if client_location:
                     client.client_location = client_location
                     client.save()
-                user_to_update.client = client.id_client
-
+                user_to_update.client = client
 
             if is_consultant_or_freelance:
                 # Mise à jour des informations de mission
@@ -437,13 +423,9 @@ def update_profile_ajax(request):
                     new_mission.save()
                     user_to_update.mission = new_mission
        
-
-        
-        
         # Mise à jour des informations personnelles
         user_to_update.users_name = request.POST.get('users_name', user_to_update.users_name)
         user_to_update.users_fname = request.POST.get('users_fname', user_to_update.users_fname)
-        # user_to_update.users_mail = request.POST.get('users_mail', user_to_update.users_mail)
         user_to_update.users_address = request.POST.get('location', user_to_update.users_address)
         user_to_update.users_phone = request.POST.get('phone_number', user_to_update.users_phone)
         user_to_update.users_region = request.POST.get('city', user_to_update.users_region)
@@ -455,6 +437,31 @@ def update_profile_ajax(request):
         print(f'Unexpected error: {str(e)}')
         return JsonResponse({'success': False, 'message': 'Une erreur est survenue lors de la mise à jour du profil'}, status=500)
     
+
+@utils.login_required_connect     
+def change_profile_picture(request):
+    user = request.user
+    if request.method == 'POST' and request.FILES.get('profile_picture'):
+        profile_picture = request.FILES['profile_picture']
+        
+        new_filename = str(uuid.uuid4()) + '.' + profile_picture.name.split('.')[-1]
+        # Enregistrer le fichier dans le dossier photos_profil
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, f'photos_profil/{new_filename[:2]}'))
+        filename = fs.save(new_filename, profile_picture) 
+        
+        # Mettre à jour l'utilisateur avec le nouveau chemin de fichier
+        user.profile_photo = new_filename
+        user.url_photo_profile= f'{new_filename[:2]}/' + new_filename
+        user.save()
+        
+        response = {
+            'new_profile_photo_url': fs.url(os.path.join( f'photos_profil/{new_filename[:2]}',filename))
+        }
+        
+        return JsonResponse(response)
+    
+    return JsonResponse({'error': 'Invalid request'}, status=400)
+
 
 def get_clients_data(request):
     if request.method == 'GET':
@@ -617,11 +624,11 @@ def fiche_paie(request):
         
     if request.user.users_type == 'paie':
         users = list(Users.objects.filter(users_is_active=True, delete_date__isnull=True).values(
-            'id_user','users_name', 'users_fname', 'users_phone','users_type', 'users_mail', 'users_region', 'created_date', 'users_is_active', 'profile_photo'
+            'id_user','users_name', 'users_fname', 'users_phone','users_type', 'users_mail', 'users_region', 'created_date', 'users_is_active', 'profile_photo','url_photo_profile'
         ))
     else:
         users = list(Users.objects.values(
-            'id_user','users_name', 'users_fname', 'users_phone', 'users_type' ,'users_mail', 'users_region', 'created_date', 'users_is_active', 'profile_photo'
+            'id_user','users_name', 'users_fname', 'users_phone', 'users_type' ,'users_mail', 'users_region', 'created_date', 'users_is_active', 'profile_photo','url_photo_profile'
         ))
 
     for i in users:
