@@ -105,9 +105,24 @@ $(document).ready(function() {
         }
     });
     
+    $("#basic-datatable-lead").DataTable({
+        keys: !0,
+        language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
+            paginate: {
+                previous: "<i class='mdi mdi-chevron-left'>",
+                next: "<i class='mdi mdi-chevron-right'>"
+            }
+        },
+        drawCallback: function() {
+            $(".dataTables_paginate > .pagination").addClass("pagination-rounded")
+        }
+    });
+    
     $("#basic-datatable").DataTable({
         keys: !0,
         language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
             paginate: {
                 previous: "<i class='mdi mdi-chevron-left'>",
                 next: "<i class='mdi mdi-chevron-right'>"
@@ -136,6 +151,7 @@ $(document).ready(function() {
             style: "multi"
         },
         language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
             paginate: {
                 previous: "<i class='mdi mdi-chevron-left'>",
                 next: "<i class='mdi mdi-chevron-right'>"
@@ -157,6 +173,7 @@ $(document).ready(function() {
         scrollCollapse: !0,
         paging: !1,
         language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
             paginate: {
                 previous: "<i class='mdi mdi-chevron-left'>",
                 next: "<i class='mdi mdi-chevron-right'>"
@@ -169,6 +186,7 @@ $(document).ready(function() {
     $("#scroll-horizontal-datatable").DataTable({
         scrollX: !0,
         language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
             paginate: {
                 previous: "<i class='mdi mdi-chevron-left'>",
                 next: "<i class='mdi mdi-chevron-right'>"
@@ -180,6 +198,7 @@ $(document).ready(function() {
     }),
     $("#complex-header-datatable").DataTable({
         language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
             paginate: {
                 previous: "<i class='mdi mdi-chevron-left'>",
                 next: "<i class='mdi mdi-chevron-right'>"
@@ -195,6 +214,7 @@ $(document).ready(function() {
     }),
     $("#row-callback-datatable").DataTable({
         language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
             paginate: {
                 previous: "<i class='mdi mdi-chevron-left'>",
                 next: "<i class='mdi mdi-chevron-right'>"
@@ -210,6 +230,7 @@ $(document).ready(function() {
     $("#state-saving-datatable").DataTable({
         stateSave: !0,
         language: {
+            url: "//cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
             paginate: {
                 previous: "<i class='mdi mdi-chevron-left'>",
                 next: "<i class='mdi mdi-chevron-right'>"

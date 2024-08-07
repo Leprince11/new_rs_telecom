@@ -44,7 +44,7 @@ def getMonth(month):
 @utils.login_required_connect
 def getcra(request):
     user=request.user
-    context={}
+    context=utils.recup_infos_users(user)
     current_date = datetime.now()
     current_month = current_date.month
     current_year = current_date.year
@@ -52,12 +52,11 @@ def getcra(request):
     user= Users.objects.get(pk=pin)
     exit=CRA.objects.filter(user=user,start_date__month=current_date.month).exists
     current_month_year=f"{getMonth(current_month)} {current_year}"
-    context = {
-        'user':user,
+    context.update({
         'exit':exit,
         'Annee':current_month_year,
         'userId':user.id_user
-    }
+    })
     return render(request,'pages/gestion_cra/cra.html',context)
 
 def getClassForCategorie(categorie,hours):

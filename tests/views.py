@@ -28,6 +28,7 @@ from django.utils.timezone import now
 from .models import Leads
 from django.db.models.functions import Trunc
 from django.db.models import DateField
+import os
 
 import schedule
 import time
