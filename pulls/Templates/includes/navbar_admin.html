@@ -21,65 +21,7 @@
                     <i class="dripicons-bell noti-icon"></i>
                     <!-- <span class="noti-icon-badge"></span> -->
                 </a>
-                <!-- <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated dropdown-lg" aria-labelledby="topbar-notifydrop">
-
-                    <div class="dropdown-item noti-title">
-                        <h5 class="m-0">
-                            <span class="float-end">
-                                <a href="javascript: void(0);" class="text-dark">
-                                    <small>Tout effacer </small>
-                                </a>
-                            </span>Notification
-                        </h5>
-                    </div>
-
-                    <div style="max-height: 230px;" data-simplebar="">
-                        
-                        <a href="javascript:void(0);" class="dropdown-item notify-item">
-                            <div class="notify-icon bg-primary">
-                                <i class="mdi mdi-comment-account-outline"></i>
-                            </div>
-                            <p class="notify-details">Caleb Flakelar commented on Admin
-                                <small class="text-muted">1 min ago</small>
-                            </p>
-                        </a>
-
-                        
-                        <a href="javascript:void(0);" class="dropdown-item notify-item">
-                            <div class="notify-icon bg-info">
-                                <i class="mdi mdi-account-plus"></i>
-                            </div>
-                            <p class="notify-details">New user registered.
-                                <small class="text-muted">5 hours ago</small>
-                            </p>
-                        </a>
-                        
-                        <a href="javascript:void(0);" class="dropdown-item notify-item">
-                            <div class="notify-icon bg-primary">
-                                <i class="mdi mdi-comment-account-outline"></i>
-                            </div>
-                            <p class="notify-details">Caleb Flakelar commented on Admin
-                                <small class="text-muted">4 days ago</small>
-                            </p>
-                        </a>
-                        
-                        <a href="javascript:void(0);" class="dropdown-item notify-item">
-                            <div class="notify-icon bg-info">
-                                <i class="mdi mdi-heart"></i>
-                            </div>
-                            <p class="notify-details">Carlos Crouch liked
-                                <b>Admin</b>
-                                <small class="text-muted">13 days ago</small>
-                            </p>
-                        </a>
-                    </div>
-
-                    
-                    <a href="javascript:void(0);" class="dropdown-item text-center text-primary notify-item notify-all">
-                        View All
-                    </a>
-
-                </div> -->
+                
             </li>
 
             <li class="dropdown notification-list d-none d-sm-inline-block">
@@ -98,7 +40,7 @@
                 <a class="nav-link dropdown-toggle nav-user arrow-none me-0" data-bs-toggle="dropdown" id="topbar-userdrop" href="#" role="button" aria-haspopup="true" aria-expanded="false">
                     <span>
                         <span class="account-user-name">{{user.users_fname}}</span>
-                        <span class="account-position">{{users_type}}</span>
+                        <span class="account-position">{{user_types}}</span>
                     </span>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-animated topbar-dropdown-menu profile-dropdown" aria-labelledby="topbar-userdrop">
@@ -113,25 +55,7 @@
                         <span>Mon compte</span>
                     </a>
 
-                    <!-- item-->
-                    <!-- <a href="javascript:void(0);" class="dropdown-item notify-item">
-                        <i class="mdi mdi-account-edit me-1"></i>
-                        <span>Paramettres</span>
-                    </a> -->
-
-                    <!-- item-->
-                    <!-- <a href="javascript:void(0);" class="dropdown-item notify-item">
-                        <i class="mdi mdi-lifebuoy me-1"></i>
-                        <span>Support</span>
-                    </a> -->
-
-                    <!-- item-->
-                    <!-- <a href="javascript:void(0);" class="dropdown-item notify-item">
-                        <i class="mdi mdi-lock-outline me-1"></i>
-                        <span>Écran verrouillé</span>
-                    </a> -->
-
-                    <!-- item-->
+                    
                     <a href="{% url 'logout'%}" class="dropdown-item notify-item">
                         <i class="mdi mdi-logout me-1"></i>
                         <span>Deconnexion</span>

@@ -188,7 +188,7 @@
                 </div>
             </div>
                
-    </div>
+        </div>
         <button id="startBtn" class="btn btn-primary mt-3">Démarrer l'Extraction</button>
         <div id="status" class="alert alert-info mt-4" style="display: none;"></div>
         <div class="loading-message" id="loadingMessage">
@@ -298,6 +298,9 @@
                 });
 
                 if (!response.ok) {
+                    if (response.status === 504) {
+                        throw new Error('504 Timeout');
+                    }
                     throw new Error('Network response was not ok ' + response.statusText);
                 }
 
@@ -313,10 +316,23 @@
                     throw new Error(data.message || 'Failed to fetch data');
                 }
             } catch (error) {
-                statusDiv.classList.remove('alert-info');
-                statusDiv.classList.add('alert-danger');
-                statusDiv.textContent = 'Erreur lors de l\'extraction.';
-                console.error('Error:', error);
+                if (error.message === '504 Timeout') {
+                    setTimeout(() => {
+                    statusDiv.classList.remove('alert-info');
+                    statusDiv.classList.add('alert-success');
+                    statusDiv.textContent = 'Les leads sont disponibles dans la page visualisation des leads : ';
+                    var a = document.createElement('a');
+                    a.textContent = "lien des leads" ; 
+                    a.href = "{% url 'visualisation_leads' %}";
+                    statusDiv.appendChild(a);
+                    }, 60000);
+                } else {
+                    statusDiv.classList.remove('alert-info');
+                    statusDiv.classList.add('alert-danger');
+                    statusDiv.textContent = 'Erreur lors de l\'extraction. Continuer le scraping.';
+                    // Continue scraping logic here, if applicable.
+                    console.error('Error:', error);
+                }
             } finally {
                 loadingMessage.style.display = 'none';
             }

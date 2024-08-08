@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import render,redirect,get_object_or_404
 from datetime import datetime,timedelta
+from django.utils.timezone import now
 from django.http import JsonResponse
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.hashers import make_password,check_password
@@ -25,7 +26,7 @@ def login(request):
             username = form.cleaned_data.get("username")
             password = form.cleaned_data.get("password")
             try:
-                user = Users.objects.get(users_mail=username,delete_date=None)
+                user = Users.objects.get(users_mail=username,delete_date__isnull=True)
                 if check_password(password,user.users_password):
                     if user is not None:
                         if user.users_is_active:
@@ -84,7 +85,6 @@ def register(request):
        
         
         if(accept_terms=='on'):
-            print(email)
             if(utils.is_valid_email(email)['success']):
                 try:
                     users = Users.objects.create(users_mail=email)
@@ -103,7 +103,7 @@ def register(request):
                         users.users_password=make_password(password)
                         users.users_name=lname
                         users.users_fname=fname
-                        users.users_type="com"
+                        users.users_type="default"
                         users.users_is_active=False
                         users.users_preavis=False
                         users.save()
@@ -168,93 +168,86 @@ def logout(request):
         return render(request,'pages/auth/logout.html')
     return redirect("login")
 
+
+
+@utils.login_required_connect 
 def home(request):
     pin = request.session.get('user_id')
-    context={}
-    if pin:
-        user= Users.objects.get(pk=pin)
-        user_type=""
-        match user.users_type:
-            case 'paie':
-                users_all=Users.objects.filter(delete_date=None).order_by('-id_user')[:5]
-                count_users=Users.objects.filter(delete_date=None).count()
-                stt=Users.objects.filter(users_type='stt',delete_date=None).count()
-                con=Users.objects.filter(users_type='con',delete_date=None).count()
+    user=request.user
+    context=utils.recup_infos_users(user)
+    user_type=""
+    match user.users_type:
+        case 'paie':
+            users_all=Users.objects.filter(delete_date=None).order_by('-created_date')[:5]
+            count_users=Users.objects.filter(delete_date=None).count()
+            stt=Users.objects.filter(users_type='stt',delete_date=None).count()
+            con=Users.objects.filter(users_type='con',delete_date=None).count()
 
-                last_month_start= datetime.now().replace(day=1) - timedelta(days=1)
-                last_month_start = last_month_start.replace(day=1)
-                current_month_start = datetime.now().replace(day=1)
+            last_month_start= datetime.now().replace(day=1) - timedelta(days=1)
+            last_month_start = last_month_start.replace(day=1)
+            current_month_start = datetime.now().replace(day=1)
 
-                user_last_month = Users.objects.filter(created_date__gte=last_month_start, created_date__lt=current_month_start).count()
-                user_current_month = Users.objects.filter(created_date__gte=current_month_start).count()
+            user_last_month = Users.objects.filter(created_date__gte=last_month_start, created_date__lt=current_month_start).count()
+            user_current_month = Users.objects.filter(created_date__gte=current_month_start).count()
                
-                def croissance(y2,y1):
-                    if y1!=0:
-                        return ((y2 - y1) / y1)*100
-                    else :
-                        return 0
-                user_type ="Ressources humaines"
+            def croissance(y2,y1):
+                if y1!=0:
+                    return ((y2 - y1) / y1)*100
+                else :
+                    return 0
+            user_type ="Ressources humaines"
                 
-                context={
-                    'user':user,
-                    'users_type':user_type,
-                    'users_all':users_all,
-                    'count_users':count_users,
-                    'colab_users':(stt+con),
-                    'croissance':croissance(user_current_month,user_last_month),
-                }
-            case 'admin':
+            context.update({
+                'users_all':users_all,
+                'count_users':count_users,
+                'colab_users':(stt+con),
+                'croissance':croissance(user_current_month,user_last_month),
+            })
 
-                users_type ="Direction"
-                context={
-                    'user':user,
-                    'users_type':user_type,
-                }
-            case 'stt':
-                users_type ="Freelance"
-                context={
-                    'user':user,
-                    'users_type':users_type
-                }
-            case 'con':
-                users_type ="Consultant"
-                context={
-                    'user':user,
-                    'users_type':users_type
-                }
-            case 'com':
-                users_type ="Commercial"
-                context={
-                    'user':user,
-                    'users_type':users_type
-                }
-            case 'sup':
-                users_type ="Super admin"
-                context={
-                    'user':user,
-                    'users_type':users_type
-                }
-            case _:
-                users_type="Mode invite"
-                context={
-                    'user':user,
-                    'users_type':users_type
-                }
+        case 'admin':
+            pass
+        case 'stt':
+            pass
+        case 'con':
+            pass
+        case 'com':
+            pass
+        case 'sup':
+                pass
+        case _:
+            pass
         
-        return render(request,'pages/admin/home.html',context)
-    return redirect('login')
+    return render(request,'pages/admin/home.html',context)
+
+
+@utils.login_required_connect
+def delete_user(request, user_id):
+    if request.method == 'DELETE':
+        try:
+            user = Users.objects.get(pk=user_id)
+            user.delete_date = now()
+            user.save()
+            return JsonResponse({'success': True, 'message': 'Utilisateur supprimé avec succès.'})
+        except Users.DoesNotExist:
+            return JsonResponse({'success': False, 'message': 'Utilisateur non trouvé.'}, status=404)
+        except Exception as e:
+            return JsonResponse({'success': False, 'message': str(e)}, status=500)
+    else:
+        return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'}, status=405)
 
 @utils.login_required_connect
 def profil(request, user_id=None):
     context = {}
-    print(user_id)
     if user_id:
         # Utilisateur connecté
         user = request.user
+        context =  utils.recup_infos_users(user)
+
         # Récupérer l'utilisateur spécifié par user_id
         user_info = get_object_or_404(Users, id_user=user_id)
 
         context['user_info'] = user_info
+        context['type_user_info']= utils.recup_infos_users(user_info)
         
         # Vérifie le type d'utilisateur et ajuste le contexte en conséquence
         if user_info.users_type in ['con', 'stt']:
@@ -270,7 +263,6 @@ def profil(request, user_id=None):
             current_mission = get_current_mission(user_info) 
             context['current_mission'] = current_mission
         
-        print('message',user_info.client.id_client)
         if user_info.client:
             current_client  = get_object_or_404(Clients, id_client=user_info.client.id_client)
             print(current_client)
@@ -287,13 +279,11 @@ def profil(request, user_id=None):
         
        
         context['grouped_companies']=grouped_companies
-        # Ajoute l'utilisateur et ses informations au contexte
-        context['user'] = user
             
     else:
         # Utilisateur connecté
         user = request.user
-        context['user'] = user
+        context =  utils.recup_infos_users(user)
         context['clients'] = Clients.objects.all()
         
         
@@ -525,35 +515,12 @@ def opt(request):
     if pin:
         return render(request,'pages/settings/opt.html')
     return redirect('login')
-
+@utils.login_required_connect 
 def getcra(request):
-    context={}
-    pin=request.session.get('user_id')
-    if pin:
-        user= Users.objects.get(pk=pin)
-        users_type=""
-        match user.users_type:
-            case 'paie':
-                users_type ="Ressources humaines"
-            case 'admin':
-                users_type ="Direction"
-            case 'stt':
-                users_type ="Freelance"
-            case 'con':
-                users_type ="Consultant"
-            case 'sup':
-                users_type ="Commercial"
-            case 'sup':
-                users_type ="Super admin"
-            case _:
-                users_type="Inconue"
-        context={
-            'user':user,
-            'users_type':users_type
-        }
-        return render(request,'pages/admin/gestion_cra/cra.html',context)
-    else:
-        return redirect('login')
+    user=request.user
+    context=utils.recup_infos_users(user)
+    return render(request,'pages/admin/gestion_cra/cra.html',context)
+    
 
 def conge(request):
     pin=request.session.get('user_id')
@@ -615,14 +582,28 @@ def change_password(request):
     else:
         return JsonResponse({'reponse':'error','message':'Vous etes pas autorisé a effectuer cette requete'})
 
-
+def recup_type_format(user_type):
+    match user_type :
+        case 'admin':
+            return 'Direction'
+        case 'paie':
+            return 'Ressources humaines'
+        case 'con':
+            return 'Consultant'
+        case 'com':
+            return 'Commercial'
+        case 'stt':
+            return 'Freelance'
+        case _:
+            return 'Invite'
 
 @utils.login_required_connect
 @utils.utilisateur_autorise(types_autorises=["Direction", "Super admin", "Ressources humaines"])
 def fiche_paie(request):
-    context= {}
+    user=request.user
+    context= utils.recup_infos_users(user)
         
-    if request.user.users_type == 'paie':
+    if user.users_type == 'paie':
         users = list(Users.objects.filter(users_is_active=True, delete_date__isnull=True).values(
             'id_user','users_name', 'users_fname', 'users_phone','users_type', 'users_mail', 'users_region', 'created_date', 'users_is_active', 'profile_photo','url_photo_profile'
         ))
@@ -631,29 +612,16 @@ def fiche_paie(request):
             'id_user','users_name', 'users_fname', 'users_phone', 'users_type' ,'users_mail', 'users_region', 'created_date', 'users_is_active', 'profile_photo','url_photo_profile'
         ))
 
-    for i in users:
-        print(i)
-        match i['users_type']:
-            case 'paie':
-                users_type ="Ressources humaines"
-            case 'admin':
-                users_type ="Direction"
-            case 'stt':
-                users_type ="Freelance"
-            case 'con':
-                users_type ="Consultant"
-            case 'com':
-                users_type ="Commerciaux"
-            case 'sup':
-                users_type ="Super admin"
-            case _:
-                users_type="Inconue"
+    liste=[]
+
+    for u in users :
+        liste.append(recup_type_format(u['users_type']))
+    print(liste)
               
     context.update({
-        'users':users,
-        "user_type":users_type
+        'users':zip(users,liste)
     })
-    
+    print(context)
     return render(request,'pages/admin/gestion_users/user_all.html',context)
 
 @utils.login_required_connect
