@@ -15,6 +15,14 @@ class Clients(models.Model):
         return self.client_name
 
 class Users(models.Model):
+    USER_TYPES = [
+        ('con', 'Consultant'),
+        ('stt', 'Freelance'),
+        ('com', 'Commercial'),
+        ('it', 'IT'),
+        ('admin', 'Direction'),
+        ('sup', 'Super Admin'),
+    ]
     id_user = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     users_name = models.CharField(max_length=255)
     users_fname = models.CharField(max_length=255)

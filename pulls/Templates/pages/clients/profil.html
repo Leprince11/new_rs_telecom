@@ -852,44 +852,27 @@
                                     </div>
                                     <div class="d-flex">
                                         <div class="w-100">
-                                            <h5 class="m-0">STATUS</h5>
+                                            <h5 class="m-0">STATUS HR</h5>
                                         </div>
                                     </div>
                                     <hr class="m-0">
-                                    <div class="container my-3">
-                                        <div class="row align-items-center" >
-                                            <div class="col-3">Employee Type</div>
-                                            <div class="col-9">
-                                                <select class="form-control select2" data-toggle="select2">
-                                                    <option>Select</option>
-                                                    <optgroup label="Pacific Time Zone">
-                                                        <option value="CA">Consultant</option>
-                                                        <option value="NV">HR</option>
-                                                        <option value="OR">Etudiant</option>
-                                                        <option value="WA">Freelance</option>
-                                                        <option value="DR">Direction</option>
-
-                                                    </optgroup>
-                                                </select>
-                                            </div>
-                                        </div>
-                                    </div>
                                     <div class="container my-2">
                                         <div class="row align-items-center" >
-                                            <div class="col-3">Employee Type</div>
+                                            <div class="col-3">Employee Type <i class="mdi mdi-help badge-primary-lighten"></i></div>
                                             <div class="col-9">
                                                 <!-- Multiple Select -->
-                                                <select class="select2 form-control select2-multiple" data-toggle="select2" multiple="multiple" data-placeholder="Choose ...">
-                                                    <optgroup label="Mountain Time Zone">
-                                                        <option value="AZ">Employe</option>
-                                                        <option value="CO">Colorado</option>
-                                                        <option value="ID">Idaho</option>
-                                                        <option value="MT">Montana</option>
-                                                        <option value="NE">Nebraska</option>
-                                                        <option value="NM">New Mexico</option>
-                                                        <option value="ND">North Dakota</option>
-                                                        <option value="UT">Utah</option>
-                                                        <option value="WY">Wyoming</option>
+                                                <select class="select2 form-control select2-multiple" data-toggle="select2" multiple="multiple" data-placeholder="choisie ...">
+                                                    <optgroup label="type de colaborateur">
+                                                        <option value="con">consultant</option>
+                                                        <option value="stt">Freelance</option>
+                                                        <option value="com">commercial</option>
+                                                        <option value="it">IT</option>
+                                                        <option value="admin">Direction</option>
+                                                    </optgroup>
+                                                    <optgroup label="groupe">
+                                                        <option value="AZ">Employee</option>
+                                                        <option value="CO">Manager</option>
+                                                        <option value="ID">Etudiant</option>
                                                     </optgroup>
                                                 </select>
                                             </div>
@@ -902,7 +885,7 @@
                                                 <!-- Multiple Select -->
                                                 <select class="select2 form-control" data-toggle="select2">
                                                     <optgroup label="Alaskan/Hawaiian Time Zone">
-                                                        <option value="AK">Alaska</option>
+                                                        <option value="AK">jalal</option>
                                                         <option value="HI">Hawaii</option>
                                                     </optgroup>
                                                 </select>
@@ -1161,7 +1144,7 @@
         }
     }
 
-    function showModal(title, message) {
+        function showModal(title, message) {
             document.getElementById('message-title').innerText = title;
             document.getElementById('message-body').innerText = message;
             var modalIcon = document.getElementById('modal-icon');
