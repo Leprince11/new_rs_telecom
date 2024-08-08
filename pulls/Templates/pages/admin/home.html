@@ -3,277 +3,359 @@
 
 {% block content %}
 <div class="row">
-    <div class="col-12">
-        <div class="page-title-box">
-            <div class="page-title-right">
-                <form class="d-flex">
-                    <div class="input-group">
-                        <input type="text" class="form-control form-control-light" id="dash-daterange">
-                        <span class="input-group-text bg-primary border-primary text-white">
-                            <i class="mdi mdi-calendar-range font-13"></i>
-                        </span>
-                    </div>
-                    <a href="javascript: void(0);" class="btn btn-primary ms-2">
-                        <i class="mdi mdi-autorenew"></i>
-                    </a>
-                    <a href="javascript: void(0);" class="btn btn-primary ms-1">
-                        <i class="mdi mdi-filter-variant"></i>
-                    </a>
-                </form>
-            </div>
-            <h4 class="page-title">Dashboard</h4>
+<div class="col-12">
+    <div class="page-title-box">
+        <div class="page-title-right">
+            <form class="d-flex">
+                <div class="input-group">
+                    <input type="text" class="form-control form-control-light" id="dash-daterange">
+                    <span class="input-group-text bg-primary border-primary text-white">
+                        <i class="mdi mdi-calendar-range font-13"></i>
+                    </span>
+                </div>
+                <a href="javascript: void(0);" class="btn btn-primary ms-2">
+                    <i class="mdi mdi-autorenew"></i>
+                </a>
+                <a href="javascript: void(0);" class="btn btn-primary ms-1">
+                    <i class="mdi mdi-filter-variant"></i>
+                </a>
+            </form>
         </div>
+        <h4 class="page-title">Tableau de bord</h4>
     </div>
+</div>
 </div>
 
 {% if user.users_type == 'paie' %}
 <div class="row">
-    <div class="col-xl-12 col-lg-12">
-        <div class="row">
-            <div class="col-lg-3">
-                <div class="card widget-flat">
-                    <div class="card-body">
-                        <div class="float-end">
-                            <i class="mdi mdi-account-multiple widget-icon"></i>
-                        </div>
-                        <h5 class="text-muted fw-normal mt-0" title="Number of Customers">Employé-es</h5>
-                        <h3 class="mt-3 mb-3">{{ count_users }}</h3>
-                        <p class="mb-0 text-muted">
-                            <span class="text-success me-2"><i class="mdi mdi-arrow-up-bold"></i> 5.27%</span>
-                            <span class="text-nowrap">Depuis le mois dernier</span>  
-                        </p>
-                    </div> <!-- end card-body-->
-                </div> <!-- end card-->
-            </div> <!-- end col-->
+<div class="col-xl-12 col-lg-12">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="card widget-flat">
+                <div class="card-body">
+                    <div class="float-end">
+                        <i class="mdi mdi-account-multiple widget-icon"></i>
+                    </div>
+                    <h5 class="text-muted fw-normal mt-0" title="Number of Customers">Employé-es</h5>
+                    <h3 class="mt-3 mb-3">{{ count_users }}</h3>
+                    <p class="mb-0 text-muted">
+                        <span class="text-success me-2"><i class="mdi mdi-arrow-up-bold"></i> 5.27%</span>
+                        <span class="text-nowrap">Depuis le mois dernier</span>  
+                    </p>
+                </div> <!-- end card-body-->
+            </div> <!-- end card-->
+        </div> <!-- end col-->
 
-            <div class="col-lg-3">
-                <div class="card widget-flat">
-                    <div class="card-body">
-                        <div class="float-end">
-                            <i class="mdi mdi-account-multiple widget-icon"></i>
-                        </div>
-                        <h5 class="text-muted fw-normal mt-0" title="Number of Orders">Collaborateur</h5>
-                        <h3 class="mt-3 mb-3">{{ colab_users }}</h3>
-                        <p class="mb-0 text-muted">
-                            <span class="text-danger me-2"><i class="mdi mdi-arrow-down-bold"></i> 1.08%</span>
-                            <span class="text-nowrap">Depuis le mois dernier</span>
-                        </p>
-                    </div> <!-- end card-body-->
-                </div> <!-- end card-->
-            </div> <!-- end col-->
+        <div class="col-lg-3">
+            <div class="card widget-flat">
+                <div class="card-body">
+                    <div class="float-end">
+                        <i class="mdi mdi-account-multiple widget-icon"></i>
+                    </div>
+                    <h5 class="text-muted fw-normal mt-0" title="Number of Orders">Collaborateur</h5>
+                    <h3 class="mt-3 mb-3">{{ colab_users }}</h3>
+                    <p class="mb-0 text-muted">
+                        <span class="text-danger me-2"><i class="mdi mdi-arrow-down-bold"></i> 1.08%</span>
+                        <span class="text-nowrap">Depuis le mois dernier</span>
+                    </p>
+                </div> <!-- end card-body-->
+            </div> <!-- end card-->
+        </div> <!-- end col-->
 
-            <div class="col-lg-3">
-                <div class="card widget-flat">
-                    <div class="card-body">
-                        <div class="float-end">
-                            <i class="mdi mdi-pulse widget-icon"></i>
-                        </div>
-                        <h5 class="text-muted fw-normal mt-0" title="Growth">Croissance</h5>
-                        <h3 class="mt-3 mb-3">{{ croissance }}%</h3>
-                        <p class="mb-0 text-muted">
-                            <span class="text-success me-2"><i class="mdi mdi-arrow-up-bold"></i> 4.87%</span>
-                            <span class="text-nowrap">Depuis le mois dernier</span>
-                        </p>
-                    </div> <!-- end card-body-->
-                </div> <!-- end card-->
-            </div> 
-            <div class="col-lg-3">
-                <div class="card widget-flat">
-                    <div class="card-body">
-                        <div class="float-end">
-                            <i class="mdi mdi-currency-eur widget-icon"></i>
-                        </div>
-                        <h5 class="text-muted fw-normal mt-0" title="Average Revenue">Revenue</h5>
-                        <h3 class="mt-3 mb-3">6,254 &euro;</h3>
-                        <p class="mb-0 text-muted">
-                            <span class="text-danger me-2"><i class="mdi mdi-arrow-down-bold"></i> 7.00%</span>
-                            <span class="text-nowrap">Depuis le mois dernier</span>
-                        </p>
-                    </div> <!-- end card-body-->
-                </div> <!-- end card-->
-            </div> <!-- end col-->
-        </div> <!-- end row-->
-    </div> <!-- end col -->
+        <div class="col-lg-3">
+            <div class="card widget-flat">
+                <div class="card-body">
+                    <div class="float-end">
+                        <i class="mdi mdi-pulse widget-icon"></i>
+                    </div>
+                    <h5 class="text-muted fw-normal mt-0" title="Growth">Croissance</h5>
+                    <h3 class="mt-3 mb-3">{{ croissance }}%</h3>
+                    <p class="mb-0 text-muted">
+                        <span class="text-success me-2"><i class="mdi mdi-arrow-up-bold"></i> 4.87%</span>
+                        <span class="text-nowrap">Depuis le mois dernier</span>
+                    </p>
+                </div> <!-- end card-body-->
+            </div> <!-- end card-->
+        </div> 
+        <div class="col-lg-3">
+            <div class="card widget-flat">
+                <div class="card-body">
+                    <div class="float-end">
+                        <i class="mdi mdi-currency-eur widget-icon"></i>
+                    </div>
+                    <h5 class="text-muted fw-normal mt-0" title="Average Revenue">Revenue</h5>
+                    <h3 class="mt-3 mb-3">6,254 &euro;</h3>
+                    <p class="mb-0 text-muted">
+                        <span class="text-danger me-2"><i class="mdi mdi-arrow-down-bold"></i> 7.00%</span>
+                        <span class="text-nowrap">Depuis le mois dernier</span>
+                    </p>
+                </div> <!-- end card-body-->
+            </div> <!-- end card-->
+        </div> <!-- end col-->
+    </div> <!-- end row-->
+</div> <!-- end col -->
 </div> <!-- end row -->
 
 <div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
+<div class="col-12">
+    <div class="card">
+        <div class="card-body">
 
-                <div class="table-responsive">
-                    <table class="table table-centered table-striped dt-responsive nowrap w-100" id="products-datatable">
-                        <thead>
-                            <tr>
-                                <th>Employer</th>
-                                <th>Numero</th>
-                                <th>Email</th>
-                                <th>Adresse</th>
-                                <th>Arrivee</th>
-                                <th>Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for i in users_all %}
-                            <tr>
-                                <td class="table-user">
-                                    <a href="#" class="text-body fw-semibold">{{ i.users_name }} {{ i.users_fname }}</a>
-                                </td>
-                                <td>
-                                    {% if i.users_phone %} {{ i.users_phone }} {% else %} Aucun contact disponible {% endif %}
-                                </td>
-                                <td>{{ i.users_mail }}</td>
-                                <td>
-                                    {% if i.users_region %} {{ i.users_address }} {{ i.users_postal }} {{ i.users_region }} {% else %} Aucune adresse disponible {% endif %}
-                                </td>
-                                <td>{{ i.created_date|date:"F Y" }}</td>
-                                <td>
-                                    <span class="badge badge-success-lighten">
-                                        {% if i.users_is_active %} Activé {% else %} Désactivé {% endif %}
-                                    </span>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div> <!-- end table-responsive-->
-            </div> <!-- end card-body-->
-        </div> <!-- end card-->
-    </div> <!-- end col -->
+            <div class="table-responsive">
+                <table class="table table-centered table-striped dt-responsive nowrap w-100" id="products-datatable">
+                    <thead>
+                        <tr>
+                            <th>Employé</th>
+                            <th>Numero</th>
+                            <th>Email</th>
+                            <th>Adresse</th>
+                            <th>Arrivee</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for i in users_all %}
+                        <tr>
+                            <td class="table-user">
+                                <a href="#" class="text-body fw-semibold">{{ i.users_name }} {{ i.users_fname }}</a>
+                            </td>
+                            <td>
+                                {% if i.users_phone %} {{ i.users_phone }} {% else %} Aucun contact disponible {% endif %}
+                            </td>
+                            <td>{{ i.users_mail }}</td>
+                            <td>
+                                {% if i.users_region %} {{ i.users_address }} {{ i.users_postal }} {{ i.users_region }} {% else %} Aucune adresse disponible {% endif %}
+                            </td>
+                            <td>{{ i.created_date|date:"F Y" }}</td>
+                            <td>
+                                <span class="badge badge-success-lighten">
+                                    {% if i.users_is_active %} Activé {% else %} Désactivé {% endif %}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div> <!-- end table-responsive-->
+        </div> <!-- end card-body-->
+    </div> <!-- end card-->
+</div> <!-- end col -->
 </div> <!-- end row-->
 {% elif user.users_type == 'admin' %}
 <div class="row">
-    <!-- Contenu spécifique pour le type 'com' -->
-    <p>Contenu spécifique pour les utilisateurs de type admin.</p>
+<!-- Contenu spécifique pour le type 'com' -->
+<p>Contenu spécifique pour les utilisateurs de type admin.</p>
 </div>
 {% elif user.users_type == 'com' %}
 <div class="row">
-    <div class="col-xl-5 col-lg-12 d-flex align-items-stretch">
-        <div class="card flex-fill">
-            <div class="card-body">
-                <span class="float-start m-2 me-4">
-                    <img src="{% static 'images/logo.png' %}" style="height: 100px;" alt="" class="rounded-circle img-thumbnail">
-                </span>
-                <div class="">
-                    <h4 class="mt-1 mb-1">{{ user.users_name }} {{ user.users_fname }}</h4>
-                    <p class="font-13">R&S-TELECOM</p>
-                    <ul class="mb-0 list-inline">
-                        <li class="list-inline-item me-3 ">
-                            <h5 class="mb-1 ">Role</h5>
-                            <p class="mb-0 font-13">{{ user_types }}</p>
-                        </li>
-                        <li class="list-inline-item text-center">
-                            <h5 class="mb-1">Date d'inscription</h5>
-                            <p class="mb-0 font-13 ">{{ user.created_date | date:"d F Y"}}</p>
-                        </li>
-                    </ul>
-                </div>
-                <!-- end div-->
+<div class="col-xl-5 col-lg-12 d-flex align-items-stretch">
+    <div class="card flex-fill">
+        <div class="card-body">
+            <span class="float-start m-2 me-4">
+                <img src="{% static 'images/logo.png' %}" style="height: 100px;" alt="" class="rounded-circle img-thumbnail">
+            </span>
+            <div class="">
+                <h4 class="mt-1 mb-1">{{ user.users_name }} {{ user.users_fname }}</h4>
+                <p class="font-13">R&S-TELECOM</p>
+                <ul class="mb-0 list-inline">
+                    <li class="list-inline-item me-3 ">
+                        <h5 class="mb-1 ">Role</h5>
+                        <p class="mb-0 font-13">{{ user_types }}</p>
+                    </li>
+                    <li class="list-inline-item text-center">
+                        <h5 class="mb-1">Date d'inscription</h5>
+                        <p class="mb-0 font-13 ">{{ user.created_date | date:"d F Y"}}</p>
+                    </li>
+                </ul>
             </div>
-            <!-- end card-body-->
+            <!-- end div-->
         </div>
-    </div> <!-- end col -->
+        <!-- end card-body-->
+    </div>
+</div> <!-- end col -->
 
-    <div class="col-xl-7 col-lg-6 d-flex align-items-stretch">
-        <div class="card cta-box bg-danger text-white flex-fill">
-            <div class="card-body">
-                <div class="d-flex align-items-center">
-                    <div class="w-100 overflow-hidden">
-                        <h2 class="mt-0"><i class="mdi mdi-bullhorn-outline"></i></h2>
-                        <h3 class="m-0 fw-normal cta-box-title">Le site est <b>actuellement en cours de construction</b>. Merci de votre patience ! <i class="mdi mdi-arrow-right-bold-outline"></i></h3>
-                    </div>
-                    <img class="ms-3" src="{% static 'pulls/assets/images/email-campaign.svg' %}" width="120" alt="Image de site en construction">
+<div class="col-xl-7 col-lg-6 d-flex align-items-stretch">
+    <div class="card cta-box bg-danger text-white flex-fill">
+        <div class="card-body">
+            <div class="d-flex align-items-center">
+                <div class="w-100 overflow-hidden">
+                    <h2 class="mt-0"><i class="mdi mdi-bullhorn-outline"></i></h2>
+                    <h3 class="m-0 fw-normal cta-box-title">Le site est <b>actuellement en cours de construction</b>. Merci de votre patience ! <i class="mdi mdi-arrow-right-bold-outline"></i></h3>
                 </div>
+                <img class="ms-3" src="{% static 'pulls/assets/images/email-campaign.svg' %}" width="120" alt="Image de site en construction">
             </div>
         </div>
     </div>
 </div>
+</div>
 {% elif user.users_type == 'con' %}
 
 <div class="row">
-    <div class="col-lg-6 col-xl-5">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="header-title mb-3 text-danger">Bonjour {{user.users_name}} {{user.users_fname}}</h4>
+<div class="col-lg-6 col-xl-5">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="header-title mb-3 text-danger">Bonjour {{user.users_name}} {{user.users_fname}}</h4>
 
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Unde, totam id harum laudantium error explicabo rerum ducimus sed blanditiis reiciendis a labore ipsam dolores ut aliquam incidunt accusamus rem sequi!</p>
-                <!-- end table-responsive -->
-                <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Inventore quod nesciunt, amet perferendis dicta in. Iure quo eligendi magni repellat neque quod quaerat possimus magnam praesentium, nobis sint commodi voluptates.</p>
-                <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Earum autem unde cumque, fugit laborum facere, aperiam soluta quas ratione accusamus nulla? Debitis dicta recusandae accusamus eum facere culpa deserunt veniam?</p>
-            </div>
+            <p>Bienvenue sur votre espace consultant R&S TELECOM !</p>
+            <!-- end table-responsive -->
+            <p>Dans votre espace consultant, vous pourrez créer, remplir et télécharger votre CRA (Compte Rendu d'Activité) de manière simple et efficace. Pour toute aide supplémentaire, veuillez laisser un message sur la page de feedback ou nous contacter à <span><strong>contact@rs-telecom.com</strong></span></p>
+            <p>Les deadlines pour soumettre votre CRA sont indiquées dans l'application. Assurez-vous de respecter ces dates pour une gestion optimale de vos rapports.</p>
+                
         </div>
-    </div> <!-- end col -->
+    </div>
+</div> <!-- end col -->
 
-    <div class="col-lg-6 col-xl-7">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="header-title mb-3 text-success">Calendrier</h4>
+<div class="col-lg-6 col-xl-7">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="header-title mb-3 text-success">Calendrier</h4>
 
-                <div class="row">
-                    <div class="col-lg-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="align-items-center">
-                                    <div class="container">
-                                        <h5 class="text-muted text-center fw-normal mt-0 text-truncate" title="Campaign Sent">Juillet 2024</h5>
-                                        <p class="text-center">Lundi</p>
-                                    </div>
-                                    <div class="container">
-                                        <h1 class="text-center text-danger">27</h1>
-                                    </div>
-                                    <p class="text-center">Clôture du CRA</p>
-                                </div> <!-- end row-->
-                            </div> <!-- end card-body -->
-                        </div> <!-- end card -->
-                    </div> <!-- end col -->
+            <div class="row">
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="align-items-center">
+                                <div class="container">
+                                    <h5 class="text-muted text-center fw-normal mt-0 text-truncate" title="Campaign Sent">{{date_cra|date:"M Y"}}</h5>
+                                    <p class="text-center">{{date_cra|date:"l"}}</p>
+                                </div>
+                                <div class="container">
+                                    <h1 class="text-center text-danger">{{date_cra|date:"d"}}</h1>
+                                </div>
+                                <p class="text-center">Clôture du CRA</p>
+                            </div> <!-- end row-->
+                        </div> <!-- end card-body -->
+                    </div> <!-- end card -->
+                </div> <!-- end col -->
 
-                    <div class="col-lg-4">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="align-items-center">
-                                    <div class="container">
-                                        <h5 class="text-muted text-center fw-normal mt-0 text-truncate" title="Campaign Sent">Aout 2024</h5>
-                                        <p class="text-center">Mercredi</p>
-                                    </div>
-                                    <div class="container">
-                                        <h1 class="text-center text-primary">5</h1>
-                                    </div>
-                                    <p class="text-center">Réception du salaire</p>
-                                    
-                                </div> <!-- end row-->
-                            </div> <!-- end card-body -->
-                        </div> <!-- end card -->
-                    </div> <!-- end col -->
+                <div class="col-lg-4">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="align-items-center">
+                                <div class="container">
+                                    <h5 class="text-muted text-center fw-normal mt-0 text-truncate" title="Campaign Sent">{{date_salaire|date:"M Y "}}</h5>
+                                    <p class="text-center">{{date_salaire|date:"l"}}</p>
+                                </div>
+                                <div class="container">
+                                    <h1 class="text-center text-primary">{{date_salaire|date:"d"}}</h1>
+                                </div>
+                                <p class="text-center">Réception du salaire</p>
+                                
+                            </div> <!-- end row-->
+                        </div> <!-- end card-body -->
+                    </div> <!-- end card -->
+                </div> <!-- end col -->
 
-                    <div class="col-lg-4">
-                        <div class="card rounded-2">
-                            <div class="card-body">
-                                <div class="align-items-center">
-                                    <div class="container">
-                                        <h5 class="text-muted text-center fw-normal mt-0 text-truncate" title="Campaign Sent">Aout 2024</h5>
-                                        <p class="text-center">Jeudi</p>
-                                    </div>
-                                    <div class="container">
-                                    <h1 class="text-center text-success">6</h1>
-                                    </div>
-                                    <p class="text-center text-truncate">Fiche de paie sur l'intranet</p>
-                                    
-                                </div> <!-- end row-->
-                            </div> <!-- end card-body -->
-                        </div> <!-- end card -->
-                    </div> <!-- end col -->
-                </div>
-                <!-- end table-responsive -->
-
+                <div class="col-lg-4">
+                    <div class="card rounded-2">
+                        <div class="card-body">
+                            <div class="align-items-center">
+                                <div class="container">
+                                    <h5 class="text-muted text-center fw-normal mt-0 text-truncate" title="Campaign Sent">{{date_paie|date:"M Y"}}</h5>
+                                    <p class="text-center">{{date_paie|date:"l"}}</p>
+                                </div>
+                                <div class="container">
+                                <h1 class="text-center text-success">{{date_paie|date:"d"}}</h1>
+                                </div>
+                                <p class="text-center text-truncate">Fiche de paie sur l'intranet</p>
+                                
+                            </div> <!-- end row-->
+                        </div> <!-- end card-body -->
+                    </div> <!-- end card -->
+                </div> <!-- end col -->
             </div>
+            <!-- end table-responsive -->
+            
+
         </div>
-    </div> <!-- end col -->
+    </div>
+</div> <!-- end col -->
 </div>
+<div class="row">
+<div class="col-lg-6 col-xl-5">
+    <div class="card">
+        <div class="card-body">
+    <div data-simplebar="" style="max-height: 330px;">
+        <div class="timeline-alt pb-0">
+            <div class="timeline-item">
+                <i class="dripicons-thumbs-up bg-info-lighten text-success timeline-icon"></i>
+                <div class="timeline-item-info">
+                    <a href="#" class="text-success fw-bold mb-1 d-block">Validation de votre CRA</a>
+                    <small>Votre CRA a bien été versé le {{date_salaire|date:"d M Y"}} </small>
+                    <p class="mb-0 pb-2">
+                        <small class="text-muted">5 minutes plus tot</small>
+                    </p>
+                </div>
+            </div>
 
+            <div class="timeline-item">
+                <i class="dripicons-warning bg-warning-lighten text-warning timeline-icon"></i>
+                <div class="timeline-item-info">
+                    <a href="#" class="text-warning fw-bold mb-1 d-block">Remplissage CRA</a>
+                    <small>attention ! il ne reste plus que quelques jours avant la deadline du remplissage de votre CRA , pensez à finaliser et à l'envoyer et le faire signer par votre manager 
+                        <span class="fw-bold">Nom manager</span>
+                    </small>
+                    <p class="mb-0 pb-2">
+                        <small class="text-muted">30 minutes plus tot </small>
+                    </p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <i class="dripicons-cross bg-danger-lighten text-danger timeline-icon"></i>
+                <div class="timeline-item-info">
+                    <a href="#" class="text-danger fw-bold mb-1 d-block">Refus CRA</a>
+                    <small>Votre CRA a été refusé en raison de non-conformité , prière de vous rapprocher de votre manager afin de connaitre les raisons 
+                        <span class="fw-bold"></span>
+                    </small>
+                    <p class="mb-0 pb-2">
+                        <small class="text-muted">2 heures plus tot</small>
+                    </p>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <i class="mdi mdi-upload bg-primary-lighten text-primary timeline-icon"></i>
+                <div class="timeline-item-info">
+                    <a href="#" class="text-primary fw-bold mb-1 d-block">Initialisation de votre CRA</a>
+                    <small>Votre CRA a bien été créé , pensez à le remplir avant le <strong>{{date_cra|date:"d/m/Y"}}</strong>
+                        <span class="fw-bold"></span>
+                    </small>
+                    <p class="mb-0 pb-2">
+                        <small class="text-muted">14 heures plus tot</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+        </div>
+        </div>
+        <!-- end timeline -->
+    </div> <!-- end slimscroll -->
+</div>
+<div class="col-lg-6 col-xl-7">
+    <div class="card">
+        <div class="card-body">
+            <h4 class="header-title mb-3 text-primary">à propos de votre CRA</h4>
+
+            <p>Le compte-rendu d'activité correspond à la déclaration du nombre de jours travaillés sur une période d'un mois</p>
+            <!-- end table-responsive -->
+             <p>En effet , celui-ci nous permet d'établir la facturation à destination du client pour qui vous travaillez , et d'éditer par la suite votre bulletin de paie</p>
+            <p>Les deadlines pour soumettre votre CRA sont indiquées dans l'application. Assurez-vous de respecter ces dates pour une gestion optimale de vos rapports et recevoir votre salaire dans les délais indiqués dans le calendrier ci-dessus</p>
+            <p>Afin de créer votre CRA ,rendez-vous sur <a href="{% url 'cra' %}"><strong> Créer votre CRA </strong></a> en cas de difficulté rencontrée , veuillez vous rapprochez de <strong>contact@rs-telecom.com</strong></p>
+
+        </div>
+    </div>
+</div> <!-- end col -->
+<!-- end card-body -->
+</div>
+<!-- end card-->
+
+</div>
+</div>
 {% else %}
 <div class="row">
-    <!-- Contenu spécifique pour le type 'admin' -->
-    <p>Contenu spécifique pour les utilisateurs de type default.</p>
+<!-- Contenu spécifique pour le type 'admin' -->
+<p>Veuillez contacter l'adresse contact@rs-telecom.fr</p>
 </div>
 {% endif %}
 
@@ -281,10 +363,10 @@
 {%endblock%}
 
 {% block js %}
-        <script src="{% static 'pulls/assets/js/vendor/jquery.dataTables.min.js' %}"></script>
-        <script src="{% static 'pulls/assets/js/vendor/dataTables.bootstrap5.js' %}"></script>
-        <script src="{% static 'pulls/assets/js/vendor/dataTables.responsive.min.js' %}"></script>
-        <script src="{% static 'pulls/assets/js/vendor/responsive.bootstrap5.min.js' %}"></script>
-        <script src="{% static 'pulls/assets/js/pages/demo.datatable-init.js' %}"> </script>
-        <script src="{% static 'pulls/assets/js/pages/demo.dashboard.js' %}"></script>
+    <script src="{% static 'pulls/assets/js/vendor/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'pulls/assets/js/vendor/dataTables.bootstrap5.js' %}"></script>
+    <script src="{% static 'pulls/assets/js/vendor/dataTables.responsive.min.js' %}"></script>
+    <script src="{% static 'pulls/assets/js/vendor/responsive.bootstrap5.min.js' %}"></script>
+    <script src="{% static 'pulls/assets/js/pages/demo.datatable-init.js' %}"> </script>
+    <script src="{% static 'pulls/assets/js/pages/demo.dashboard.js' %}"></script>
 {% endblock js %}
