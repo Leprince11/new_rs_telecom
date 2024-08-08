@@ -26,6 +26,7 @@ urlpatterns = [
     #gestion de fiche de paie
     path('Employes', views.fiche_paie,name='employes'),
     path('employes_all', views.getEmploye,name='getEmployes'),
+    path('Employes/delete_user/<uuid:user_id>', views.delete_user,name='deleteEmployes'),
     
 
 

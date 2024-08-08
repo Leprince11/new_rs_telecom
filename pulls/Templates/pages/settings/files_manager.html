@@ -53,7 +53,7 @@
                             <div id="jstree-2" class="custom-jstree">
                                 <ul>
                                     <li data-jstree='{ "icon" : "mdi mdi-clock-outline text-dark" }'>
-                                        <a href="#tab-recent" class="custom-jstree-link" data-bs-toggle="pill">Récents</a>
+                                        <a href="#tab-recent" class="custom-jstree-link" data-bs-toggle="pill">Accès rapide</a>
                                     </li>
                                     <li data-jstree='{ "icon" : "mdi mdi-folder text-primary" }'>CV-Tech
                                         <ul>
@@ -113,21 +113,91 @@
                     <div class="mt-3">
                         <div class="tab-content" id="v-pills-cv-tech-tabContent">
                             <div class="tab-pane fade show active" id="tab-recent" role="tabpanel" aria-labelledby="v-pills-recent-tab">
-                                <h5 class="mb-3" id="text-title-recent">Récents</h5>
-                                <div class="table-responsive">
-                                    <table id="basic-datatable-recent" class="table dt-responsive nowrap w-100">
-                                        <thead class="table-light">
-                                            <tr>
-                                                <th>Nom du fichier</th>
-                                                <th>Propriétaire</th>
-                                                <th>Date de création</th>
-                                                <th>Date de dernière mise à jour</th>
-                                                <th>Action</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
+                                <div class="mt-3">
+                                    <h5 class="mb-2">Accès rapide</h5>
+    
+                                    <div class="row mx-n1 g-0">
+                                        <div class="col-xxl-3 col-lg-6">
+                                            <div class="card m-1 shadow-none border">
+                                                <div class="p-2">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-auto">
+                                                            <div class="avatar-sm">
+                                                                <span class="avatar-title bg-primary-lighten text-primary rounded">
+                                                                    <i class="mdi mdi-folder font-16"></i>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col ps-0">
+                                                            <a href="#tab-cv" class="text-muted fw-bold custom-jstree-link">CV</a>
+                                                            <p class="mb-0 font-13">87.2 MB</p>
+                                                        </div>
+                                                    </div> <!-- end row -->
+                                                </div> <!-- end .p-2-->
+                                            </div> <!-- end col -->
+                                        </div> <!-- end col-->
+    
+                                        <div class="col-xxl-3 col-lg-6">
+                                            <div class="card m-1 shadow-none border">
+                                                <div class="p-2">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-auto">
+                                                            <div class="avatar-sm">
+                                                                <span class="avatar-title bg-info-lighten text-info rounded">
+                                                                    <i class="mdi mdi-folder-outline font-16"></i>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col ps-0">
+                                                            <a href="#tab-factures" class="text-muted fw-bold custom-jstree-link">Factures</a>
+                                                            <p class="mb-0 font-13">45.1 MB</p>
+                                                        </div>
+                                                    </div> <!-- end row -->
+                                                </div> <!-- end .p-2-->
+                                            </div> <!-- end col -->
+                                        </div> <!-- end col-->
+    
+                                        <div class="col-xxl-3 col-lg-6">
+                                            <div class="card m-1 shadow-none border">
+                                                <div class="p-2">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-auto">
+                                                            <div class="avatar-sm">
+                                                                <span class="avatar-title bg-warning-lighten text-warning rounded">
+                                                                    <i class="mdi mdi-folder-account-outline font-18"></i>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col ps-0">
+                                                            <a href="#tab-favoris" class="text-muted fw-bold custom-jstree-link">Favoris</a>
+                                                            <p class="mb-0 font-13">2.2 MB</p>
+                                                        </div>
+                                                    </div> <!-- end row -->
+                                                </div> <!-- end .p-2-->
+                                            </div> <!-- end col -->
+                                        </div> <!-- end col-->
+    
+                                        <div class="col-xxl-3 col-lg-6">
+                                            <div class="card m-1 shadow-none border">
+                                                <div class="p-2">
+                                                    <div class="row align-items-center">
+                                                        <div class="col-auto">
+                                                            <div class="avatar-sm">
+                                                                <span class="avatar-title bg-light text-secondary rounded">
+                                                                    <i class="mdi mdi-folder-account font-18"></i>
+                                                                </span>
+                                                            </div>
+                                                        </div>
+                                                        <div class="col ps-0">
+                                                            <a href="#tab-contrat" class="text-muted fw-bold custom-jstree-link">Contrat</a>
+                                                            <p class="mb-0 font-13">874 MB</p>
+                                                        </div>
+                                                    </div> <!-- end row -->
+                                                </div> <!-- end .p-2-->
+                                            </div> <!-- end col -->
+                                        </div> <!-- end col-->
+                                    </div> <!-- end row-->
+                                </div> <!-- end .mt-3-->
                             </div>
                             <div class="tab-pane fade" id="tab-cv" role="tabpanel" aria-labelledby="v-pills-cv-tab">
                                 <h5 class="mb-3" id="text-title-cv">CV</h5>

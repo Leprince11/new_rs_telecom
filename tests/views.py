@@ -340,7 +340,7 @@ async def run_in_executor(func, *args):
 
 
 @require_http_methods(["POST"])
-def start_scraping(request):
+async def start_scraping(request):
     try:
         data = json.loads(request.body.decode('utf-8'))
         source_lead = data.get('sourceLead')
@@ -359,7 +359,7 @@ def start_scraping(request):
 
             base_url = 'https://www.apec.fr/candidat/recherche-emploi.html/emploi'
             location = search_nom
-            new_data = scraping_apec(base_url, location, keywords, salary_min, salary_max)
+            new_data = await run_in_executor(scraping_apec, base_url, location, keywords, salary_min, salary_max)
         elif source_lead == 'linkedin':
             search_city = data.get('searchCity')
             select_region = data.get('selectRegion')
@@ -370,11 +370,11 @@ def start_scraping(request):
                 return JsonResponse({'status': 'error', 'message': 'Tous les champs sont obligatoires pour LinkedIn.'}, status=400)
 
             location = f"{search_city}, {select_region}, France"
-            lien ,new_data = main_extraction(keywords, location, time_frame)
+            lien, new_data = await run_in_executor(main_extraction, keywords, location, time_frame)
         else:
             return JsonResponse({'status': 'error', 'message': 'Source du lead inconnue.'}, status=400)
         
-        return JsonResponse({'status':'success' , 'data' : new_data} , safe=False )
+        return JsonResponse({'status': 'success', 'data': new_data}, safe=False)
 
     except Exception as e:
         print(f"Error in start_scraping: {e}")

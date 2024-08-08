@@ -9,7 +9,7 @@
 {% block content %}
                         
      <!-- start page title -->
-     <div class="row">
+    <div class="row">
         <div class="col-12">
             <div class="page-title-box">
                 <div class="page-title-right">
@@ -55,14 +55,14 @@
                                     <th>Employé</th>
                                     <th>telephone</th>
                                     <th>Adresse email</th>
-                                    <th>Company</th>
+                                    <th>Entreprise</th>
                                     <th>Job position</th>
                                     <th>Manager</th>
                                     <th style="width: 75px;">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for user in users %} 
+                                {% for user in users %}
                                 <tr>
                                     <td>
                                         <div class="form-check">
@@ -72,33 +72,33 @@
                                     </td>
                                     <td class="table-user">
                                         <img src="{% if user.profile_photo %} /media/photos_profil/{{ user.url_photo_profile }}{% else %}{% static 'images/logo.png' %}{% endif %}" alt="table-user" class="me-2 rounded-circle">
-                                        <a href="javascript:void(0);" class="text-body fw-semibold">{{ user.users_name|default:"N/A" }} {{ user.users_fname|default:"N/A" }}</a>
+                                        <a href="javascript:void(0);" class="text-body fw-semibold">{{ user.0.users_name|default:"N/A" }} {{ user.0.users_fname|default:"N/A" }}</a>
                                     </td>
                                     <td>
-                                        {{ user.users_phone|default:"N/A" }}
+                                        {{ user.0.users_phone|default:"N/A" }}
                                     </td>
                                     <td>
-                                        {{ user.users_mail|default:"N/A" }}
+                                        {{ user.0.users_mail|default:"N/A" }}
                                     </td>
                                     <td>
-                                        {{ user.users_company|default:"N/A" }}
+                                        {{ user.0.users_company|default:"N/A" }}
                                     </td>
                                     <td>
-                                        {{ user.users_type|default:"N/A" }}
+                                        {{ user.1|default:"N/A" }}
                                     </td>
                                     <td>
-                                        {% if user.users_is_active %}
+                                        {% if user.0.users_is_active %}
                                             <span class="badge badge-success-lighten">N/A</span>
                                         {% else %}
                                             <span class="badge badge-danger-lighten">N/A</span>
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a href="{% url 'edith_profil' user.id_user %}" class="action-icon"> <i class="mdi mdi-square-edit-outline text-primary"></i></a>
-                                        <a href="javascript:void(0);" class="action-icon"> <i class="mdi mdi-delete text-danger"></i></a>
+                                        <a href="{% url 'edith_profil' user.0.id_user %}" class="action-icon"> <i class="mdi mdi-square-edit-outline text-primary"></i></a>
+                                        <a href="#" class="action-icon delete-user" data-id="{{user.id_user}}" id="delete_user" data-url="{% url 'deleteEmployes' user.0.id_user%}"> <i class="mdi mdi-delete text-danger"></i></a>
                                     </td>
                                 </tr>
-                                
+                            
                                 {% endfor  %}
                             </tbody>
                         </table>
@@ -108,6 +108,21 @@
         </div> <!-- end col -->
     </div>
     <!-- end row -->
+    <div id="warning-alert-modal" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-body p-4">
+                    <div class="text-center">
+                        <i id="modal-icon"></i>
+                        <h4 class="mt-2" id="message-title"></h4>
+                        <p class="mt-3" id="message-body"></p>
+                        <button type="button" id="validation" class="btn my-2">Confirmer</button>
+                        <button type="button" id="Annuler" class="btn my-2" data-bs-dismiss="modal">Annuler</button>
+                    </div>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
 {% endblock %}
 
 {% block js %}
@@ -120,42 +135,138 @@
 <script src="{% static 'pulls/assets/js/vendor/dataTables.responsive.min.js' %}"></script>
 <script src="{% static 'pulls/assets/js/pages/demo.customers.js' %}"></script>
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        fetch('employes_all', {
-            method: 'GET',
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            const tableBody = document.getElementById('table-body');
-            data.forEach(item => {
-                const row = document.createElement('tr');
-                const profilePhoto = item.profile_photo ? `pulls/assets/images/users/${item.profile_photo}` : "{% static 'images/logo.png' %}";
+    $(document).ready(function() {
+        // fetch('employes_all', {
+        //     method: 'GET',
+        //     headers: {
+        //         'Content-Type': 'application/json'
+        //     }
+        // })
+        // .then(response => response.json())
+        // .then(data => {
+        //     const tableBody = document.getElementById('table-body');
+        //     data.forEach(item => {
+        //         const row = document.createElement('tr');
+        //         const profilePhoto = item.profile_photo ? `pulls/assets/images/users/${item.profile_photo}` : "{% static 'images/logo.png' %}";
 
-                row.innerHTML = `
-                    <td class="table-user">
-                        <img src="${profilePhoto}" alt="table-user" class="me-2 rounded-circle" width="40">
-                        <a href="javascript:void(0);" class="text-body fw-semibold">${item.users_name} ${item.users_fname}</a>
-                    </td>
-                    <td>${item.users_phone || 'N/A'}</td>
-                    <td>${item.users_mail}</td>
-                    <td>${item.users_region || 'N/A'}</td>
-                    <td>${new Date(item.created_date).toLocaleDateString()}</td>
-                    <td>
-                        <span class="badge badge-${item.users_is_active ? 'success' : 'danger'}-lighten">${item.users_is_active ? 'Active' : 'Inactive'}</span>
-                    </td>
-                    <td>
-                        <a href="javascript:void(0);" class="action-icon" id="customer-edit-${item.id_user}"> <i class="mdi mdi-square-edit-outline"></i></a>
-                        <a href="javascript:void(0);" class="action-icon" id="customer-delete-${item.id_user}"> <i class="mdi mdi-delete"></i></a>
-                    </td>
-                `;
+        //         row.innerHTML = `
+        //             <td class="table-user">
+        //                 <img src="${profilePhoto}" alt="table-user" class="me-2 rounded-circle" width="40">
+        //                 <a href="javascript:void(0);" class="text-body fw-semibold">${item.users_name} ${item.users_fname}</a>
+        //             </td>
+        //             <td>${item.users_phone || 'N/A'}</td>
+        //             <td>${item.users_mail}</td>
+        //             <td>${item.users_region || 'N/A'}</td>
+        //             <td>${new Date(item.created_date).toLocaleDateString()}</td>
+        //             <td>
+        //                 <span class="badge badge-${item.users_is_active ? 'success' : 'danger'}-lighten">${item.users_is_active ? 'Active' : 'Inactive'}</span>
+        //             </td>
+        //             <td>
+        //                 <a href="javascript:void(0);" class="action-icon" id="customer-edit-${item.id_user}"> <i class="mdi mdi-square-edit-outline"></i></a>
+        //                 <a href="javascript:void(0);" class="action-icon" id="customer-delete-${item.id_user}"> <i class="mdi mdi-delete"></i></a>
+        //             </td>
+        //         `;
 
-                tableBody.appendChild(row);
-            });
-        })
-        .catch(error => console.error('Erreur lors de la requête:', error));
+        //         tableBody.appendChild(row);
+        //     });
+        // })
+        // .catch(error => console.error('Erreur lors de la requête:', error));
+
+
+        $(document).on('click', '.delete-user', function() {
+            var userId = $(this).data('id');
+            const button=document.getElementById('validation');
+            showModal('erreur-suppression   ','Confimation de la suppression', 'Souhaitez-vous vraiment supprimer cet utilisateur?');
+            button.addEventListener('click',function(){
+                deleteUser(userId);
+            })
+        });
+        
+        // $('#delete_user').on('click', function() {
+        //     showModal('Suppression de l\'utilisateur','Voulez vous vraiment supprimer cette utilisateurs? cette utilisateur sera supprimer de manier definitive')
+                
+            
+        // });
+
     });
+
+    function showModal(type,title, message, confirmCallback) {
+        $('#message-title').text(title);
+        $('#message-body').text(message);
+        var modalIcon = $('#modal-icon');
+        var button = $('#validation');
+        var buttonAnnul = $('#Annuler');
+        modalIcon.removeClass().addClass('h1');
+        button.removeClass();
+        // Modifier la classe de l'icône en fonction du titre
+        if (type.toLowerCase().includes('succès')) {
+            modalIcon.addClass('dripicons-checkmark text-success');
+            button.addClass('btn btn-success d-none');
+            buttonAnnul.addClass('btn btn-success')
+
+        } else if (type.toLowerCase().includes('erreur')) {
+
+            if(type.toLowerCase().includes('erreur-suppression')) {
+                modalIcon.addClass('mdi mdi-delete-forever text-danger');
+                button.addClass('btn btn-danger');
+                buttonAnnul.removeClass('d-none')
+            }
+            else{
+                modalIcon.addClass('dripicons-cross text-danger');
+                button.addClass('btn btn-danger d-none');
+                buttonAnnul.addClass('btn btn-danger ')
+            }
+        }
+         else {
+            modalIcon.addClass('dripicons-warning text-warning');
+            button.addClass('btn btn-warning');
+            buttonAnnul.addClass('d-none')
+        }
+
+        // Afficher la modal
+        var modal = new bootstrap.Modal(document.getElementById('warning-alert-modal'));
+        modal.show();
+    }
+
+    function deleteUser(userId) {
+        var lien = document.getElementById('delete_user').getAttribute('data-url');
+            $.ajax({
+                url: lien ,
+                type: 'DELETE',
+                headers: {
+                    'X-CSRFToken': getCookie('csrftoken') // Function to get CSRF token
+                },
+                success: function(result) {
+                    // let modal_url= document.getElementById('warning-alert-modal');
+                    var modalId = document.getElementById('warning-alert-modal');
+                    var modal = bootstrap.Modal.getInstance(modalId); 
+                    if (modal) {
+                        modal.hide();
+                    }
+                    showModal('Succès','opération réussie', 'Utilisateur supprimé avec succès.');
+                },
+                error: function(xhr, status, error) {
+                    let modal_url= document.getElementById('warning-alert-modal');
+                    var modal = new bootstrap.Modal.getOrCreateInstance(modal_url);
+                    modal.hide();
+                    showModal('Erreur','Erreur','Une erreur s\'est produite lors de la suppression de l\'utilisateur.');
+                }
+            });
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
 </script>
 {% endblock %}
