@@ -13,12 +13,6 @@
                         <i class="mdi mdi-calendar-range font-13"></i>
                     </span>
                 </div>
-                <a href="javascript: void(0);" class="btn btn-primary ms-2">
-                    <i class="mdi mdi-autorenew"></i>
-                </a>
-                <a href="javascript: void(0);" class="btn btn-primary ms-1">
-                    <i class="mdi mdi-filter-variant"></i>
-                </a>
             </form>
         </div>
         <h4 class="page-title">Tableau de bord</h4>
@@ -198,7 +192,7 @@
 
             <p>Bienvenue sur votre espace consultant R&S TELECOM !</p>
             <!-- end table-responsive -->
-            <p>Dans votre espace consultant, vous pourrez créer, remplir et télécharger votre CRA (Compte Rendu d'Activité) de manière simple et efficace. Pour toute aide supplémentaire, veuillez laisser un message sur la page de feedback ou nous contacter à <span><strong>contact@rs-telecom.com</strong></span></p>
+            <p>Dans votre espace consultant, vous pourrez créer, remplir et télécharger votre CRA (Compte Rendu d'Activité) de manière simple et efficace. Pour toute aide supplémentaire, veuillez laisser un message sur la page de feedback ou nous contacter à <span><strong>contact@rs-telecom.fr</strong></span></p>
             <p>Les deadlines pour soumettre votre CRA sont indiquées dans l'application. Assurez-vous de respecter ces dates pour une gestion optimale de vos rapports.</p>
                 
         </div>
@@ -208,7 +202,7 @@
 <div class="col-lg-6 col-xl-7">
     <div class="card">
         <div class="card-body">
-            <h4 class="header-title mb-3 text-success">Calendrier</h4>
+            <h4 class="header-title mb-3 text-success">Deadlines importantes</h4>
 
             <div class="row">
                 <div class="col-lg-4">
@@ -239,7 +233,7 @@
                                 <div class="container">
                                     <h1 class="text-center text-primary">{{date_salaire|date:"d"}}</h1>
                                 </div>
-                                <p class="text-center">Réception du salaire</p>
+                                <p class="text-center">Réception de la rémunération</p>
                                 
                             </div> <!-- end row-->
                         </div> <!-- end card-body -->
@@ -257,7 +251,7 @@
                                 <div class="container">
                                 <h1 class="text-center text-success">{{date_paie|date:"d"}}</h1>
                                 </div>
-                                <p class="text-center text-truncate">Fiche de paie sur l'intranet</p>
+                                <p class="text-center text-truncate">bulletin de rémunération</p>
                                 
                             </div> <!-- end row-->
                         </div> <!-- end card-body -->
@@ -352,6 +346,105 @@
 
 </div>
 </div>
+{% elif user.users_type == 'stt' %}
+<div class="row">
+    <div class="col-lg-6 col-xl-5">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="header-title mb-3 text-danger">Bonjour {{user.users_name}} {{user.users_fname}}</h4>
+    
+                <p>Bienvenue sur votre espace consultant R&S TELECOM !</p>
+                <!-- end table-responsive -->
+                <p>Dans votre espace consultant, vous pourrez créer, remplir et télécharger votre CRA (Compte Rendu d'Activité) de manière simple et efficace. Pour toute aide supplémentaire, veuillez laisser un message sur la page de feedback ou nous contacter à <span><strong>contact@rs-telecom.fr</strong></span></p>
+                <p>Les deadlines pour soumettre votre CRA sont indiquées dans l'application. Assurez-vous de respecter ces dates pour une gestion optimale de vos rapports.</p>
+                    
+            </div>
+        </div>
+    </div> <!-- end col -->
+    <div class="col-lg-6 col-xl-7">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="header-title mb-3 text-primary">à propos de votre CRA</h4>
+    
+                <p>Le compte-rendu d'activité correspond à la déclaration du nombre de jours travaillés sur une période d'un mois</p>
+                <!-- end table-responsive -->
+                 <p>En effet , celui-ci nous permet d'établir la facturation à destination du client pour qui vous travaillez , et d'éditer par la suite votre bulletin de paie</p>
+                <p>Les deadlines pour soumettre votre CRA sont indiquées dans l'application. Assurez-vous de respecter ces dates pour une gestion optimale de vos rapports et recevoir votre salaire dans les délais indiqués dans le calendrier ci-dessus</p>
+                <p>Afin de créer votre CRA ,rendez-vous sur <a href="{% url 'cra' %}"><strong> Créer votre CRA </strong></a> en cas de difficulté rencontrée , veuillez vous rapprochez de <strong>contact@rs-telecom.com</strong></p>
+    
+            </div>
+        </div>
+    </div> <!-- end col -->
+    <!-- end card-body -->
+    </div>
+    <!-- end card-->
+    
+    <div class="row">
+    <div class="col-lg-6 col-xl-5">
+        <div class="card">
+            <div class="card-body">
+        <div data-simplebar="" style="max-height: 330px;">
+            <div class="timeline-alt pb-0">
+                <div class="timeline-item">
+                    <i class="dripicons-thumbs-up bg-info-lighten text-success timeline-icon"></i>
+                    <div class="timeline-item-info">
+                        <a href="#" class="text-success fw-bold mb-1 d-block">Validation de votre CRA</a>
+                        <small>Votre CRA a bien été versé le {{date_salaire|date:"d M Y"}} </small>
+                        <p class="mb-0 pb-2">
+                            <small class="text-muted">5 minutes plus tot</small>
+                        </p>
+                    </div>
+                </div>
+    
+                <div class="timeline-item">
+                    <i class="dripicons-warning bg-warning-lighten text-warning timeline-icon"></i>
+                    <div class="timeline-item-info">
+                        <a href="#" class="text-warning fw-bold mb-1 d-block">Remplissage CRA</a>
+                        <small>attention ! il ne reste plus que quelques jours avant la deadline du remplissage de votre CRA , pensez à finaliser et à l'envoyer et le faire signer par votre manager 
+                            <span class="fw-bold">Nom manager</span>
+                        </small>
+                        <p class="mb-0 pb-2">
+                            <small class="text-muted">30 minutes plus tot </small>
+                        </p>
+                    </div>
+                </div>
+    
+                <div class="timeline-item">
+                    <i class="dripicons-cross bg-danger-lighten text-danger timeline-icon"></i>
+                    <div class="timeline-item-info">
+                        <a href="#" class="text-danger fw-bold mb-1 d-block">Refus CRA</a>
+                        <small>Votre CRA a été refusé en raison de non-conformité , prière de vous rapprocher de votre manager afin de connaitre les raisons 
+                            <span class="fw-bold"></span>
+                        </small>
+                        <p class="mb-0 pb-2">
+                            <small class="text-muted">2 heures plus tot</small>
+                        </p>
+                    </div>
+                </div>
+    
+                <div class="timeline-item">
+                    <i class="mdi mdi-upload bg-primary-lighten text-primary timeline-icon"></i>
+                    <div class="timeline-item-info">
+                        <a href="#" class="text-primary fw-bold mb-1 d-block">Initialisation de votre CRA</a>
+                        <small>Votre CRA a bien été créé , pensez à le remplir avant le <strong>{{date_cra|date:"d/m/Y"}}</strong>
+                            <span class="fw-bold"></span>
+                        </small>
+                        <p class="mb-0 pb-2">
+                            <small class="text-muted">14 heures plus tot</small>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            </div>
+            </div>
+            <!-- end timeline -->
+        </div> <!-- end slimscroll -->
+    </div>
+    
+    
+    </div>
+    </div>
+
 {% else %}
 <div class="row">
 <!-- Contenu spécifique pour le type 'admin' -->
