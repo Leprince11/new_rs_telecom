@@ -70,7 +70,7 @@
                                                 {% for feedback in feedbacks %}
                                                 <li class="clearfix{% if feedback.user.users_type == 'admin' %} odd{% endif %}">
                                                     <div class="chat-avatar">
-                                                        <img src="{% if feedback.user.url_photo_profile is not None %} /media/photos_profil/{{user.url_photo_profile}} {% else %} {%static 'images/logo.png'%} {% endif %} " class="rounded" alt="{{ feedback.user.users_name }}">
+                                                        <img src="{% if feedback.user.url_photo_profile is not None %} /media/photos_profil/{{feedback.user.url_photo_profile}} {% else %} {%static 'images/logo.png'%} {% endif %} " class="rounded" alt="{{ feedback.user.users_name }}">
                                                         <i data-time="{{ feedback.created_at|date:'Y-m-d H:i:s' }}">{{ feedback.created_at|date:"H:i" }}</i>
                                                     </div>
                                                     <div class="conversation-text">
@@ -92,7 +92,7 @@
                                                 {% for feedback in pinned_feedbacks %}
                                                 <li class="clearfix{% if feedback.user.users_type == 'admin' %} odd{% endif %}">
                                                     <div class="chat-avatar">
-                                                        <img src="{% if feedback.user.url_photo_profile is not None %} /media/photos_profil/{{user.url_photo_profile}} {% else %} {%static 'images/logo.png'%} {% endif %} " class="rounded" alt="{{ feedback.user.users_name }}">
+                                                        <img src="{% if feedback.user.url_photo_profile is not None %} /media/photos_profil/{{feedback.user.url_photo_profile}} {% else %} {%static 'images/logo.png'%} {% endif %} " class="rounded" alt="{{ feedback.user.users_name }}">
                                                         <i data-time="{{ feedback.created_at|date:'Y-m-d H:i:s' }}">{{ feedback.created_at|date:"H:i" }}</i>
                                                     </div>
                                                     <div class="conversation-text">
