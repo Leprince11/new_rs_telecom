@@ -210,7 +210,11 @@ def home(request):
         case 'stt':
             pass
         case 'con':
-            pass
+            dt = datetime.now()
+            year, month = dt.year, dt.month
+            context['date_cra']=datetime(year, month, 27)
+            context['date_salaire']=datetime(year, month+1, 5) if month != 12 else (year+1, 1, 5)
+            context['date_paie']=datetime(year, month+1, 6) if month != 12 else (year+1, 1, 6)
         case 'com':
             pass
         case 'sup':
