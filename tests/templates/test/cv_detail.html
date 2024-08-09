@@ -285,238 +285,201 @@
  
 {% block js %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
+    document.addEventListener("DOMContentLoaded", function() {
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
                 }
             }
+            return cookieValue;
         }
-        return cookieValue;
-    }
- 
-    var csrfToken = getCookie('csrftoken');
- 
-    function enableEditing(field) {
-        var element = document.getElementById(field);
-        var editButton = document.getElementById('edit-' + field);
-        var saveButton = document.getElementById('save-' + field);
-        var cancelButton = document.getElementById('cancel-' + field);
- 
-        element.removeAttribute('readonly');
-        element.classList.add('editable');
-        editButton.style.display = 'none';
-        saveButton.style.display = 'inline';
-        cancelButton.style.display = 'inline';
-    }
- 
-    function disableEditing(field) {
-        var element = document.getElementById(field);
-        var editButton = document.getElementById('edit-' + field);
-        var saveButton = document.getElementById('save-' + field);
-        var cancelButton = document.getElementById('cancel-' + field);
- 
-        element.setAttribute('readonly', true);
-        element.classList.remove('editable');
-        editButton.style.display = 'inline';
-        saveButton.style.display = 'none';
-        cancelButton.style.display = 'none';
-    }
- 
-    function CreateFeedback(id, data) {
-        const divMessage = document.getElementById(id);
-        divMessage.classList.remove('badge', 'bg-danger-lighten', 'bg-success-lighten'); // Remove previous classes
- 
-        if (data.success) {
-            divMessage.innerText = 'Votre modification a bien été prise en compte';
-            divMessage.classList.add('badge', 'bg-success-lighten', 'text-success');
-        } else {
-            divMessage.innerText = 'Votre modification n\'a pas été prise en compte';
-            divMessage.classList.add('badge', 'bg-danger-lighten', 'text-danger');
+
+        var csrfToken = getCookie('csrftoken');
+
+        function enableEditing(field) {
+            var element = document.getElementById(field);
+            var editButton = document.getElementById('edit-' + field);
+            var saveButton = document.getElementById('save-' + field);
+            var cancelButton = document.getElementById('cancel-' + field);
+
+            element.removeAttribute('readonly');
+            element.classList.add('editable');
+            editButton.style.display = 'none';
+            saveButton.style.display = 'inline';
+            cancelButton.style.display = 'inline';
         }
-       
-        setTimeout(() => divMessage.innerText = '', 3000);
-    }
- 
-    function saveChanges(field) {
-        var element = document.getElementById(field);
-        var value = element.value;
-        var cv_id = '{{ cv.0 }}';
- 
-        var formData = new FormData();
-        formData.append('cv_id', cv_id);
-        formData.append('field', field);
-        formData.append('value', value);
- 
-        fetch('{% url "update_cv" %}', {
-            method: 'POST',
-            headers: {
-                'X-CSRFToken': csrfToken
-            },
-            body: formData
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
+
+        function disableEditing(field) {
+            var element = document.getElementById(field);
+            var editButton = document.getElementById('edit-' + field);
+            var saveButton = document.getElementById('save-' + field);
+            var cancelButton = document.getElementById('cancel-' + field);
+
+            element.setAttribute('readonly', true);
+            element.classList.remove('editable');
+            editButton.style.display = 'inline';
+            saveButton.style.display = 'none';
+            cancelButton.style.display = 'none';
+        }
+
+        function CreateFeedback(id, data) {
+            const divMessage = document.getElementById(id);
+            divMessage.classList.remove('badge', 'bg-danger-lighten', 'bg-success-lighten'); // Remove previous classes
+
             if (data.success) {
-                let chemin = field + '-feedback';
-                disableEditing(field);
-                CreateFeedback(chemin, data);
+                divMessage.innerText = 'Votre modification a bien été prise en compte';
+                divMessage.classList.add('badge', 'bg-success-lighten', 'text-success');
             } else {
-                alert('Erreur lors de la mise à jour. Veuillez réessayer.');
+                divMessage.innerText = 'Votre modification n\'a pas été prise en compte';
+                divMessage.classList.add('badge', 'bg-danger-lighten', 'text-danger');
             }
-        })
-        .catch(error => console.error('Error:', error));
-    }
- 
-    function LeaveCommentaire(id, name) {
-        document.getElementById(id).addEventListener('click', function() {
-            var cv_id = document.getElementById('cv_id').getAttribute('data_id');
-            var comment = document.getElementsByName(name)[0].value;
- 
+            
+            setTimeout(() => divMessage.innerText = '', 3000);
+        }
+
+        function saveChanges(field) {
+            var element = document.getElementById(field);
+            var value = element.value;
+            var cv_id = '{{ cv.0 }}';
+
             var formData = new FormData();
             formData.append('cv_id', cv_id);
-            formData.append('comment', comment);
- 
-            fetch('{% url "add_comment" %}', {
+            formData.append('field', field);
+            formData.append('value', value);
+
+            fetch('{% url "update_cv" %}', {
                 method: 'POST',
                 headers: {
                     'X-CSRFToken': csrfToken
                 },
                 body: formData
             })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
             .then(data => {
-                var feedback = document.getElementById('comment-feedback');
-                if (data.message) {
-                    feedback.innerText = 'Commentaire ajouté : ' + data.message;
-                    feedback.classList.add('text-success');
-                    setTimeout(() => feedback.innerText = '', 3000);
-                    document.getElementById('comment-form').reset();
-                    var commentsContainer = document.getElementById('comments-container');
-                    var newComment = document.createElement('div');
-                    newComment.className = 'd-flex align-items-start mt-2 comment-item';
-                    newComment.innerHTML = `
-                        <img class="me-3 avatar-sm rounded-circle" src="{% static 'pulls/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
-                        <div class="w-100 overflow-hidden">
-                            <h5 class="mt-0">${data.user_name}</h5>
-                            ${data.comment}
-                            <span class="created-at" style="top: -1px">${data.created_at}</span>
-                        </div>`;
-                    commentsContainer.prepend(newComment);
-                    var modalElement = document.getElementById('comment-modal');
-                    var instancemodale = bootstrap.Modal.getInstance(modalElement);
-                    if (instancemodale) {
-                        instancemodale.hide();
-                    }
-                    var modal = new bootstrap.Modal(document.getElementById('success-alert-modal'));
-                     modal.show();
-                    var feedbacke = document.getElementById('feedback_' + cvId);
-                    feedbacke.innerText = 'Commentaire ajouté : ' + data.message;
-                    feedbacke.classList.add('text-success');
-                    setTimeout(() => feedbacke.innerText = '', 3000);
-                    document.getElementById('modal-comment-' + cvId).value = '';
-                   
+                if (data.success) {
+                    let chemin = field + '-feedback';
+                    disableEditing(field);
+                    CreateFeedback(chemin, data);
                 } else {
-                    feedback.innerText = 'Erreur : ' + data.error;
-                    feedback.classList.add('text-danger');
-                    setTimeout(() => feedback.innerText = '', 3000);
+                    alert('Erreur lors de la mise à jour. Veuillez réessayer.');
                 }
             })
-            .catch(error => console.error('Fetch error:', error));
+            .catch(error => console.error('Error:', error));
+        }
+
+        function LeaveCommentaire(id, name) {
+            document.getElementById(id).addEventListener('click', function() {
+                var cv_id = document.getElementById('cv_id').getAttribute('data_id');
+                var comment = document.getElementsByName(name)[0].value;
+
+                var formData = new FormData();
+                formData.append('cv_id', cv_id);
+                formData.append('comment', comment);
+
+                fetch('{% url "add_comment" %}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken
+                    },
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    var feedback = document.getElementById('comment-feedback');
+                    if (data.message) {
+                        feedback.innerText = 'Commentaire ajouté : ' + data.message;
+                        feedback.classList.add('text-success');
+                        setTimeout(() => feedback.innerText = '', 3000);
+                        document.getElementById('comment-form').reset();
+                        var commentsContainer = document.getElementById('comments-container');
+                        var newComment = document.createElement('div');
+                        newComment.className = 'd-flex align-items-start mt-2 comment-item';
+                        newComment.innerHTML = `
+                            <img class="me-3 avatar-sm rounded-circle" src="{% static 'pulls/assets/images/users/avatar-3.jpg' %}" alt="Image générique">
+                            <div class="w-100 overflow-hidden">
+                                <h5 class="mt-0">${data.user_name}</h5>
+                                ${data.comment}
+                                <span class="created-at" style="top: -1px">${data.created_at}</span>
+                            </div>`;
+                        commentsContainer.prepend(newComment);
+                        var modal = new bootstrap.Modal(document.getElementById('success-alert-modal'));
+                        modal.show();
+                        var feedbacke = document.getElementById('feedback_' + cvId);
+                        feedbacke.innerText = 'Commentaire ajouté : ' + data.message;
+                        feedbacke.classList.add('text-success');
+                        setTimeout(() => feedbacke.innerText = '', 3000);
+                        document.getElementById('modal-comment-' + cvId).value = '';
+                       
+                    } else {
+                        feedback.innerText = 'Erreur : ' + data.error;
+                        feedback.classList.add('text-danger');
+                        setTimeout(() => feedback.innerText = '', 3000);
+                    }
+                })
+                .catch(error => console.error('Fetch error:', error));
+            });
+        }
+
+        LeaveCommentaire("submit-comment", "comment");
+        LeaveCommentaire("envoyer_commentaire", "comment1");
+
+        document.getElementById('edit-tjm').addEventListener('click', function() {
+            enableEditing('tjm');
         });
+
+        document.getElementById('save-tjm').addEventListener('click', function() {
+            saveChanges('tjm');
+        });
+
+        document.getElementById('cancel-tjm').addEventListener('click', function() {
+            disableEditing('tjm');
+        });
+
+        document.getElementById('edit-description').addEventListener('click', function() {
+            enableEditing('description');
+        });
+
+        document.getElementById('save-description').addEventListener('click', function() {
+            saveChanges('description');
+        });
+
+        document.getElementById('cancel-description').addEventListener('click', function() {
+            disableEditing('description');
+        });
+
+        document.getElementById('maquettageButton').addEventListener('click', function() {
+            location.href = 'https://rs-telecom-5fe33.web.app/';
+        });
+
+        document.getElementById('toggleButton').addEventListener('click', function(event) {
+            event.preventDefault();
+            toggleDetails();
+        });
+    });
+
+    function toggleDetails() {
+        var details = document.getElementById('cvDetails');
+        var button = document.getElementById('toggleButton');
+        if (details.style.display === 'none' || details.style.display === '') {
+            details.style.display = 'block';
+            button.textContent = 'Voir moins';
+        } else {
+            details.style.display = 'none';
+            button.textContent = 'Voir plus';
+        }
     }
- 
-    LeaveCommentaire("submit-comment", "comment");
-    LeaveCommentaire("envoyer_commentaire", "comment1");
- 
-    document.getElementById('edit-tjm').addEventListener('click', function() {
-        enableEditing('tjm');
-    });
- 
-    document.getElementById('save-tjm').addEventListener('click', function() {
-        saveChanges('tjm');
-    });
- 
-    document.getElementById('cancel-tjm').addEventListener('click', function() {
-        disableEditing('tjm');
-    });
- 
-    document.getElementById('edit-description').addEventListener('click', function() {
-        enableEditing('description');
-    });
- 
-    document.getElementById('save-description').addEventListener('click', function() {
-        saveChanges('description');
-    });
- 
-    document.getElementById('cancel-description').addEventListener('click', function() {
-        disableEditing('description');
-    });
- 
-    document.getElementById('maquettageButton').addEventListener('click', function() {
-        location.href = 'https://rs-telecom-5fe33.web.app/';
-    });
- 
-    document.getElementById('toggleButton').addEventListener('click', function(event) {
-        event.preventDefault();
-        toggleDetails();
-    });
- 
-    var filename = "{{ cv.2 }}";
-    var mimeType = "{{ cv.3 }}";
-    var fileUrlBase = "/media/CV/filestore/" + filename;
-    var fileUrl = fileUrlBase; // Default to the base URL
- 
-    var mimeToExtension = {
-        'application/pdf': '.pdf',
-        'application/msword': '.doc',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
-        'image/png': '.png',
-        'image/jpeg': '.jpeg',
-        'text/vnd.graphviz': '.gv',
-        'application/vnd.oasis.opendocument.text': '.odt',
-        'application/zip': '.zip',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation': '.pptx',
-        'Null': '.pdf'
-    };
- 
-    if (mimeType === 'application/msword' || mimeType === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
-        document.getElementById('fileViewer').src = fileUrl + mimeToExtension[mimeType];
-        document.getElementById('fileDownload').style.display = 'block';
-        document.getElementById('fileDownload').href = fileUrl + mimeToExtension[mimeType];
-    } else {
-        document.getElementById('fileViewer').src = fileUrl + mimeToExtension[mimeType];
-        document.getElementById('fileDownload').style.display = 'none';
-    }
- 
-    var fileSizeElement = document.getElementById('fileSize');
-    var sizeInBytes = parseInt(fileSizeElement.getAttribute('data-size'), 10);
-    var sizeInMB = (sizeInBytes / (1024)).toFixed(2);
-    fileSizeElement.textContent = sizeInMB + ' Ko';
-});
- 
-function toggleDetails() {
-    var details = document.getElementById('cvDetails');
-    var button = document.getElementById('toggleButton');
-    if (details.style.display === 'none' || details.style.display === '') {
-        details.style.display = 'block';
-        button.textContent = 'Voir moins';
-    } else {
-        details.style.display = 'none';
-        button.textContent = 'Voir plus';
-    }
-}
 </script>
 </body>
 </html>
