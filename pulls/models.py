@@ -16,12 +16,14 @@ class Clients(models.Model):
 
 class Users(models.Model):
     USER_TYPES = [
+        ('default', 'Mode Invite'),
         ('con', 'Consultant'),
         ('stt', 'Freelance'),
         ('com', 'Commercial'),
+        ('paie', 'Resource humaine'),
         ('it', 'IT'),
         ('admin', 'Direction'),
-        ('sup', 'Super Admin'),
+        ('sup', 'Super-Admin'),
     ]
     id_user = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     users_name = models.CharField(max_length=255)
@@ -32,27 +34,30 @@ class Users(models.Model):
     users_phone = models.CharField(max_length=255, null=True, blank=True)
     users_company = models.CharField(max_length=255)
     users_mail = models.CharField(max_length=50, unique=True)
-    users_type = models.CharField(max_length=255)
+    users_type = models.CharField(max_length=7,choices=USER_TYPES,default='default')
     users_bio = models.CharField(max_length=255 , null=True, blank=True)
     users_password = models.CharField(max_length=128)
+    users_manager = models.CharField(max_length=128,null=True)
     users_region = models.CharField(max_length=255)
     users_address = models.CharField(max_length=255)
     users_postal = models.CharField(max_length=5, null=True)
     users_is_active = models.BooleanField(default=True)
     users_preavis = models.BooleanField(default=True)
     profile_photo = models.ImageField(upload_to='photos_profil/', null=True, blank=True)
-    url_photo_profile=models.CharField(max_length=50,null=True)
+    url_photo_profile = models.CharField(max_length=50, null=True)
     mission = models.ForeignKey('Mission', on_delete=models.CASCADE, related_name='all_mission', null=True, blank=True)
     client = models.ForeignKey('Clients', on_delete=models.SET_NULL, related_name='users', null=True, blank=True)
+    groups = models.ManyToManyField('Groups', related_name='users') # Ajout de la relation ManyToMany
 
     class Meta:
         db_table = 'Employés'
+
 
 class Groups(models.Model):
     id_group = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     group_name = models.CharField(max_length=255)
     created_date = models.DateTimeField(auto_now_add=True)
-    members = models.ManyToManyField(Users, related_name='groups')
+    delete_date = models.DateTimeField(auto_now_add=True,null=True)
 
     class Meta:
         db_table = 'Type_Colaborateur'

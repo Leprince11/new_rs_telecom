@@ -1,3 +1,4 @@
+import json
 import uuid
 from django.conf import settings
 from django.contrib import messages
@@ -14,7 +15,7 @@ import os
 from django.core.files.storage import FileSystemStorage
 
 from pulls.tokens import AccountActivationTokenGenerator
-from .models import Clients, Mission, Users,UserTwoFactorAuthData
+from .models import Clients, Groups, Mission, Users,UserTwoFactorAuthData
 from .form import SignupForm,LoginForm,TwoFactorAuthForm
 from . import tasks, utils
 
@@ -241,13 +242,13 @@ def profil(request, user_id=None):
     if user_id:
         # Utilisateur connecté
         user = request.user
-        context =  utils.recup_infos_users(user)
+        context = utils.recup_infos_users(user)
 
         # Récupérer l'utilisateur spécifié par user_id
         user_info = get_object_or_404(Users, id_user=user_id)
 
         context['user_info'] = user_info
-        context['type_user_info']= utils.recup_infos_users(user_info)
+        context['type_user_info'] = utils.recup_infos_users(user_info)
         
         # Vérifie le type d'utilisateur et ajuste le contexte en conséquence
         if user_info.users_type in ['con', 'stt']:
@@ -257,16 +258,16 @@ def profil(request, user_id=None):
         if user.users_type in ['paie', 'admin', 'sup']:
             context['is_admin_or_rh'] = True
             context['clients'] = Clients.objects.all()
+        
         # Pour les consultants ou freelances, récupérer la mission actuelle
         if context.get('is_consultant_or_freelance'):
-            print(user_info)
-            current_mission = get_current_mission(user_info) 
+            current_mission = get_current_mission(user_info)
             context['current_mission'] = current_mission
         
         if user_info.client:
-            current_client  = get_object_or_404(Clients, id_client=user_info.client.id_client)
-            print(current_client)
+            current_client = get_object_or_404(Clients, id_client=user_info.client.id_client)
             context['current_client'] = current_client
+        
         # Obtenez la liste des clients
         clients = Clients.objects.all()
 
@@ -277,41 +278,88 @@ def profil(request, user_id=None):
                 grouped_companies[client.client_name] = []
             grouped_companies[client.client_name].append(client)
         
-       
-        context['grouped_companies']=grouped_companies
+        context['grouped_companies'] = grouped_companies
+
+        # Inclure les types d'utilisateur et les groupes dans le contexte
+        context['user_type'] = Users.USER_TYPES[:-2]
+        context['groups'] = Groups.objects.all()
+        context['managers'] = Users.objects.filter(users_type='admin', delete_date__isnull=True)
+        try:
+            # Vérifier l'état de l'authentification à deux facteurs
+            try:
+                user_two_factor = UserTwoFactorAuthData.objects.get(id=user_info.id_user)
+                context['activate'] = user_two_factor.is_active
+            except UserTwoFactorAuthData.DoesNotExist:
+                context['activate'] = False
             
+        except Exception as e:
+            print('Message erreur:', e)
+
     else:
         # Utilisateur connecté
         user = request.user
-        context =  utils.recup_infos_users(user)
+        context = utils.recup_infos_users(user)
         context['clients'] = Clients.objects.all()
-        
         
         if user.users_type in ['con', 'stt']:
             context['is_consultant_or_freelance'] = True
+        
         # Pour les consultants ou freelances, récupérer la mission actuelle
         if context.get('is_consultant_or_freelance'):
-            current_mission = get_current_mission(user)  # Assurez-vous que cette fonction est définie
+            current_mission = get_current_mission(user)
             context['current_mission'] = current_mission
         
         # Récupérer le client associé si disponible
         if user.client:
             context['current_client'] = get_object_or_404(Clients, id_client=user.client.id_client)
 
-    try:
-        
-        # Vérifier l'état de l'authentification à deux facteurs
         try:
-            user_two_factor = UserTwoFactorAuthData.objects.get(id=user.id_user)
-            context['activate'] = user_two_factor.is_active
-        except UserTwoFactorAuthData.DoesNotExist:
-            context['activate'] = False
-        
-    except Exception as e:
-        print('Message erreur:', e)
-
+            # Vérifier l'état de l'authentification à deux facteurs
+            try:
+                user_two_factor = UserTwoFactorAuthData.objects.get(id=user.id_user)
+                context['activate'] = user_two_factor.is_active
+            except UserTwoFactorAuthData.DoesNotExist:
+                context['activate'] = False
+            
+        except Exception as e:
+            print('Message erreur:', e)
 
     return render(request, 'pages/clients/profil.html', context)
+
+def add_group(request):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            group_name = data.get('group_name')
+            if group_name:
+                new_group = Groups(group_name=group_name)
+                new_group.save()
+                return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
+def update_user_info(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        user_id = data.get('user_id')
+        user_types = data.get('user_type')
+        manager_id = data.get('manager_id')
+        group_ids = data.get('group_ids', [])
+        
+        # Récupérer l'utilisateur
+        user_info = Users.objects.get(pk=user_id)
+        # Mettre à jour les types d'utilisateur
+        print('Type de users',user_types)
+        user_info.users_type=user_types
+        # Mettre à jour le manager
+        user_info.users_manager = manager_id
+        # Mettre à jour les groupes
+        user_info.groups.set(group_ids)
+        user_info.save()
+        
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'fail'}, status=400)
 
 def parse_date(date_str, date_format='%m/%d/%Y'):
     try:

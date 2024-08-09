@@ -22,11 +22,13 @@ urlpatterns = [
     path("verification", views.verification, name="verification"),
     path('get_clients_data/', views.get_clients_data, name='get_clients_data'),
     path('change_profile_picture/', views.change_profile_picture, name='change_profile_picture'),
+    path('Informations/add_group/', views.add_group, name='add_group'),
 
     #gestion de fiche de paie
     path('Employes', views.fiche_paie,name='employes'),
     path('employes_all', views.getEmploye,name='getEmployes'),
     path('Employes/delete_user/<uuid:user_id>', views.delete_user,name='deleteEmployes'),
+    path('update_user_info/', views.update_user_info, name='update_user_info'),
     
 
 

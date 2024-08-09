@@ -363,41 +363,88 @@
                                     </div>
                                     <hr class="m-0">
                                     <div class="container my-2">
-                                        <div class="row align-items-center" >
-                                            <div class="col-3">Employee Type <i class="mdi mdi-help badge-primary-lighten"></i></div>
-                                            <div class="col-9">
-                                                <!-- Multiple Select -->
-                                                <select class="select2 form-control select2-multiple" data-toggle="select2" multiple="multiple" data-placeholder="choisie ...">
-                                                    <optgroup label="type de colaborateur">
-                                                        <option value="con">consultant</option>
-                                                        <option value="stt">Freelance</option>
-                                                        <option value="com">commercial</option>
-                                                        <option value="it">IT</option>
-                                                        <option value="admin">Direction</option>
-                                                    </optgroup>
-                                                    <optgroup label="groupe">
-                                                        <option value="AZ">Employee</option>
-                                                        <option value="CO">Manager</option>
-                                                        <option value="ID">Etudiant</option>
-                                                    </optgroup>
-                                                </select>
+                                        <div class="container my-2">
+                                            <div class="row align-items-center">
+                                                <div class="col-3">Type d'utilisateur <i class="mdi mdi-help badge-primary-lighten"></i></div>
+                                                <div class="col-9">
+                                                    <!-- Sélection simple -->
+                                                    <select id="users_type" name="users_type" class="select2 form-control" data-toggle="select2" data-placeholder="choisissez ...">
+                                                        {% for value, label in user_type %}
+                                                            <option value="{{ value }}" {% if user_info and user_info.users_type == value %} selected {% endif %}>{{ label }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container my-2">
+                                            <div class="row align-items-center">
+                                                <div class="col-3">Groupes</div>
+                                                <div class="col-9">
+                                                    <!-- Sélection multiple -->
+                                                    <select id="groups" name="groups" class="select2 form-control select2-multiple" data-toggle="select2" multiple="multiple" data-placeholder="choisissez ...">
+                                                        {% for group in groups %}
+                                                            <option value="{{ group.id_group }}" {% if user_info and group in user_info.groups.all %} selected {% endif %}>{{ group.group_name }}</option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container my-2">
+                                            <div class="row align-items-center">
+                                                <div class="col-3">Manager</div>
+                                                <div class="col-9">
+                                                    <!-- Sélection simple -->
+                                                    <select id="manager" name="manager" class="select2 form-control" data-toggle="select2">
+                                                        <option value="" selected aria-readonly="true" disabled>Selectionner le manager</option>
+                                                        {% for manager in managers %}
+                                                            <option value="{{ manager.id_user }}" {% if user_info and user_info.users_manager == manager.id_user %} selected {% endif %}>
+                                                                {{ manager.users_name }} {{ manager.users_fname }}
+                                                            </option>
+                                                        {% endfor %}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="container my-2">
+                                            <div class="row align-items-center">
+                                                <div class="col-12">
+                                                    <button id="saveButton" class="btn btn-primary">Sauvegarder</button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="container my-2">
-                                        <div class="row align-items-center" >
-                                            <div class="col-3">Manager</div>
-                                            <div class="col-9">
-                                                <!-- Multiple Select -->
-                                                <select class="select2 form-control" data-toggle="select2">
-                                                    <optgroup label="Alaskan/Hawaiian Time Zone">
-                                                        <option value="AK">jalal</option>
-                                                        <option value="HI">Hawaii</option>
-                                                    </optgroup>
-                                                </select>
-                                            </div>
+                                    <!-- <div class="container">
+                                        <div class="row d-flex align-items-center">
+                                            <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#addGroupModal">
+                                                Ajouter un groupe
+                                            </button>
                                         </div>
-                                    </div>
+                                    </div> -->
+                                    
+                                    <!-- Modal -->
+                                    <div class="modal fade" id="addGroupModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="addGroupModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="addGroupModalLabel">Ajouter un groupe</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-hidden="true"></button>
+                                                </div> <!-- end modal header -->
+                                                <div class="modal-body">
+                                                    <form id="addGroupForm">
+                                                        {% csrf_token %}
+                                                        <div class="mb-3">
+                                                            <label for="group_name" class="form-label">Nom du groupe</label>
+                                                            <input class="form-control" type="text" id="group_name" name="group_name" required>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                            <button type="submit" class="btn btn-primary">Ajouter</button>
+                                                        </div> <!-- end modal footer -->
+                                                    </form>
+                                                </div>
+                                            </div> <!-- end modal content-->
+                                        </div> <!-- end modal dialog-->
+                                    </div> <!-- end modal-->
                                 </div>
                             </div>
                         </div>
@@ -787,7 +834,6 @@
                                     <hr class="m-0">
                                     <div class="font-16 my-3">
                                         
-                                        <div class="container">
                                             <p class="text-muted">L'authentification à deux facteurs (« 2FA ») est un système de
                                                 double authentification. Le premier se fait avec votre mot de passe et le second
                                                 avec un code que vous obtenez depuis une application mobile dédiée. Les plus
@@ -809,7 +855,7 @@
                                                                 l'authentification à deux facteurs</span></button>
                                                     {% endif %}
                                             
-                                        </div>
+                                        
                                     </div>
                                 </div>
                             </div>
@@ -968,6 +1014,42 @@
     let clientData = {}; 
 
     document.addEventListener('DOMContentLoaded', function() {
+
+        const saveButton = document.getElementById('saveButton');
+        const userTypeSelect = document.getElementById('users_type');
+        const managerSelect = document.getElementById('manager');
+        const groupSelect = document.getElementById('groups');
+
+        saveButton.addEventListener('click', function () {
+            const user_id = '{{ user_info.id_user }}';
+            const user_type = userTypeSelect.value;
+            console.log(user_type);
+            const manager_id = managerSelect.value;
+            const group_ids = Array.from(groupSelect.selectedOptions).map(option => option.value);
+
+            fetch('{% url "update_user_info" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify({
+                    user_id: user_id,
+                    user_type: user_type,
+                    manager_id: manager_id,
+                    group_ids: group_ids
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    
+                    showModal('Succès', 'Les informations de l\'utilisateur ont été mises à jour avec succès.');
+                } else {
+                    showModal('Erreur', 'Une erreur s\'est produite lors de la mise à jour des informations de l\'utilisateur.');
+                }
+            });
+        });
         document.getElementById('profileForm').addEventListener('submit', function(event) {
             event.preventDefault();
 
@@ -979,7 +1061,6 @@
             
             
             
-            console.log(formData)
             fetch("{% url 'update_profile' %}", {
                 method: 'POST',
                 headers: {
@@ -1027,7 +1108,36 @@
             });
         });
 
+        document.getElementById('addGroupForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const groupName = document.getElementById('group_name').value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch("{% url 'add_group' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken
+                },
+                body: JSON.stringify({ group_name: groupName })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Group added successfully!');
+                    document.getElementById('addGroupForm').reset();
+                    $('#addGroupModal').modal('hide');
+                } else {
+                    alert('Error adding group');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
     });
+
 
     function fetchClientData() {
         fetch('{% url "get_clients_data" %}')

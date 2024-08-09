@@ -8,7 +8,7 @@
 
 {% block content %}
                         
-     <!-- start page title -->
+    <!-- start page title -->
     <div class="row">
         <div class="col-12">
             <div class="page-title-box">
@@ -31,7 +31,8 @@
                 <div class="card-body">
                     <div class="row mb-2">
                         <div class="col-sm-4">
-                            <a href="javascript:void(0);" class="btn btn-danger mb-2"><i class="mdi mdi-plus-circle me-2"></i> Employé</a>
+                            <a href="javascript:void(0);" id="suiviConsultantBtn" class="btn btn-primary mb-2 text-capitalize">Suivi consultant <i class="mdi mdi-account-arrow-right mx-2"></i> </a>
+                            <a href="javascript:void(0);" class="btn btn-light mb-2 fw-bold mx-2">Aout 2024 </a>
                         </div>
                         <div class="col-sm-8">
                             <div class="text-sm-end">
@@ -41,8 +42,8 @@
                             </div>
                         </div><!-- end col-->
                     </div>
-
-                    <div class="table-responsive">
+    
+                    <div class="table-responsive" id="employeeTable">
                         <table class="table table-centered table-striped dt-responsive nowrap w-100" id="products-datatable">
                             <thead>
                                 <tr>
@@ -95,11 +96,71 @@
                                     </td>
                                     <td>
                                         <a href="{% url 'edith_profil' user.0.id_user %}" class="action-icon"> <i class="mdi mdi-square-edit-outline text-primary"></i></a>
-                                        <a href="#" class="action-icon delete-user" data-id="{{user.id_user}}" id="delete_user" data-url="{% url 'deleteEmployes' user.0.id_user%}"> <i class="mdi mdi-delete text-danger"></i></a>
+                                        <a href="#" class="action-icon delete-user" data-id="{{user.id_user}}" id="delete_user" data-url="{% url 'deleteEmployes' user.0.id_user%}"> <i class="mdi mdi-account-remove-outline text-danger"></i></a>
                                     </td>
                                 </tr>
-                            
-                                {% endfor  %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+    
+                    <div class="table-responsive d-none" id="consultantTable">
+                        <table class="table table-centered table-striped dt-responsive nowrap w-100" id="consultants-datatable">
+                            <thead>
+                                <tr>
+                                    <th style="width: 20px;">
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="customCheck2">
+                                            <label class="form-check-label" for="customCheck2">&nbsp;</label>
+                                        </div>
+                                    </th>
+                                    <th>Consultant</th>
+                                    <th>Adresse email</th>
+                                    <th>Client</th>
+                                    <th>Manager</th>
+                                    <th>Nombre de jour </th>
+                                    <th>status</th>
+                                    <th style="width: 75px;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for consultant in consultants %}
+                                <tr>
+                                    <td>
+                                        <div class="form-check">
+                                            <input type="checkbox" class="form-check-input" id="customCheck23">
+                                            <label class="form-check-label" for="customCheck23">&nbsp;</label>
+                                        </div>
+                                    </td>
+                                    <td class="table-user">
+                                        <img src="{% if consultant.profile_photo %} /media/photos_profil/{{ consultant.url_photo_profile }}{% else %}{% static 'images/logo.png' %}{% endif %}" alt="table-user" class="me-2 rounded-circle">
+                                        <a href="javascript:void(0);" class="text-body fw-semibold">{{ consultant.0.users_name|default:"N/A" }} {{ consultant.0.users_fname|default:"N/A" }}</a>
+                                    </td>
+                                    <td>
+                                        {{ consultant.0.users_phone|default:"N/A" }}
+                                    </td>
+                                    <td>
+                                        {{ consultant.0.users_mail|default:"N/A" }}
+                                    </td>
+                                    <td>
+                                        {{ consultant.0.users_company|default:"N/A" }}
+                                    </td>
+                                    <td>
+                                        {{ consultant.1|default:"N/A" }}
+                                    </td>
+                                    <td>
+                                        {% if consultant.0.users_is_active %}
+                                            <span class="badge badge-success-lighten">N/A</span>
+                                        {% else %}
+                                            <span class="badge badge-danger-lighten">N/A</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'edith_profil' consultant.0.id_user %}" class="action-icon"> <i class="mdi mdi-square-edit-outline text-primary"></i></a>
+                                        <a href="#" class="action-icon delete-user" data-id="{{consultant.id_user}}" id="delete_user" data-url="{% url 'deleteConsultants' consultant.0.id_user%}"> <i class="mdi mdi-account-remove text-danger"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
                             </tbody>
                         </table>
                     </div>
@@ -135,43 +196,21 @@
 <script src="{% static 'pulls/assets/js/vendor/dataTables.responsive.min.js' %}"></script>
 <script src="{% static 'pulls/assets/js/pages/demo.customers.js' %}"></script>
 <script>
-    $(document).ready(function() {
-        // fetch('employes_all', {
-        //     method: 'GET',
-        //     headers: {
-        //         'Content-Type': 'application/json'
-        //     }
-        // })
-        // .then(response => response.json())
-        // .then(data => {
-        //     const tableBody = document.getElementById('table-body');
-        //     data.forEach(item => {
-        //         const row = document.createElement('tr');
-        //         const profilePhoto = item.profile_photo ? `pulls/assets/images/users/${item.profile_photo}` : "{% static 'images/logo.png' %}";
-
-        //         row.innerHTML = `
-        //             <td class="table-user">
-        //                 <img src="${profilePhoto}" alt="table-user" class="me-2 rounded-circle" width="40">
-        //                 <a href="javascript:void(0);" class="text-body fw-semibold">${item.users_name} ${item.users_fname}</a>
-        //             </td>
-        //             <td>${item.users_phone || 'N/A'}</td>
-        //             <td>${item.users_mail}</td>
-        //             <td>${item.users_region || 'N/A'}</td>
-        //             <td>${new Date(item.created_date).toLocaleDateString()}</td>
-        //             <td>
-        //                 <span class="badge badge-${item.users_is_active ? 'success' : 'danger'}-lighten">${item.users_is_active ? 'Active' : 'Inactive'}</span>
-        //             </td>
-        //             <td>
-        //                 <a href="javascript:void(0);" class="action-icon" id="customer-edit-${item.id_user}"> <i class="mdi mdi-square-edit-outline"></i></a>
-        //                 <a href="javascript:void(0);" class="action-icon" id="customer-delete-${item.id_user}"> <i class="mdi mdi-delete"></i></a>
-        //             </td>
-        //         `;
-
-        //         tableBody.appendChild(row);
-        //     });
-        // })
-        // .catch(error => console.error('Erreur lors de la requête:', error));
-
+        $(document).ready(function() {
+            
+            document.getElementById('suiviConsultantBtn').addEventListener('click', function() {
+            var employeeTable = document.getElementById('employeeTable');
+            var consultantTable = document.getElementById('consultantTable');
+            if (employeeTable.classList.contains('d-none')) {
+                employeeTable.classList.remove('d-none');
+                consultantTable.classList.add('d-none');
+                document.getElementById('suiviConsultantBtn').innerHTML=`Suivi consultant <i class="mdi mdi-account-arrow-right fs-4 mx-2"></i>`;
+            } else {
+                employeeTable.classList.add('d-none');
+                consultantTable.classList.remove('d-none');
+                document.getElementById('suiviConsultantBtn').innerHTML=`Employés <i class="mdi mdi-account-arrow-left fs-4 mx-2"></i>`;
+            }
+        });
 
         $(document).on('click', '.delete-user', function() {
             var userId = $(this).data('id');
@@ -181,12 +220,6 @@
                 deleteUser(userId);
             })
         });
-        
-        // $('#delete_user').on('click', function() {
-        //     showModal('Suppression de l\'utilisateur','Voulez vous vraiment supprimer cette utilisateurs? cette utilisateur sera supprimer de manier definitive')
-                
-            
-        // });
 
     });
 
