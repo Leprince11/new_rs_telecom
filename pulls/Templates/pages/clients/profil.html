@@ -1019,11 +1019,10 @@
         const userTypeSelect = document.getElementById('users_type');
         const managerSelect = document.getElementById('manager');
         const groupSelect = document.getElementById('groups');
-
-        saveButton.addEventListener('click', function () {
+        if(saveButton){
+            saveButton.addEventListener('click', function () {
             const user_id = '{{ user_info.id_user }}';
             const user_type = userTypeSelect.value;
-            console.log(user_type);
             const manager_id = managerSelect.value;
             const group_ids = Array.from(groupSelect.selectedOptions).map(option => option.value);
 
@@ -1050,7 +1049,11 @@
                 }
             });
         });
-        document.getElementById('profileForm').addEventListener('submit', function(event) {
+        }
+        buttonm=document.getElementById('profileForm')
+        
+        if(buttonm){
+            buttonm.addEventListener('submit', function(event) {
             event.preventDefault();
 
             let formData = new FormData(this);
@@ -1081,10 +1084,14 @@
                 showModal('Erreur', 'Erreur lors de la mise à jour du profil');
             });
         });
-        document.getElementById('validation').addEventListener('click', function() {
+        }
+        const btnValidation=document.getElementById('validation')
+        if(btnValidation){
+        btnValidation.addEventListener('click', function() {
             location.reload();
-
         });
+
+        }
 
         fetchClientData();
 
